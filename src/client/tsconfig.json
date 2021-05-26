@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "jsx": "react",
+    "baseUrl": "../../../../",
+    "paths": {
+      "@typings/*": ["../typings/*"]
+    }
+  }
+}

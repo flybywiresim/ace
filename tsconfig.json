@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "noImplicitAny": true,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "lib": ["esnext"],
+    "baseUrl": "../../",
+    "paths": {
+      "@typings/*": ["../typings/*"]
+    }
+  },
+  "include": [
+    "./src/server/**/*"
+  ]
+}

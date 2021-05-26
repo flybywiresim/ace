@@ -18,15 +18,6 @@ export class LocalShim implements SimulatorInterface {
         },
     }
 
-    public GetStoredData= (key: string): any => {
-        if (key === 'A32NX_CONFIG_SELF_TEST_TIME') {
-            return 2;
-        }
-        return 0;
-    }
-
-    public SetStoredData = () => {}
-
     public Simplane = {
         getPressureSelectedMode() {
             return 'Std';
@@ -49,4 +40,14 @@ export class LocalShim implements SimulatorInterface {
     };
 
     public Aircraft = {}
+
+    public GetStoredData = (key: string): any => {
+        if (key === 'A32NX_CONFIG_SELF_TEST_TIME') {
+            return 2;
+        }
+        return 0;
+    }
+
+    public SetStoredData = () => {
+    }
 }

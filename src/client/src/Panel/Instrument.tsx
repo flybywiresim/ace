@@ -46,12 +46,14 @@ export const Instrument: FC<InstrumentProps> = ({ instrument, index, scale, canv
                 styleTag.textContent = bundle.css;
 
                 // Clear all intervals in the iframe
-                const lastInterval = iframeWindow.setInterval(() => {}, 99999999);
+                const lastInterval = iframeWindow.setInterval(() => {
+                }, 99999999);
                 for (let i = 0; i < lastInterval; i++) {
                     iframeWindow.clearInterval(i);
                 }
 
-                const lastTimeout = iframeWindow.setTimeout(() => {}, 99999999);
+                const lastTimeout = iframeWindow.setTimeout(() => {
+                }, 99999999);
                 for (let i = 0; i < lastTimeout; i++) {
                     iframeWindow.clearTimeout(i);
                 }
@@ -111,7 +113,10 @@ export const Instrument: FC<InstrumentProps> = ({ instrument, index, scale, canv
     };
 
     return (
-        <div className="absolute flex flex-col bg-gray-300 p-0 overflow-hidden rounded-t-md shadow-md" ref={containerRef}>
+        <div
+            className="absolute flex flex-col bg-gray-300 p-0 overflow-hidden rounded-t-md shadow-md"
+            ref={containerRef}
+        >
             <span
                 onMouseDown={handleDragStart}
                 onMouseUp={handleDragStop}
@@ -120,9 +125,15 @@ export const Instrument: FC<InstrumentProps> = ({ instrument, index, scale, canv
                 {instrument?.name}
                 {' '}
                 {index}
-                <button onClick={onRemoved}>X</button>
+                <button onClick={onRemoved} type="button">X</button>
             </span>
-            <iframe title="Instrument Frame" ref={iframeRef} width={dimensions.width} height={dimensions.height} style={{ pointerEvents: 'none' }} />
+            <iframe
+                title="Instrument Frame"
+                ref={iframeRef}
+                width={dimensions.width}
+                height={dimensions.height}
+                style={{ pointerEvents: 'none' }}
+            />
         </div>
     );
 };

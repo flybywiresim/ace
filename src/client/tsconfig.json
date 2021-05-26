@@ -4,7 +4,9 @@
     "jsx": "react",
     "baseUrl": "../../../../",
     "paths": {
-      "@typings/*": ["../typings/*"]
+      "@typings/*": [
+        "../typings/*"
+      ]
     }
   }
 }

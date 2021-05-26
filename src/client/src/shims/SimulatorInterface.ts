@@ -4,11 +4,6 @@ export interface SimulatorInterface {
         GetSimVarValue(name): string | number,
         SetSimVarValue(): void
     }
-
-    GetStoredData(name: string): any
-
-    SetStoredData(): void
-
     Simplane: {
         getPressureSelectedMode(): string,
         getAutoPilotDisplayedAltitudeLockValue(): number
@@ -17,6 +12,9 @@ export interface SimulatorInterface {
         getAutoPilotApproachLoaded(): boolean,
         getAutoPilotApproachType(): null
     };
-
     Aircraft: {}
+
+    GetStoredData(name: string): any
+
+    SetStoredData(): void
 }

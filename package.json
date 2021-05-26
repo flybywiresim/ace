@@ -2,6 +2,8 @@
   "name": "webcockpit",
   "version": "0.1.0",
   "scripts": {
+    "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
+    "lint-fix": "npm run lint -- --fix",
     "dev:server": "nodemon --watch 'src/**/*' --ignore 'src/client/**/*' -e ts,tsx --exec ts-node src/server.ts",
     "dev:client": "cd src/client && snowpack dev"
   },
@@ -14,9 +16,13 @@
     "react-zoom-pan-pinch": "^1.6.1"
   },
   "devDependencies": {
+    "@flybywiresim/eslint-config": "^0.1.0",
     "@snowpack/plugin-postcss": "^1.4.0",
     "@types/koa": "^2.13.1",
     "@types/koa-router": "^7.4.2",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
+    "eslint": "^7.27.0",
     "http2-proxy": "^5.0.53",
     "nodemon": "^2.0.7",
     "postcss": "^8.3.0",

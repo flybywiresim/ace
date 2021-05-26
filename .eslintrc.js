@@ -27,6 +27,7 @@ module.exports = {
     ],
     rules: {
         'no-control-regex': 'off',
+        'no-undef': 'off',
 
         // Irrelevant for our use
         'jsx-a11y/alt-text': 'off',

@@ -1,7 +1,10 @@
 import * as fs from 'fs';
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
+import * as bodyParser from 'koa-bodyparser';
 import { readPanel } from './server/panel';
+import { ProjectCreationParams, ProjectLoadingParams } from './common/project';
+import { createProject, loadProject, validateProjectCreation, validateProjectLoading } from './server/project';
 
 const server = new Koa();
 const router = new Router();
@@ -33,10 +36,39 @@ const apiRouter = new Router({ prefix: '/api' })
 
         ctx.body = JSON.stringify(panel);
         ctx.type = 'application/json';
+    })
+    .post('/project', (ctx) => {
+        const creationParams = ctx.request.body as ProjectCreationParams;
+
+        const projectValidationResult = validateProjectCreation(creationParams);
+
+        if (projectValidationResult === true) {
+            const project = createProject(creationParams);
+
+            ctx.body = JSON.stringify(project);
+        } else {
+            ctx.status = 400;
+            ctx.body = { error: projectValidationResult };
+        }
+    })
+    .post('/project/load', (ctx) => {
+        const loadingParams = ctx.request.body as ProjectLoadingParams;
+
+        const projectValidationResult = validateProjectLoading(loadingParams);
+
+        if (projectValidationResult === true) {
+            const project = loadProject(loadingParams);
+
+            ctx.body = JSON.stringify(project);
+        } else {
+            ctx.status = 400;
+            ctx.body = { error: projectValidationResult };
+        }
     });
 
 router.use(apiRouter.routes());
 
+server.use(bodyParser());
 server.use(router.routes());
 
 server.listen(3000);

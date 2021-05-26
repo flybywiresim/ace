@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import ReactDOM from 'react-dom';
-import { Panel } from './Panel';
+import { Home } from './Home';
 import './styles.css';
 
 const Navbar: FC = () => (
@@ -18,7 +18,7 @@ const Navbar: FC = () => (
 const App: FC = () => (
     <div className="h-full flex flex-col justify-start">
         <Navbar />
-        <Panel />
+        <Home />
     </div>
 );
 

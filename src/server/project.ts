@@ -1,6 +1,7 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import { ProjectCreationParams, ProjectData, ProjectDef, ProjectLoadingParams } from '../common/project';
-import { readPanel } from './panel';
+import { readPanelUnsafe } from './panel';
 
 export function validateProjectLoading({ directory }: ProjectLoadingParams): string | true {
     if (directory) {
@@ -18,11 +19,11 @@ export function validateProjectLoading({ directory }: ProjectLoadingParams): str
     return 'Project loading parameters must include directory';
 }
 
-export function loadProject({ directory }: ProjectLoadingParams): ProjectData {
+export function loadProjectUnsafe({ directory }: ProjectLoadingParams): ProjectData {
     const projectFileText = fs.readFileSync(`${directory}/.ace/project.json`).toString();
     const definition = JSON.parse(projectFileText) as ProjectDef;
 
-    const panel = readPanel(`${directory}/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/panel.cfg`);
+    const panel = readPanelUnsafe(path.join(directory, definition.paths.panelSrc));
 
     return { definition, panel };
 }
@@ -43,13 +44,12 @@ export function validateProjectCreation({ directory }: ProjectCreationParams): s
     return 'Project creation parameters must include directory';
 }
 
-export function createProject({ name: finalName, directory }: ProjectCreationParams): ProjectDef {
-    if (fs.existsSync(`${directory}/.ace`)) {
-        throw new Error('Project already exists at location');
-    }
+const DEFAULT_PROJECT_PANEL_SRC = 'src/instruments';
 
-    const packageJsonPath = `${directory}/package.json`;
+export function createProjectUnsafe(params: ProjectCreationParams): ProjectDef {
+    let finalName = params.name;
 
+    const packageJsonPath = `${(params.directory)}/package.json`;
     const directoryHasPackageJson = fs.existsSync(packageJsonPath);
 
     if (!finalName && !directoryHasPackageJson) {
@@ -69,9 +69,10 @@ export function createProject({ name: finalName, directory }: ProjectCreationPar
     const def: ProjectDef = {
         name: finalName,
         createdAt: Date.now(),
+        paths: { panelSrc: params.paths?.panelSrc ?? DEFAULT_PROJECT_PANEL_SRC },
     };
 
-    writeProjectFile(directory, def);
+    writeProjectFile(params.directory, def);
 
     return def;
 }

@@ -6,8 +6,8 @@ export async function getInstrumentList(): Promise<InstrumentDef[]> {
     return request.json();
 }
 
-export async function getInstrumentBundle(def: InstrumentDef): Promise<{ js: string, css: string }> {
-    const request = await fetch(`/api/instrument/${def.name}`);
+export async function getInstrumentBundle(name: string): Promise<{ js: string, css: string }> {
+    const request = await fetch(`/api/instrument/${name}`);
 
     return request.json();
 }

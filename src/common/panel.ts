@@ -20,6 +20,25 @@ export type PanelEntry = {
     },
 }
 
-export type PanelDef = {
-    entries: PanelEntry[],
+export type PanelInstrument = {
+    name: string,
+    isInteractive: boolean,
+    dimensions?: {
+        mm: {
+            width: number,
+            height: number,
+        },
+        px: {
+            width: number,
+            height: number,
+        }
+    },
+    position?: {
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+    }
 }
+
+export type PanelDef = PanelInstrument[];

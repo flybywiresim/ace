@@ -1,9 +1,14 @@
-import React, { FC, useState } from 'react';
-import { ProjectDef, ProjectLoadingParams } from '../../../common/project';
+import React, { FC, useContext, useState } from 'react';
+import { useHistory } from 'react-router';
+import { ProjectLoadingParams } from '../../../common/project';
 import { readProject } from '../queries/project';
+import { ProjectContext } from '../index';
 
 export const Home: FC = () => {
-    const [recentProjects] = useState<(ProjectDef & ProjectLoadingParams)[]>([
+    const { setLoadedProject } = useContext(ProjectContext);
+    const history = useHistory();
+
+    const [recentProjects] = useState<({ name: string, createdAt: number } & ProjectLoadingParams)[]>([
         {
             name: 'a32nx',
             createdAt: Date.now(),
@@ -11,10 +16,12 @@ export const Home: FC = () => {
         },
     ]);
 
-    const handleProjectSelected = (def: ProjectDef & ProjectLoadingParams) => {
-        const project = readProject(def);
+    const handleProjectSelected = (def: { name: string, createdAt: number } & ProjectLoadingParams) => {
+        readProject(def).then((project) => {
+            setLoadedProject(project);
 
-        console.log(project);
+            history.push(`/project/${project.definition.name}`);
+        });
     };
 
     return (

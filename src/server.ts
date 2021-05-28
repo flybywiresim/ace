@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
-import { readPanel } from './server/panel';
+import { readPanelUnsafe } from './server/panel';
 import { ProjectCreationParams, ProjectLoadingParams } from './common/project';
-import { createProject, loadProject, validateProjectCreation, validateProjectLoading } from './server/project';
+import { createProjectUnsafe, loadProjectUnsafe, validateProjectCreation, validateProjectLoading } from './server/project';
 
 const server = new Koa();
 const router = new Router();
@@ -32,7 +32,7 @@ const apiRouter = new Router({ prefix: '/api' })
     .get('/panel', (ctx) => {
         const path = '../../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/panel.cfg';
 
-        const panel = readPanel(path);
+        const panel = readPanelUnsafe(path);
 
         ctx.body = JSON.stringify(panel);
         ctx.type = 'application/json';
@@ -43,7 +43,7 @@ const apiRouter = new Router({ prefix: '/api' })
         const projectValidationResult = validateProjectCreation(creationParams);
 
         if (projectValidationResult === true) {
-            const project = createProject(creationParams);
+            const project = createProjectUnsafe(creationParams);
 
             ctx.body = JSON.stringify(project);
         } else {
@@ -57,7 +57,7 @@ const apiRouter = new Router({ prefix: '/api' })
         const projectValidationResult = validateProjectLoading(loadingParams);
 
         if (projectValidationResult === true) {
-            const project = loadProject(loadingParams);
+            const project = loadProjectUnsafe(loadingParams);
 
             ctx.body = JSON.stringify(project);
         } else {

@@ -1,11 +1,10 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
-import { InstrumentDef } from './index';
 import { getInstrumentBundle } from '../queries/instruments';
-import { getPanel } from '../queries/panel';
 import { LocalShim } from '../shims/LocalShim';
+import { PanelInstrument } from '../../../common/panel';
 
 export type InstrumentProps = {
-    instrument: InstrumentDef,
+    instrument: PanelInstrument,
     index: number,
     canvas: React.MutableRefObject<HTMLDivElement>,
     scale: number,
@@ -18,11 +17,9 @@ export const Instrument: FC<InstrumentProps> = ({ instrument, index, scale, canv
 
     const [isDragging, setIsDragging] = useState(false);
 
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
     useEffect(() => {
         if (iframeRef && instrument) {
-            getInstrumentBundle(instrument).then((bundle) => {
+            getInstrumentBundle(instrument.name).then((bundle) => {
                 const iframeWindow = iframeRef.current.contentWindow;
                 const iframeDocument = iframeRef.current.contentDocument;
 
@@ -92,14 +89,6 @@ export const Instrument: FC<InstrumentProps> = ({ instrument, index, scale, canv
         return () => canvas.current.removeEventListener('mousemove', listener);
     }, [canvas, isDragging]);
 
-    useEffect(() => {
-        getPanel().then((panel) => {
-            const panelEntry = panel.entries.find((entry) => entry.gauges.some((gauge) => gauge.templateUrl.includes(instrument.name)));
-
-            setDimensions(panelEntry.sizePX);
-        });
-    }, [instrument]);
-
     const handleDragStart = (event: MouseEvent) => {
         setIsDragging(true);
 
@@ -130,8 +119,8 @@ export const Instrument: FC<InstrumentProps> = ({ instrument, index, scale, canv
             <iframe
                 title="Instrument Frame"
                 ref={iframeRef}
-                width={dimensions.width}
-                height={dimensions.height}
+                width={instrument.dimensions.px.width}
+                height={instrument.dimensions.px.height}
                 style={{ pointerEvents: 'none' }}
             />
         </div>

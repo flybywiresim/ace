@@ -1,11 +1,11 @@
-import React, { FC, useContext, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { useHistory } from 'react-router';
 import { ProjectLoadingParams } from '../../../common/project';
 import { readProject } from '../queries/project';
-import { ProjectContext } from '../index';
+import { useProjectContext } from '../index';
 
 export const Home: FC = () => {
-    const { setLoadedProject } = useContext(ProjectContext);
+    const { setLoadedProject } = useProjectContext();
     const history = useHistory();
 
     const [recentProjects] = useState<({ name: string, createdAt: number } & ProjectLoadingParams)[]>([

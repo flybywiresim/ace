@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+.react-transform-component {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.react-transform-element {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 :root {
   font-family: sans-serif;
 }

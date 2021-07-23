@@ -1,27 +1,25 @@
 import React, { FC, useState } from 'react';
 import { useHistory } from 'react-router';
-import { ProjectLoadingParams } from '../../../common/project';
 import { readProject } from '../queries/project';
-import { useProjectContext } from '../index';
+import { useProjectContext } from '../Contexts/ProjectContext';
 
 export const Home: FC = () => {
     const { setLoadedProject } = useProjectContext();
     const history = useHistory();
-
-    const [recentProjects] = useState<({ name: string, createdAt: number } & ProjectLoadingParams)[]>([
+    const [recentProjects] = useState<({ name: string, directory: string})[]>([
+        {
+            name: 'project350',
+            directory: '../project350',
+        },
         {
             name: 'a32nx',
-            createdAt: Date.now(),
             directory: '../a32nx',
         },
     ]);
-
-    const handleProjectSelected = (def: { name: string, createdAt: number } & ProjectLoadingParams) => {
-        readProject(def).then((project) => {
-            setLoadedProject(project);
-
-            history.push(`/project/${project.definition.name}`);
-        });
+    const handleProjectSelected = (directory: string) => {
+        const project = readProject(directory);
+        setLoadedProject(project);
+        history.push(`/project/${project.name}`);
     };
 
     return (
@@ -37,9 +35,8 @@ export const Home: FC = () => {
                             <div className="flex flex-row justify-between items-center">
                                 <div className="flex flex-col">
                                     <span className="text-xl font-medium">{def.name}</span>
-                                    <span>{def.createdAt}</span>
                                 </div>
-                                <div className="text-5xl text-bold cursor-pointer" onClick={() => handleProjectSelected(def)}>
+                                <div className="text-5xl text-bold cursor-pointer" onClick={() => handleProjectSelected(def.directory)}>
                                     &rarr;
                                 </div>
                             </div>

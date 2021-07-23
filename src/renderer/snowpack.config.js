@@ -18,6 +18,7 @@ module.exports = {
     ],
     plugins: [
         '@snowpack/plugin-postcss',
+        '@snowpack/plugin-react-refresh',
     ],
     packageOptions: {},
     devOptions: { tailwindConfig: './tailwind.config.js' },

@@ -1,8 +1,9 @@
-import React, { FC, useRef, useState } from 'react';
+import React, { FC, useRef, useState, useEffect } from 'react';
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { Instrument } from './Instrument';
-import { useProjectContext } from '../index';
 import { PanelInstrument } from '../../../common/panel';
+import { useProjectContext } from '../Contexts/ProjectContext';
+import { SimvarPanel } from './SimVars';
 
 export type InstrumentDef = {
     name: string,
@@ -52,11 +53,12 @@ export const Panel: FC = () => {
                         onSelected={() => handleAddElement(instrument)}
                     />
                 ))}
+                <SimvarPanel />
             </section>
             <section className="w-full h-full" ref={canvas}>
                 <TransformWrapper
                     options={{ limitToBounds: false, minScale: 0 }}
-                    onZoomChange={(a) => setZoomScale(a.scale)}
+                    onZoomChange={(a: any) => setZoomScale(a.scale)}
                 >
                     <TransformComponent>
                         {entries.map((element) => (

@@ -28,6 +28,7 @@ module.exports = {
     rules: {
         'no-control-regex': 'off',
         'no-undef': 'off',
+        'linebreak-style': 'off',
 
         // Irrelevant for our use
         'jsx-a11y/alt-text': 'off',

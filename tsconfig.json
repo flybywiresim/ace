@@ -1,17 +1,21 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "module": "commonjs",
-    "target": "es2017",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
     "noImplicitAny": true,
-    "outDir": "./dist",
     "sourceMap": true,
-    "lib": ["esnext"],
-    "baseUrl": "../../",
+    "baseUrl": ".",
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "jsx": "react",
     "paths": {
-      "@typings/*": ["../typings/*"]
+      "*": ["node_modules/*"]
     }
   },
   "include": [
-    "./src/server/**/*"
+    "src/**/*"
   ]
 }

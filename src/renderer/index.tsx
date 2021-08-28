@@ -30,10 +30,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import { Home } from './Home';
+import { ProjectProvider } from './hooks/ProjectContext';
 
 export const Main = () => (
-    <>
+    <ProjectProvider>
         <Home />
-    </>
+    </ProjectProvider>
 );
 ReactDOM.render(<Main />, document.body);

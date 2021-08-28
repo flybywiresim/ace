@@ -1,23 +1,45 @@
 import React, { createContext, FC, useContext, useState } from 'react';
+import path from 'path';
+import fs from 'fs';
 import { Project } from '../types/Project';
-
-const fs = window.require('fs');
 
 type ProjectContextType = {
     loadProject: (path: string) => void;
+    createProject: (name: string, path: string, instrumentsSrc: string) => void;
     project: Project | undefined;
 }
+
 export const ProjectContext = createContext<ProjectContextType>(undefined as any);
 export const useProject = () => useContext(ProjectContext);
+
 export const ProjectProvider: FC = ({ children }) => {
     const [project, setProject] = useState<Project | undefined>();
 
-    const loadProject = (path: string) => {
-        const project = JSON.parse(fs.readFileSync(path, { encoding: 'utf8' })) as Project;
+    const loadProject = (location: string) => {
+        if (!fs.existsSync(`${location}/.ace/project.json`)) window.alert(`Project Doesn't exist in: ${location}`);
+
+        const project = JSON.parse(fs.readFileSync(path.join(location, '.ace/project.json'), { encoding: 'utf8' })) as Project;
         setProject(project);
     };
+
+    const createProject = async (name: string, location: string, instrumentsSrc: string) => {
+        if (fs.existsSync(`${location}/.ace/project.json`)) return;
+
+        const project: Project = {
+            name,
+            paths: {
+                instrumentSrc: path.relative(location, instrumentsSrc),
+            },
+        };
+
+        console.log(project);
+        if (!fs.existsSync(path.join(location, '.ace'))) fs.mkdirSync(path.join(location, '.ace'));
+        fs.writeFileSync(path.join(location, '.ace/project.json'), JSON.stringify(project));
+        setProject(project);
+    };
+
     return (
-        <ProjectContext.Provider value={{ project, loadProject }}>
+        <ProjectContext.Provider value={{ project, loadProject, createProject }}>
             {children}
         </ProjectContext.Provider>
     );

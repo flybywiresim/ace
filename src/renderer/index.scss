@@ -9,3 +9,7 @@ body {
   padding: 2rem;
   @apply bg-navy text-white;
 }
+
+button {
+  @apply px-2 py-1 rounded-md bg-navy-dark
+}

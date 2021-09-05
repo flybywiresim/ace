@@ -1,7 +1,8 @@
 'use strict';
 
 module.exports = {
-    purge: [],
+    mode: 'jit',
+    purge: ['./src/**/*'],
     darkMode: false, // or 'media' or 'class'
     theme: {
         extend: {},

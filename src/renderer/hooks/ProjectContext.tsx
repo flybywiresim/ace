@@ -29,6 +29,7 @@ export const ProjectProvider: FC = ({ children }) => {
             name,
             paths: {
                 instrumentSrc: path.relative(location, instrumentsSrc),
+                project: location,
             },
         };
 

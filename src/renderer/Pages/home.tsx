@@ -14,9 +14,12 @@ export const Home = () => {
                 Current Project:
                 {' '}
                 {project?.name}
+                <br />
+                {project?.paths.project}
             </h1>
             <button
                 type="button"
+                className="my-2 mx-4"
                 onClick={async () => {
                     const result = await remote.dialog.showOpenDialog({
                         title: 'Select the root directory of your project',

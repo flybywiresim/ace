@@ -1,6 +1,7 @@
 export type Project = {
     name: string;
     paths: {
-        instrumentSrc: string;
+        instrumentSrc: string
+        project: string,
     };
 }

@@ -16,7 +16,11 @@ export const CreateProject = () => {
     return (
         <div>
             <h3>Project Name: </h3>
-            <input value={name} onChange={(e) => setName(e.target.value)} />
+            <input
+                value={name}
+                className="mb-2 pl-1 rounded-md text-black"
+                onChange={(e) => setName(e.target.value)}
+            />
 
             <h3>
                 Project Location:
@@ -25,6 +29,7 @@ export const CreateProject = () => {
             </h3>
             <button
                 type="button"
+                className="mb-2"
                 onClick={async () => {
                     const result = await remote.dialog.showOpenDialog({
                         title: 'Select the root directory of your project',
@@ -44,6 +49,7 @@ export const CreateProject = () => {
             </h3>
             <button
                 type="button"
+                className="mb-2"
                 onClick={async () => {
                     const result = await remote.dialog.showOpenDialog({
                         title: 'Select the Instruments folder of your project',
@@ -61,16 +67,18 @@ export const CreateProject = () => {
             <br />
             <br />
 
-            <button
-                type="button"
-                onClick={async () => {
-                    createProject(name, location, instrumentsLocation);
-                    history.push('/');
-                }}
-            >
-                Create Project
-            </button>
-            <button type="button" onClick={() => history.push('/')}>Cancel</button>
+            <div className="space-x-2">
+                <button
+                    type="button"
+                    onClick={async () => {
+                        createProject(name, location, instrumentsLocation);
+                        history.push('/');
+                    }}
+                >
+                    Create Project
+                </button>
+                <button type="button" onClick={() => history.push('/')}>Cancel</button>
+            </div>
         </div>
     );
 };

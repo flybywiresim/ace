@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { remote } from 'electron';
 import path from 'path';
-import { isInstrumentsFolderSuitable, isProjectFolderSuitable } from '../utils';
+import { isInstrumentsFolderSuitable, isProjectFolderSuitable } from '../../utils/project';
 import { useProject } from '../hooks/ProjectContext';
 
 export const CreateProject = () => {
     const [name, setName] = useState('');
     const [location, setLocation] = useState('');
     const [instrumentsLocation, setInstrumentsLocation] = useState('');
+    const [bundlesLocation, setBundlesLocation] = useState('');
 
     const { createProject } = useProject();
     const history = useHistory();
@@ -63,6 +64,27 @@ export const CreateProject = () => {
             >
                 Select Instruments Folder
             </button>
+            <h3>
+                Bundles Location:
+                {' '}
+                {bundlesLocation}
+            </h3>
+            <button
+                type="button"
+                className="mb-2"
+                onClick={async () => {
+                    const result = await remote.dialog.showOpenDialog({
+                        title: 'Select the Bundles folder of your project',
+                        properties: ['openDirectory'],
+                        defaultPath: path.join(location, '.'),
+                    });
+                    if (result.filePaths.length !== 1) window.alert('Too many Folders Selected');
+                    if (!isInstrumentsFolderSuitable(result.filePaths[0], location)) return;
+                    setBundlesLocation(result.filePaths[0]);
+                }}
+            >
+                Select Bundles Folder
+            </button>
 
             <br />
             <br />
@@ -71,7 +93,7 @@ export const CreateProject = () => {
                 <button
                     type="button"
                     onClick={async () => {
-                        createProject(name, location, instrumentsLocation);
+                        createProject(name, location, instrumentsLocation, bundlesLocation);
                         history.push('/');
                     }}
                 >

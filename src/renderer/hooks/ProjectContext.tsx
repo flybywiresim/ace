@@ -5,7 +5,7 @@ import { Project } from '../types/Project';
 
 type ProjectContextType = {
     loadProject: (path: string) => void;
-    createProject: (name: string, path: string, instrumentsSrc: string) => void;
+    createProject: (name: string, path: string, instrumentsSrc: string, bundlesSrc: string) => void;
     project: Project | undefined;
 }
 
@@ -22,13 +22,14 @@ export const ProjectProvider: FC = ({ children }) => {
         setProject(project);
     };
 
-    const createProject = async (name: string, location: string, instrumentsSrc: string) => {
+    const createProject = async (name: string, location: string, instrumentsSrc: string, bundlesSrc: string) => {
         if (fs.existsSync(`${location}/.ace/project.json`)) return;
 
         const project: Project = {
             name,
             paths: {
                 instrumentSrc: path.relative(location, instrumentsSrc),
+                bundlesSrc: path.relative(location, bundlesSrc),
                 project: location,
             },
         };

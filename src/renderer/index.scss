@@ -4,12 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  @apply h-full;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
-  max-width: 38rem;
-  padding: 2rem;
-  @apply bg-navy text-white;
+  @apply w-full h-full bg-navy text-white;
 }
 
 button {

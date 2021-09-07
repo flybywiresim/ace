@@ -87,6 +87,8 @@ export const Home = () => {
             const iframeWindow = iframeRef.current.contentWindow;
             const iframeDocument = iframeRef.current.contentDocument;
 
+            iframeDocument.body.style.overflow = 'hidden';
+
             Object.assign(iframeRef.current.contentWindow, new LocalShim());
 
             const rootTag = iframeDocument.createElement('div');

@@ -65,7 +65,7 @@ export const PanelCanvas: FC<PanelCanvasProps> = ({ render }) => {
             onMouseMove={handleMouseMove}
             onWheel={handleZoom}
         >
-            <div ref={canvasElementsContainer}>
+            <div ref={canvasElementsContainer} className="transition-transform">
                 {render(zoom)}
             </div>
         </div>
@@ -107,19 +107,20 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
     };
 
     return (
-        <div>
-            <div
+        <span className="absolute">
+            <span
                 ref={canvasElementRef}
-                className="bg-blue-500"
                 onMouseDown={handlePanStart}
                 onMouseUp={handlePanStop}
                 onMouseLeave={handlePanStop}
                 onMouseMove={handleMouseMove}
             >
-                <div className="py-8">{title}</div>
+                <h1 className="text-3xl mb-6">{title}</h1>
 
-                {children}
-            </div>
-        </div>
+                <span className="block border-2 border-[#00c2cc] overflow-hidden">
+                    {children}
+                </span>
+            </span>
+        </span>
     );
 };

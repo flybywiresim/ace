@@ -239,7 +239,6 @@ export const Home = () => {
                 <SimVarEditor name="Heading" unit="deg" simVar="PLANE HEADING DEGREES TRUE" initialState={0} inputType="range" min={0} max={359} />
                 <SimVarEditor name="Pitch" unit="deg" simVar="PLANE PITCH DEGREES" initialState={0} inputType="range" min={-90} max={90} />
                 <SimVarEditor name="Roll" unit="deg" simVar="PLANE BANK DEGREES" initialState={0} inputType="range" min={-90} max={90} />
-                <SimVarEditor name="Callsign" simVar="ATC CALLSIGN" inputType="text" />
                 {simVarEditors}
                 <div className="relative">
                     <button

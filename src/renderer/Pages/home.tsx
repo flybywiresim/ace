@@ -8,7 +8,7 @@ import { useProject } from '../hooks/ProjectContext';
 import { LocalShim } from '../shims/LocalShim';
 import { PanelCanvas } from './PanelCanvas';
 import { Instrument, InstrumentFile, InstrumentFrame } from './Canvas/InstrumentFrame';
-import SimVarEditor from './SimVarEditor';
+import SimVarEditor, { SimVarEditorProps } from './SimVarEditor';
 import SimVarEditorContext, { SimVarContextProps } from './SimVarEditorContext';
 import SimVarPopover from './SimVarPopover';
 
@@ -82,21 +82,21 @@ export const Home = () => {
         setStep: setNewStep,
     };
 
-    const [simVarEditors, setSimVarEditors] = useState<JSX.Element[]>([]);
+    const [simVarEditors, setSimVarEditors] = useState<SimVarEditorProps[]>([]);
 
     const onSave = () => {
         setSimVarEditors((editors) => [
             ...editors,
-            <SimVarEditor
-                initialState={context.type === 'number' || context.type === 'range' ? 0 : ''}
-                name={context.name}
-                unit={context.unit}
-                simVar={context.simVar}
-                inputType={context.type}
-                min={context.min}
-                max={context.max}
-                step={context.step}
-            />,
+            {
+                initialState: context.type === 'number' || context.type === 'range' ? 0 : '',
+                name: context.name,
+                unit: context.unit,
+                simVar: context.simVar,
+                type: context.type,
+                min: context.min,
+                max: context.max,
+                step: context.step,
+            },
         ]);
         setShowNewSimVarPopover(false);
         setNewName('');
@@ -159,12 +159,23 @@ export const Home = () => {
                     ))}
                 </div>
                 <h2 className="mb-3 font-medium">SimVars</h2>
-                <SimVarEditor name="Altitude" unit="ft" simVar="INDICATED ALTITUDE" initialState={0} inputType="range" min={0} max={41000} />
-                <SimVarEditor name="Airspeed" unit="kn" simVar="AIRSPEED INDICATED" initialState={0} inputType="range" min={0} max={400} />
-                <SimVarEditor name="Heading" unit="deg" simVar="PLANE HEADING DEGREES TRUE" initialState={0} inputType="range" min={0} max={359} />
-                <SimVarEditor name="Pitch" unit="deg" simVar="PLANE PITCH DEGREES" initialState={0} inputType="range" min={-90} max={90} />
-                <SimVarEditor name="Roll" unit="deg" simVar="PLANE BANK DEGREES" initialState={0} inputType="range" min={-90} max={90} />
-                {simVarEditors}
+                <SimVarEditor name="Altitude" unit="ft" simVar="INDICATED ALTITUDE" initialState={0} type="range" min={0} max={41000} />
+                <SimVarEditor name="Airspeed" unit="kn" simVar="AIRSPEED INDICATED" initialState={0} type="range" min={0} max={400} />
+                <SimVarEditor name="Heading" unit="deg" simVar="PLANE HEADING DEGREES TRUE" initialState={0} type="range" min={0} max={359} />
+                <SimVarEditor name="Pitch" unit="deg" simVar="PLANE PITCH DEGREES" initialState={0} type="range" min={-90} max={90} />
+                <SimVarEditor name="Roll" unit="deg" simVar="PLANE BANK DEGREES" initialState={0} type="range" min={-90} max={90} />
+                {simVarEditors.map((props) => (
+                    <SimVarEditor
+                        initialState={props.type}
+                        name={props.name}
+                        unit={props.unit}
+                        simVar={props.simVar}
+                        type={props.type}
+                        min={props.min}
+                        max={props.max}
+                        step={props.step}
+                    />
+                ))}
                 <div className="relative">
                     <button
                         type="button"

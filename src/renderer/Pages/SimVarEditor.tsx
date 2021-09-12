@@ -2,18 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import SimVarEditorContext, { SimVarContextProps } from './SimVarEditorContext';
 import SimVarPopover from './SimVarPopover';
 
-type SimVarEditorProps = {
+export type SimVarEditorProps = {
     name: string;
     unit?: string;
     simVar: string;
     initialState?: any;
-    inputType: string;
+    type: string;
     max?: number;
     min?: number;
     step?: number;
 };
 
-const SimVarEditor: React.FC<SimVarEditorProps> = ({ name, unit, simVar, initialState, inputType, max, min, step }: SimVarEditorProps) => {
+const SimVarEditor: React.FC<SimVarEditorProps> = ({ name, unit, simVar, initialState, type, max, min, step }: SimVarEditorProps) => {
     const valueRef = useRef<HTMLSpanElement>();
 
     const [state, setState] = useState<any>(initialState);
@@ -21,7 +21,7 @@ const SimVarEditor: React.FC<SimVarEditorProps> = ({ name, unit, simVar, initial
     const [defaultName, setDefaultName] = useState(name);
     const [defaultUnit, setDefaultUnit] = useState(unit);
     const [defaultSimVar, setDefaultSimVar] = useState(simVar);
-    const [defaultType, setDefaultType] = useState(inputType);
+    const [defaultType, setDefaultType] = useState(type);
     const [defaultMin, setDefaultMin] = useState(min);
     const [defaultMax, setDefaultMax] = useState(max);
     const [defaultStep, setDefaultStep] = useState(step);
@@ -30,7 +30,7 @@ const SimVarEditor: React.FC<SimVarEditorProps> = ({ name, unit, simVar, initial
     const [editName, setEditName] = useState(name);
     const [editUnit, setEditUnit] = useState(unit);
     const [editSimVar, setEditSimVar] = useState(simVar);
-    const [editType, setEditType] = useState(inputType);
+    const [editType, setEditType] = useState(type);
     const [editMin, setEditMin] = useState(min);
     const [editMax, setEditMax] = useState(max);
     const [editStep, setEditStep] = useState(step);

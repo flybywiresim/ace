@@ -6,6 +6,9 @@ import { useHistory } from 'react-router-dom';
 import { useProject } from '../hooks/ProjectContext';
 import { PanelCanvas } from './PanelCanvas';
 import { Instrument, InstrumentFile, InstrumentFrame } from './Canvas/InstrumentFrame';
+import { SimVarEditor, SimVarEditorProps } from './SimVarEditor';
+import { SimVarEditorContext, SimVarEditorContextProps } from './SimVarEditorContext';
+import { SimVarPopover } from './SimVarPopover';
 
 const getInstruments = (instDirStr: string | undefined) => {
     if (instDirStr) {
@@ -51,6 +54,58 @@ export const Home = () => {
 
     const history = useHistory();
 
+    const [showNewSimVarPopover, setShowNewSimVarPopover] = useState(false);
+    const [newName, setNewName] = useState<string>();
+    const [newUnit, setNewUnit] = useState<string>();
+    const [newSimVar, setNewSimVar] = useState<string>();
+    const [newType, setNewType] = useState<string>();
+    const [newMin, setNewMin] = useState<number>();
+    const [newMax, setNewMax] = useState<number>();
+    const [newStep, setNewStep] = useState<number>();
+
+    const context: SimVarEditorContextProps = {
+        name: newName,
+        setName: setNewName,
+        unit: newUnit,
+        setUnit: setNewUnit,
+        simVar: newSimVar,
+        setSimVar: setNewSimVar,
+        type: newType,
+        setType: setNewType,
+        min: newMin,
+        setMin: setNewMin,
+        max: newMax,
+        setMax: setNewMax,
+        step: newStep,
+        setStep: setNewStep,
+    };
+
+    const [simVarEditors, setSimVarEditors] = useState<SimVarEditorProps[]>([]);
+
+    const onSave = () => {
+        setSimVarEditors((editors) => [
+            ...editors,
+            {
+                initialState: context.type === 'number' || context.type === 'range' ? 0 : '',
+                name: context.name,
+                unit: context.unit,
+                simVar: context.simVar,
+                type: context.type,
+                min: context.min,
+                max: context.max,
+                step: context.step,
+            },
+        ]);
+        setShowNewSimVarPopover(false);
+        setNewName('');
+        setNewUnit('');
+        setNewSimVar('');
+        setNewType('');
+        setNewMin(0);
+        setNewMax(0);
+        setNewStep(0);
+    };
+
     useEffect(() => {
         if (project) {
             const bundlesPath = path.join(project.paths.project, project.paths.bundlesSrc);
@@ -63,18 +118,16 @@ export const Home = () => {
     return (
         <div className="w-full h-full flex">
             <div className="flex flex-col p-5">
-                <h1 className="mb-2 text-3xl">Webcockpit</h1>
-                <h2 className="mb-2 mt-4">
-                    Current Project:
+                <h1 className="mb-6 text-3xl font-semibold">Webcockpit</h1>
+                <h2 className="mb-2">
+                    <span className="font-medium">Current Project:</span>
                     {' '}
                     {project?.name}
-                    <br />
-                    {project?.paths.project}
                 </h2>
-                <div className="space-x-2">
+                <code className="mb-4">{project?.paths.project}</code>
+                <div className="space-x-2 mb-4">
                     <button
                         type="button"
-                        className=""
                         onClick={async () => {
                             const result = await remote.dialog.showOpenDialog({
                                 title: 'Select the root directory of your project',
@@ -102,6 +155,40 @@ export const Home = () => {
                             {instrument.name}
                         </button>
                     ))}
+                </div>
+                <h2 className="mb-3 font-medium">SimVars</h2>
+                <SimVarEditor name="Altitude" unit="ft" simVar="INDICATED ALTITUDE" initialState={0} type="range" min={0} max={41000} />
+                <SimVarEditor name="Airspeed" unit="kn" simVar="AIRSPEED INDICATED" initialState={0} type="range" min={0} max={400} />
+                <SimVarEditor name="Heading" unit="deg" simVar="PLANE HEADING DEGREES TRUE" initialState={0} type="range" min={0} max={359} />
+                <SimVarEditor name="Pitch" unit="deg" simVar="PLANE PITCH DEGREES" initialState={0} type="range" min={-90} max={90} />
+                <SimVarEditor name="Roll" unit="deg" simVar="PLANE BANK DEGREES" initialState={0} type="range" min={-90} max={90} />
+                {simVarEditors.map((props) => (
+                    <SimVarEditor
+                        initialState={props.type}
+                        name={props.name}
+                        unit={props.unit}
+                        simVar={props.simVar}
+                        type={props.type}
+                        min={props.min}
+                        max={props.max}
+                        step={props.step}
+                    />
+                ))}
+                <div className="relative">
+                    <button
+                        type="button"
+                        className="w-full mt-3"
+                        onClick={() => setShowNewSimVarPopover(true)}
+                    >
+                        Add SimVars
+                    </button>
+                    <SimVarEditorContext.Provider value={context}>
+                        <SimVarPopover
+                            show={showNewSimVarPopover}
+                            onCancel={() => setShowNewSimVarPopover(false)}
+                            onSave={onSave}
+                        />
+                    </SimVarEditorContext.Provider>
                 </div>
             </div>
             <PanelCanvas render={(zoom) => (

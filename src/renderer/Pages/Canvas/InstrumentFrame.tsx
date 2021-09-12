@@ -19,14 +19,13 @@ export interface InstrumentFrameProps {
 }
 
 export interface InstrumentConfig {
+    index: string,
+    isInteractive: boolean,
     name: string,
     dimensions: InstrumentDimensions,
 }
 
 export interface InstrumentDimensions {
-    index: string,
-    isInteractive: boolean,
-    name: string,
     width: number,
     height: number,
 }

@@ -1,5 +1,7 @@
 import React, { FC, useRef, MouseEvent, useState, WheelEvent, useEffect } from 'react';
 
+const CANVAS_ZOOM_FACTOR = 1.5;
+
 export interface PanelCanvasProps {
     render: (zoom: number) => JSX.Element;
 }
@@ -49,9 +51,9 @@ export const PanelCanvas: FC<PanelCanvasProps> = ({ render }) => {
 
     const handleZoom = (event: WheelEvent<HTMLDivElement>) => {
         if (event.deltaY >= 0) {
-            setZoom((zoom) => zoom / 2);
+            setZoom((zoom) => zoom / CANVAS_ZOOM_FACTOR);
         } else {
-            setZoom((zoom) => zoom * 2);
+            setZoom((zoom) => zoom * CANVAS_ZOOM_FACTOR);
         }
     };
 
@@ -85,12 +87,14 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
 
     const canvasElementRef = useRef<HTMLDivElement>(null);
 
-    const handlePanStart = () => {
+    const handlePanStart = (event: MouseEvent) => {
         setPanning(true);
+        event.stopPropagation();
     };
 
-    const handlePanStop = () => {
+    const handlePanStop = (event: MouseEvent) => {
         setPanning(false);
+        event.stopPropagation();
     };
 
     const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
@@ -114,6 +118,7 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
                 onMouseUp={handlePanStop}
                 onMouseLeave={handlePanStop}
                 onMouseMove={handleMouseMove}
+                style={{ position: 'absolute' }}
             >
                 <h1 className="text-3xl mb-6">{title}</h1>
 

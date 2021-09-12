@@ -85,8 +85,8 @@ export const Home = () => {
     const [simVarEditors, setSimVarEditors] = useState<JSX.Element[]>([]);
 
     const onSave = () => {
-        setSimVarEditors([
-            ...simVarEditors,
+        setSimVarEditors((editors) => [
+            ...editors,
             <SimVarEditor
                 initialState={context.type === 'number' || context.type === 'range' ? 0 : ''}
                 name={context.name}

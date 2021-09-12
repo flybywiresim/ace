@@ -9,8 +9,8 @@ export interface InstrumentFile {
 }
 
 export interface Instrument {
-    name: string,
     files: InstrumentFile[],
+    config: InstrumentConfig,
 }
 
 export interface InstrumentFrameProps {
@@ -18,12 +18,25 @@ export interface InstrumentFrameProps {
     zoom: number,
 }
 
+export interface InstrumentConfig {
+    name: string,
+    dimensions: InstrumentDimensions,
+}
+
+export interface InstrumentDimensions {
+    index: string,
+    isInteractive: boolean,
+    name: string,
+    width: number,
+    height: number,
+}
+
 export const InstrumentFrame: FC<InstrumentFrameProps> = ({ selectedInstrument, zoom }) => {
     const iframeRef = useRef<HTMLIFrameElement>();
     const lastUpdate = useRef(Date.now());
 
     useEffect(() => {
-        if (iframeRef.current && selectedInstrument.name) {
+        if (iframeRef.current && selectedInstrument.config.name) {
             const iframeWindow = iframeRef.current.contentWindow;
             const iframeDocument = iframeRef.current.contentDocument;
 
@@ -76,15 +89,15 @@ export const InstrumentFrame: FC<InstrumentFrameProps> = ({ selectedInstrument, 
                 lastUpdate.current = newUpdate;
             }, 50);
         }
-    }, [iframeRef, selectedInstrument?.name, selectedInstrument.files]);
+    }, [iframeRef, selectedInstrument?.config.name, selectedInstrument.files]);
 
     return (
-        <PanelCanvasElement title={selectedInstrument.name} canvasZoom={zoom}>
+        <PanelCanvasElement title={selectedInstrument.config.name} canvasZoom={zoom}>
             <iframe
                 title="Instrument Frame"
                 ref={iframeRef}
-                width={768}
-                height={1024}
+                width={selectedInstrument.config.dimensions.width}
+                height={selectedInstrument.config.dimensions.height}
             />
         </PanelCanvasElement>
     );

@@ -10,19 +10,20 @@ import { SimVarEditor, SimVarEditorProps } from './SimVarEditor';
 import { SimVarEditorContext, SimVarEditorContextProps } from './SimVarEditorContext';
 import { SimVarPopover } from './SimVarPopover';
 
-const getInstruments = (instDirStr: string | undefined) => {
-    if (instDirStr) {
-        const instDir = fs.readdirSync(instDirStr);
+const getInstruments = (bundleDirStr: string | undefined, instrumentDirStr: string | undefined) => {
+    if (bundleDirStr) {
+        const bundleDir = fs.readdirSync(bundleDirStr);
 
         const instrumentsTemp: Instrument[] = [];
 
-        instDir.forEach((file) => {
-            const filePath = path.join(instDirStr, file);
+        bundleDir.forEach((file) => {
+            const filePath = path.join(bundleDirStr, file);
             const fileStats = fs.statSync(filePath);
             if (fileStats.isDirectory()) {
-                const individualInstDir = fs.readdirSync(filePath);
+                const instrumentConfigFile = fs.readFileSync(path.join(instrumentDirStr, file, 'config.json'));
+                const individualBundleDir = fs.readdirSync(filePath);
                 const instrumentFiles: InstrumentFile[] = [];
-                individualInstDir.forEach((instrumentFile) => {
+                individualBundleDir.forEach((instrumentFile) => {
                     const instrumentFilePath = path.join(filePath, instrumentFile);
                     const instrumentFileStats = fs.statSync(instrumentFilePath);
                     if (instrumentFileStats.isFile()) {
@@ -34,8 +35,8 @@ const getInstruments = (instDirStr: string | undefined) => {
                     }
                 });
                 instrumentsTemp.push({
-                    name: file,
                     files: instrumentFiles,
+                    config: JSON.parse(instrumentConfigFile.toString()),
                 });
             }
         });
@@ -109,9 +110,10 @@ export const Home = () => {
     useEffect(() => {
         if (project) {
             const bundlesPath = path.join(project.paths.project, project.paths.bundlesSrc);
-            setAvailableInstruments(getInstruments(bundlesPath));
+            const instrumentPath = path.join(project.paths.project, project.paths.instrumentSrc);
+            setAvailableInstruments(getInstruments(bundlesPath, instrumentPath));
         } else {
-            setAvailableInstruments(getInstruments(undefined));
+            setAvailableInstruments(getInstruments(undefined, undefined));
         }
     }, [project]);
 
@@ -152,7 +154,7 @@ export const Home = () => {
                             type="button"
                             onClick={() => setSelectedInstruments((insts) => [...insts, instrument])}
                         >
-                            {instrument.name}
+                            {instrument.config.name}
                         </button>
                     ))}
                 </div>

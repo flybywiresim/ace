@@ -1,6 +1,6 @@
 import React, { FC, useRef, MouseEvent, useState, WheelEvent, useEffect } from 'react';
 
-const CANVAS_ZOOM_FACTOR = 1.5;
+const CANVAS_ZOOM_FACTOR = 1.25;
 
 export interface PanelCanvasProps {
     render: (zoom: number) => JSX.Element;

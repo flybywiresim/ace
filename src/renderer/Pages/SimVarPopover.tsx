@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from 'react';
-import SimVarEditorContext, { SimVarEditorContextProps } from './SimVarEditorContext';
+import { SimVarEditorContextProps, SimVarEditorContext } from './SimVarEditorContext';
 
 type SimVarPopoverProps = {
     show: boolean;

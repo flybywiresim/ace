@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from 'react';
-import SimVarEditorContext, { SimVarContextProps } from './SimVarEditorContext';
+import SimVarEditorContext, { SimVarEditorContextProps } from './SimVarEditorContext';
 
 type SimVarPopoverProps = {
     show: boolean;
@@ -7,10 +7,10 @@ type SimVarPopoverProps = {
     onSave: () => void;
 }
 
-const SimVarPopover: React.FC<SimVarPopoverProps> = ({ show, onCancel, onSave }: SimVarPopoverProps) => {
+export const SimVarPopover: React.FC<SimVarPopoverProps> = ({ show, onCancel, onSave }: SimVarPopoverProps) => {
     const popoverRef = useRef<HTMLDivElement>();
 
-    const context: SimVarContextProps = useContext(SimVarEditorContext);
+    const context: SimVarEditorContextProps = useContext(SimVarEditorContext);
 
     const onMouseClick = (e: MouseEvent) => {
         const rect = popoverRef.current.getBoundingClientRect();
@@ -70,5 +70,3 @@ const SimVarPopover: React.FC<SimVarPopoverProps> = ({ show, onCancel, onSave }:
         </div>
     );
 };
-
-export default SimVarPopover;

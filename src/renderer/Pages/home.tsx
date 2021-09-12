@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
 import fs from 'fs';
 import path from 'path';
 import { remote } from 'electron';
 import { useHistory } from 'react-router-dom';
 import { useProject } from '../hooks/ProjectContext';
-import { LocalShim } from '../shims/LocalShim';
 import { PanelCanvas } from './PanelCanvas';
 import { Instrument, InstrumentFile, InstrumentFrame } from './Canvas/InstrumentFrame';
-import SimVarEditor, { SimVarEditorProps } from './SimVarEditor';
-import SimVarEditorContext, { SimVarContextProps } from './SimVarEditorContext';
-import SimVarPopover from './SimVarPopover';
+import { SimVarEditor, SimVarEditorProps } from './SimVarEditor';
+import { SimVarEditorContext, SimVarEditorContextProps } from './SimVarEditorContext';
+import { SimVarPopover } from './SimVarPopover';
 
 const getInstruments = (instDirStr: string | undefined) => {
     if (instDirStr) {
@@ -65,7 +63,7 @@ export const Home = () => {
     const [newMax, setNewMax] = useState<number>();
     const [newStep, setNewStep] = useState<number>();
 
-    const context: SimVarContextProps = {
+    const context: SimVarEditorContextProps = {
         name: newName,
         setName: setNewName,
         unit: newUnit,

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export interface SimVarContextProps {
+export interface SimVarEditorContextProps {
     name: string;
     setName: React.Dispatch<React.SetStateAction<string>>;
     unit: string;
@@ -17,6 +17,4 @@ export interface SimVarContextProps {
     setStep: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const SimVarEditorContext = React.createContext<SimVarContextProps>({} as SimVarContextProps);
-
-export default SimVarEditorContext;
+export const SimVarEditorContext = React.createContext<SimVarEditorContextProps>({} as SimVarEditorContextProps);

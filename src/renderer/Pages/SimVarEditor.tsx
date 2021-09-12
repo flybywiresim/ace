@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import SimVarEditorContext, { SimVarContextProps } from './SimVarEditorContext';
-import SimVarPopover from './SimVarPopover';
+import { SimVarEditorContext, SimVarEditorContextProps } from './SimVarEditorContext';
+import { SimVarPopover } from './SimVarPopover';
 
 export type SimVarEditorProps = {
     name: string;
@@ -13,7 +13,7 @@ export type SimVarEditorProps = {
     step?: number;
 };
 
-const SimVarEditor: React.FC<SimVarEditorProps> = ({ name, unit, simVar, initialState, type, max, min, step }: SimVarEditorProps) => {
+export const SimVarEditor: React.FC<SimVarEditorProps> = ({ name, unit, simVar, initialState, type, max, min, step }: SimVarEditorProps) => {
     const valueRef = useRef<HTMLSpanElement>();
 
     const [state, setState] = useState<any>(initialState);
@@ -35,7 +35,7 @@ const SimVarEditor: React.FC<SimVarEditorProps> = ({ name, unit, simVar, initial
     const [editMax, setEditMax] = useState(max);
     const [editStep, setEditStep] = useState(step);
 
-    const context: SimVarContextProps = {
+    const context: SimVarEditorContextProps = {
         name: editName,
         setName: setEditName,
         unit: editUnit,
@@ -130,5 +130,3 @@ const SimVarEditor: React.FC<SimVarEditorProps> = ({ name, unit, simVar, initial
         </div>
     );
 };
-
-export default SimVarEditor;

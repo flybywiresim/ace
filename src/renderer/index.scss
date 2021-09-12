@@ -9,12 +9,19 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
   @apply w-full h-full bg-navy text-white;
 }
 
-button {
+button, select, input:not([type=range]) {
+  transition: 100ms;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(#00C2CC, 0.5);
+  }
+
   @apply px-2 py-1 rounded-md bg-navy-dark
 }
 
@@ -28,4 +35,31 @@ h2 {
 
 h3 {
   @apply text-xl
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+
+  &::-webkit-slider-runnable-track {
+    height: 0.3em;
+    border-radius: 50%;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 1.1em;
+    width: 1.1em;
+    border-radius: 50%;
+    margin-top: -0.45em;
+    background: #00C2CC;
+    transition: 100ms;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  &:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px rgba(#00C2CC, 0.5);
+  }
 }

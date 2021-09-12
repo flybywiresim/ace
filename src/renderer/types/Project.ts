@@ -3,6 +3,7 @@ export type Project = {
     paths: {
         instrumentSrc: string,
         bundlesSrc: string,
+        htmlUiSrc: string,
         project: string,
     };
 }

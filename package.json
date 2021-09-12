@@ -57,7 +57,8 @@
                   "name": "main_window"
                 }
               ]
-            }
+            },
+            "devContentSecurityPolicy": "*"
           }
         ]
       ]
@@ -74,6 +75,8 @@
     "@electron-forge/plugin-webpack": "6.0.0-beta.59",
     "@flybywiresim/eslint-config": "^0.2.2",
     "@flybywiresim/tailwind-config": "^0.5.2",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
     "@types/react": "^17.0.19",
     "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.8",
@@ -83,7 +86,7 @@
     "autoprefixer": "^10.3.4",
     "babel-loader": "^8.2.2",
     "css-loader": "^6.0.0",
-    "electron": "13.2.3",
+    "electron": "^13.2.3",
     "electron-devtools-installer": "github:MarshallOfSound/electron-devtools-installer",
     "eslint": "^7.6.0",
     "eslint-plugin-import": "^2.20.0",
@@ -100,7 +103,9 @@
     "worker-loader": "^3.0.8"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "electron-squirrel-startup": "^1.0.0",
+    "express": "^4.17.1",
     "path": "^0.12.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

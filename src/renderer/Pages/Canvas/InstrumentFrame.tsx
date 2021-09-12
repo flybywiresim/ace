@@ -61,7 +61,7 @@ export const InstrumentFrame: FC<InstrumentFrameProps> = ({ selectedInstrument, 
                 iframeWindow.clearTimeout(i);
             }
 
-            iframeDocument.head.innerHTML = '';
+            iframeDocument.head.innerHTML = '<base href="http://localhost:39511" />';
             iframeDocument.body.innerHTML = '';
             iframeDocument.body.style.margin = '0';
 

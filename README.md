@@ -18,6 +18,36 @@ Simulation Variables and Local Variables exist for instruments to read and write
 
 The MSFS CoherentGT engine API is emulated in `ace`, including the `call`, `trigger` and `on` functions.
 
+## How to
+
+Each instrument's config.json should use this format:
+```json
+{
+  "index": "./index.tsx",
+  "isInteractive": true,
+  "name": "DU3",
+  "dimensions": {
+    "width": 1480,
+    "height": 1100
+  }
+}
+```
+
+Your rollup should output to a bundles folder within your project using this structure:
+```
+- bundles
+  - MFD
+    - bundle.js
+    - bundle.css
+  - PFD
+    - bundle.js
+    - bundle.css
+```
+
+In ace, run:
+Run `npm i` to install dependencies in
+Then run `npm start` to start the program
+
 ## Upcoming Features
 
 ### Button panels

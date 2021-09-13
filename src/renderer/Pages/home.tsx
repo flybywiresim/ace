@@ -107,7 +107,7 @@ export const Home = () => {
                     {' '}
                     {project?.name}
                 </h2>
-                <code className="mb-4">{project?.paths.project}</code>
+                <code className="mb-4">{project?.location}</code>
                 <div className="space-x-2 mb-4">
                     <button
                         type="button"

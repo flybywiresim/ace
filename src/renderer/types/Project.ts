@@ -4,6 +4,5 @@ export type Project = {
         instrumentSrc: string,
         bundlesSrc: string,
         htmlUiSrc: string,
-        project: string,
     };
 }

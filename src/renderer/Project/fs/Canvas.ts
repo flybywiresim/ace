@@ -3,13 +3,14 @@ import fs from 'fs';
 import { v4 as UUID } from 'uuid';
 import { Project } from '../../types/Project';
 import { CanvasSaveFile, PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
+import { ProjectData } from '../../hooks/ProjectContext';
 
 export class ProjectCanvasSaveHandler {
-    private static canvasFilePath(project: Project): string {
-        return path.join(project.paths.project, '.ace', 'canvas.json');
+    private static canvasFilePath(project: ProjectData): string {
+        return path.join(project.location, '.ace', 'canvas.json');
     }
 
-    public static loadCanvas(project: Project): CanvasSaveFile {
+    public static loadCanvas(project: ProjectData): CanvasSaveFile {
         const projectCanvasFile = ProjectCanvasSaveHandler.canvasFilePath(project);
 
         if (!fs.existsSync(projectCanvasFile)) {
@@ -34,7 +35,7 @@ export class ProjectCanvasSaveHandler {
         return projectCanvasObject;
     }
 
-    public static saveCanvas(project: Project, object: CanvasSaveFile): void {
+    public static saveCanvas(project: ProjectData, object: CanvasSaveFile): void {
         const projectCanvasFile = ProjectCanvasSaveHandler.canvasFilePath(project);
 
         if (!fs.existsSync(projectCanvasFile)) {
@@ -46,7 +47,7 @@ export class ProjectCanvasSaveHandler {
         fs.writeFileSync(projectCanvasFile, projectCanvasContents);
     }
 
-    public static createCanvas(project: Project): void {
+    public static createCanvas(project: ProjectData): void {
         const projectCanvasFile = ProjectCanvasSaveHandler.canvasFilePath(project);
 
         if (!fs.existsSync(projectCanvasFile)) {
@@ -60,7 +61,7 @@ export class ProjectCanvasSaveHandler {
         }
     }
 
-    public static addElement(project: Project, element: PossibleCanvasElements): void {
+    public static addElement(project: ProjectData, element: PossibleCanvasElements): void {
         const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
 
         currentPanel.elements.push(element);
@@ -68,7 +69,7 @@ export class ProjectCanvasSaveHandler {
         ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
     }
 
-    public static removeElement(project: Project, elementToDelete: PossibleCanvasElements): void {
+    public static removeElement(project: ProjectData, elementToDelete: PossibleCanvasElements): void {
         const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
 
         currentPanel.elements = currentPanel.elements.filter((element) => element.__uuid !== elementToDelete.__uuid);

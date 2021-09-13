@@ -166,14 +166,11 @@ export const Home = () => {
                     </SimVarEditorContext.Provider>
                 </div>
             </div>
-            <PanelCanvas render={(zoom) => (
-                <>
-                    {selectedInstruments.map((instrument) => (
-                        <InstrumentFrame selectedInstrument={instrument} zoom={zoom} />
-                    ))}
-                </>
-            )}
-            />
+            <PanelCanvas>
+                {selectedInstruments.map((instrument) => (
+                    <InstrumentFrame selectedInstrument={instrument} zoom={1} />
+                ))}
+            </PanelCanvas>
         </div>
     );
 };

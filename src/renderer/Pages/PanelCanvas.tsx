@@ -1,76 +1,71 @@
-import React, { FC, useRef, MouseEvent, useState, WheelEvent, useEffect } from 'react';
+import React, { FC, useRef, MouseEvent as Bruh, useState, useEffect, useCallback, WheelEvent } from 'react';
+import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 
-const CANVAS_ZOOM_FACTOR = 1.25;
-
-export interface PanelCanvasProps {
-    render: (zoom: number) => JSX.Element;
-}
-
-export const PanelCanvas: FC<PanelCanvasProps> = ({ render }) => {
-    const [offsetX, setOffsetX] = useState(0);
-    const [offsetY, setOffsetY] = useState(0);
-    const [zoom, setZoom] = useState(1);
+export const PanelCanvas: FC = ({ children }) => {
+    const transformWrapperRef = useRef<HTMLElement>(null);
+    const transformContentRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
-        if (canvasPaneRef.current && canvasElementsContainer.current) {
-            canvasElementsContainer.current.childNodes.forEach((node) => {
-                if (node instanceof HTMLElement) {
-                    node.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-                }
+        const element = document.querySelector('.react-transform-component') as HTMLElement;
+
+        if (element) {
+            transformContentRef.current = element;
+        }
+    }, []);
+
+    const [currentDoubleClickMode, setCurrentDoubleClickMode] = useState<'zoomIn' | 'zoomOut' | 'reset'>('zoomIn');
+    const [currentDoubleClickX, setCurrentDoubleClickX] = useState(0);
+    const [currentDoubleClickY, setCurrentDoubleClickY] = useState(0);
+
+    const doEmulateDoubleClick = useCallback(() => {
+        if (transformWrapperRef.current) {
+            transformWrapperRef.current.childNodes.forEach((node) => {
+                const wheelEvent = new MouseEvent('dblclick', { clientX: currentDoubleClickX, clientY: currentDoubleClickY });
+
+                node.dispatchEvent(wheelEvent);
             });
         }
-    }, [offsetX, offsetY, zoom]);
+    }, [currentDoubleClickX, currentDoubleClickY]);
 
-    useEffect(() => {
-        if (canvasElementsContainer.current) {
-            canvasElementsContainer.current.style.transform = `scale(${zoom})`;
-        }
-    }, [zoom]);
+    useEffect(doEmulateDoubleClick, [doEmulateDoubleClick, currentDoubleClickMode]);
 
-    const [isPanning, setPanning] = useState(false);
+    const handleWheel = useCallback((event: WheelEvent) => {
+        setCurrentDoubleClickX(event.clientX);
+        setCurrentDoubleClickY(event.clientY);
 
-    const canvasPaneRef = useRef<HTMLDivElement>(null);
-    const canvasElementsContainer = useRef<HTMLDivElement>(null);
+        const newDoubleClickMode = event.deltaY > 0 ? 'zoomOut' : 'zoomIn';
 
-    const handlePanStart = () => {
-        setPanning(true);
-    };
-
-    const handlePanStop = () => {
-        setPanning(false);
-    };
-
-    const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
-        if (!isPanning || !canvasPaneRef.current) {
-            return;
+        setCurrentDoubleClickMode(newDoubleClickMode);
+        if (currentDoubleClickMode === newDoubleClickMode) {
+            doEmulateDoubleClick();
         }
 
-        setOffsetX((old) => old + event.movementX / zoom);
-        setOffsetY((old) => old + event.movementY / zoom);
-    };
-
-    const handleZoom = (event: WheelEvent<HTMLDivElement>) => {
-        if (event.deltaY >= 0) {
-            setZoom((zoom) => zoom / CANVAS_ZOOM_FACTOR);
-        } else {
-            setZoom((zoom) => zoom * CANVAS_ZOOM_FACTOR);
-        }
-    };
+        event.stopPropagation();
+    }, [currentDoubleClickMode, doEmulateDoubleClick]);
 
     return (
-        <div
-            className="w-full flex-1 bg-black overflow-hidden select-none"
-            ref={canvasPaneRef}
-            onMouseDown={handlePanStart}
-            onMouseUp={handlePanStop}
-            onMouseLeave={handlePanStop}
-            onMouseMove={handleMouseMove}
-            onWheel={handleZoom}
-        >
-            <div ref={canvasElementsContainer} className="transition-transform">
-                {render(zoom)}
-            </div>
-        </div>
+        <section className="w-full h-full bg-gray-900" ref={transformWrapperRef} onWheel={handleWheel}>
+            <TransformWrapper
+                limitToBounds={false}
+                minScale={0}
+                doubleClick={{
+                    mode: currentDoubleClickMode,
+                }}
+                wheel={{
+                    disabled: true,
+                }}
+            >
+                <TransformComponent
+                    wrapperStyle={{
+                        minWidth: '100%',
+                        minHeight: '100%',
+
+                    }}
+                >
+                    {children}
+                </TransformComponent>
+            </TransformWrapper>
+        </section>
     );
 };
 
@@ -87,17 +82,17 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
 
     const canvasElementRef = useRef<HTMLDivElement>(null);
 
-    const handlePanStart = (event: MouseEvent) => {
+    const handlePanStart = (event: Bruh) => {
         setPanning(true);
         event.stopPropagation();
     };
 
-    const handlePanStop = (event: MouseEvent) => {
+    const handlePanStop = (event: Bruh) => {
         setPanning(false);
         event.stopPropagation();
     };
 
-    const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
+    const handleMouseMove = (event: Bruh<HTMLDivElement>) => {
         if (!isPanning || !canvasElementRef.current) {
             return;
         }

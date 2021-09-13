@@ -72,9 +72,10 @@ export const PanelCanvas: FC = ({ children }) => {
 export interface PanelCanvasElementProps {
     title?: string;
     canvasZoom: number;
+    onDelete: () => void;
 }
 
-export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZoom, children }) => {
+export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZoom, onDelete, children }) => {
     const [offsetX, setOffsetX] = useState(0);
     const [offsetY, setOffsetY] = useState(0);
 
@@ -115,7 +116,10 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
                 onMouseMove={handleMouseMove}
                 style={{ position: 'absolute' }}
             >
-                <h1 className="text-3xl mb-6">{title}</h1>
+                <span className="flex flex-row justify-between">
+                    <h1 className="text-3xl mb-6">{title}</h1>
+                    <button type="button" onClick={onDelete}>Delete</button>
+                </span>
 
                 <span className="block border-2 border-[#00c2cc] overflow-hidden">
                     {children}

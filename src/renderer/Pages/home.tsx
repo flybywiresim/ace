@@ -3,13 +3,14 @@ import { remote } from 'electron';
 import { useHistory } from 'react-router-dom';
 import { useProject } from '../hooks/ProjectContext';
 import { PanelCanvas } from './PanelCanvas';
-import { Instrument, InstrumentFrame } from './Canvas/InstrumentFrame';
+import { InstrumentFrameElement } from './Canvas/InstrumentFrameElement';
 import { SimVarEditor, SimVarEditorProps } from './SimVars/SimVarEditor';
 import { SimVarEditorContext, SimVarEditorContextProps } from './SimVars/SimVarEditorContext';
 import { SimVarPopover } from './SimVars/SimVarPopover';
 import { ProjectCanvasSaveHandler } from '../Project/fs/Canvas';
 import { ProjectInstrumentsHandler } from '../Project/fs/Instruments';
 import { CanvasElementFactory } from '../Project/canvas/ElementFactory';
+import { PossibleCanvasElements } from '../../shared/types/project/canvas/CanvasSaveFile';
 
 export const Home = () => {
     const { project, loadProject } = useProject();
@@ -17,18 +18,11 @@ export const Home = () => {
     const doLoadProjectCanvasSave = useCallback(() => {
         const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
 
-        const canvasElements = canvasSave.elements.map((element) => {
-            if (element.__kind === 'instrument') {
-                return ProjectInstrumentsHandler.loadInstrumentByName(project, element.instrumentName);
-            }
-            throw new Error(`[PanelCanvas] Unknown element kind: ${element.__kind}`);
-        });
-
-        setSelectedInstruments(canvasElements);
+        setCanvasElements(canvasSave.elements);
     }, [project]);
 
-    const [availableInstruments, setAvailableInstruments] = useState<Instrument[]>([]);
-    const [selectedInstruments, setSelectedInstruments] = useState<Instrument[]>([]);
+    const [availableInstruments, setAvailableInstruments] = useState<string[]>([]);
+    const [canvasElements, setCanvasElements] = useState<PossibleCanvasElements[]>([]);
 
     useEffect(() => {
         if (project) {
@@ -92,11 +86,17 @@ export const Home = () => {
 
     useEffect(() => {
         if (project) {
-            setAvailableInstruments(ProjectInstrumentsHandler.loadAllInstruments(project));
+            setAvailableInstruments(ProjectInstrumentsHandler.loadAllInstruments(project).map((instrument) => instrument.config.name));
         } else {
             setAvailableInstruments([]);
         }
     }, [project]);
+
+    const handleDeleteCanvasElement = (element: PossibleCanvasElements) => {
+        setCanvasElements((old) => old.filter((el) => el.__uuid !== element.__uuid));
+
+        ProjectCanvasSaveHandler.removeElement(project, element);
+    };
 
     return (
         <div className="w-full h-full flex">
@@ -134,19 +134,20 @@ export const Home = () => {
                         <button
                             type="button"
                             onClick={() => {
-                                setSelectedInstruments((insts) => [...insts, instrument]);
-
-                                ProjectCanvasSaveHandler.addElement(project, CanvasElementFactory.newInstrumentPanel({
-                                    title: instrument.config.name,
-                                    instrumentName: instrument.config.name,
+                                const newInstrumentPanel = CanvasElementFactory.newInstrumentPanel({
+                                    title: instrument,
+                                    instrumentName: instrument,
                                     position: {
                                         x: 0,
                                         y: 0,
                                     },
-                                }));
+                                });
+
+                                setCanvasElements((old) => [...old, newInstrumentPanel]);
+                                ProjectCanvasSaveHandler.addElement(project, newInstrumentPanel);
                             }}
                         >
-                            {instrument.config.name}
+                            {instrument}
                         </button>
                     ))}
                 </div>
@@ -186,9 +187,20 @@ export const Home = () => {
                 </div>
             </div>
             <PanelCanvas>
-                {selectedInstruments.map((instrument) => (
-                    <InstrumentFrame selectedInstrument={instrument} zoom={1} />
-                ))}
+                {canvasElements.map((canvasElement) => {
+                    if (canvasElement.__kind === 'instrument') {
+                        return (
+                            <InstrumentFrameElement
+                                key={canvasElement.title}
+                                instrumentFrame={canvasElement}
+                                zoom={1}
+                                onDelete={() => handleDeleteCanvasElement(canvasElement)}
+                            />
+                        );
+                    }
+
+                    return null;
+                })}
             </PanelCanvas>
         </div>
     );

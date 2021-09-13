@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { Instrument, InstrumentConfig, InstrumentFile } from '../../Pages/Canvas/InstrumentFrame';
+import { Instrument, InstrumentConfig, InstrumentFile } from '../../Pages/Canvas/InstrumentFrameElement';
 import { Project } from '../../types/Project';
 
 export class ProjectInstrumentsHandler {

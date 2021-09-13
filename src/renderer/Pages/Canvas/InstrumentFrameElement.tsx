@@ -1,6 +1,9 @@
-import React, { FC, useEffect, useRef } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import { PanelCanvasElement } from '../PanelCanvas';
 import { LocalShim } from '../../shims/LocalShim';
+import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
+import { useProject } from '../../hooks/ProjectContext';
+import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
 
 export interface InstrumentFile {
     name: string,
@@ -11,11 +14,6 @@ export interface InstrumentFile {
 export interface Instrument {
     files: InstrumentFile[],
     config: InstrumentConfig,
-}
-
-export interface InstrumentFrameProps {
-    selectedInstrument: Instrument,
-    zoom: number,
 }
 
 export interface InstrumentConfig {
@@ -30,12 +28,22 @@ export interface InstrumentDimensions {
     height: number,
 }
 
-export const InstrumentFrame: FC<InstrumentFrameProps> = ({ selectedInstrument, zoom }) => {
+export interface InstrumentFrameElementProps {
+    instrumentFrame: InstrumentFrame,
+    zoom: number,
+    onDelete: () => void,
+}
+
+export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onDelete }) => {
+    const { project } = useProject();
+
+    const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
+
     const iframeRef = useRef<HTMLIFrameElement>();
     const lastUpdate = useRef(Date.now());
 
     useEffect(() => {
-        if (iframeRef.current && selectedInstrument.config.name) {
+        if (iframeRef.current && loadedInstrument.config.name) {
             const iframeWindow = iframeRef.current.contentWindow;
             const iframeDocument = iframeRef.current.contentDocument;
 
@@ -55,10 +63,10 @@ export const InstrumentFrame: FC<InstrumentFrameProps> = ({ selectedInstrument, 
             pfdTag.setAttribute('url', 'a?Index=1');
 
             const scriptTag = iframeDocument.createElement('script');
-            scriptTag.text = selectedInstrument.files[1].contents;
+            scriptTag.text = loadedInstrument.files[1].contents;
 
             const styleTag = iframeDocument.createElement('style');
-            styleTag.textContent = selectedInstrument.files[0].contents;
+            styleTag.textContent = loadedInstrument.files[0].contents;
 
             // Clear all intervals in the iframe
             const lastInterval = iframeWindow.setInterval(() => {
@@ -88,15 +96,15 @@ export const InstrumentFrame: FC<InstrumentFrameProps> = ({ selectedInstrument, 
                 lastUpdate.current = newUpdate;
             }, 50);
         }
-    }, [iframeRef, selectedInstrument?.config.name, selectedInstrument.files]);
+    }, [iframeRef, loadedInstrument?.config.name, loadedInstrument.files]);
 
     return (
-        <PanelCanvasElement title={selectedInstrument.config.name} canvasZoom={zoom}>
+        <PanelCanvasElement title={loadedInstrument.config.name} canvasZoom={zoom} onDelete={onDelete}>
             <iframe
                 title="Instrument Frame"
                 ref={iframeRef}
-                width={selectedInstrument.config.dimensions.width}
-                height={selectedInstrument.config.dimensions.height}
+                width={loadedInstrument.config.dimensions.width}
+                height={loadedInstrument.config.dimensions.height}
             />
         </PanelCanvasElement>
     );

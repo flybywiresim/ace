@@ -1,8 +1,8 @@
 import path from 'path';
 import fs from 'fs';
+import { v4 as UUID } from 'uuid';
 import { Project } from '../../types/Project';
-import { CanvasSaveFile } from '../../../shared/types/project/canvas/CanvasSaveFile';
-import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
+import { CanvasSaveFile, PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
 
 export class ProjectCanvasSaveHandler {
     private static canvasFilePath(project: Project): string {
@@ -24,6 +24,12 @@ export class ProjectCanvasSaveHandler {
         } catch (e: any) {
             throw new Error(`[ProjectCanvasSaveHandler] Cannot parse '${projectCanvasFile}': ${e.message ?? e}`);
         }
+
+        projectCanvasObject.elements.forEach((element) => {
+            if (!element.__uuid) {
+                element.__uuid = UUID();
+            }
+        });
 
         return projectCanvasObject;
     }
@@ -54,7 +60,7 @@ export class ProjectCanvasSaveHandler {
         }
     }
 
-    public static addElement(project: Project, element: InstrumentFrame): void {
+    public static addElement(project: Project, element: PossibleCanvasElements): void {
         const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
 
         currentPanel.elements.push(element);
@@ -62,7 +68,7 @@ export class ProjectCanvasSaveHandler {
         ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
     }
 
-    public static removeElement(project: Project, elementToDelete: InstrumentFrame): void {
+    public static removeElement(project: Project, elementToDelete: PossibleCanvasElements): void {
         const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
 
         currentPanel.elements = currentPanel.elements.filter((element) => element.__uuid !== elementToDelete.__uuid);

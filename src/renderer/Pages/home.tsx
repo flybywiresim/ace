@@ -4,9 +4,9 @@ import { useHistory } from 'react-router-dom';
 import { useProject } from '../hooks/ProjectContext';
 import { PanelCanvas } from './PanelCanvas';
 import { Instrument, InstrumentFrame } from './Canvas/InstrumentFrame';
-import { SimVarEditor, SimVarEditorProps } from './SimVarEditor';
-import { SimVarEditorContext, SimVarEditorContextProps } from './SimVarEditorContext';
-import { SimVarPopover } from './SimVarPopover';
+import { SimVarEditor, SimVarEditorProps } from './SimVars/SimVarEditor';
+import { SimVarEditorContext, SimVarEditorContextProps } from './SimVars/SimVarEditorContext';
+import { SimVarPopover } from './SimVars/SimVarPopover';
 import { ProjectCanvasSaveHandler } from '../Project/fs/Canvas';
 import { ProjectInstrumentsHandler } from '../Project/fs/Instruments';
 

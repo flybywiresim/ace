@@ -117,8 +117,8 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
                 onMouseMove={handleMouseMove}
                 style={{ position: 'absolute' }}
             >
-                <span className="flex flex-row justify-between items-center">
-                    <h1 className="text-3xl mb-6">{title}</h1>
+                <span className="flex flex-row justify-between items-center mb-5">
+                    <h1 className="text-3xl">{title}</h1>
 
                     <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
                 </span>

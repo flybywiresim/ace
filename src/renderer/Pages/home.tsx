@@ -1,51 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import fs from 'fs';
-import path from 'path';
 import { remote } from 'electron';
 import { useHistory } from 'react-router-dom';
 import { useProject } from '../hooks/ProjectContext';
 import { PanelCanvas } from './PanelCanvas';
-import { Instrument, InstrumentFile, InstrumentFrame } from './Canvas/InstrumentFrame';
+import { Instrument, InstrumentFrame } from './Canvas/InstrumentFrame';
 import { SimVarEditor, SimVarEditorProps } from './SimVarEditor';
 import { SimVarEditorContext, SimVarEditorContextProps } from './SimVarEditorContext';
 import { SimVarPopover } from './SimVarPopover';
-
-const getInstruments = (bundleDirStr: string | undefined, instrumentDirStr: string | undefined) => {
-    if (bundleDirStr) {
-        const bundleDir = fs.readdirSync(bundleDirStr);
-
-        const instrumentsTemp: Instrument[] = [];
-
-        bundleDir.forEach((file) => {
-            const filePath = path.join(bundleDirStr, file);
-            const fileStats = fs.statSync(filePath);
-            if (fileStats.isDirectory()) {
-                const instrumentConfigFile = fs.readFileSync(path.join(instrumentDirStr, file, 'config.json'));
-                const individualBundleDir = fs.readdirSync(filePath);
-                const instrumentFiles: InstrumentFile[] = [];
-                individualBundleDir.forEach((instrumentFile) => {
-                    const instrumentFilePath = path.join(filePath, instrumentFile);
-                    const instrumentFileStats = fs.statSync(instrumentFilePath);
-                    if (instrumentFileStats.isFile()) {
-                        instrumentFiles.push({
-                            name: instrumentFile,
-                            path: instrumentFilePath,
-                            contents: fs.readFileSync(instrumentFilePath, { encoding: 'utf8' }),
-                        });
-                    }
-                });
-                instrumentsTemp.push({
-                    files: instrumentFiles,
-                    config: JSON.parse(instrumentConfigFile.toString()),
-                });
-            }
-        });
-
-        return instrumentsTemp;
-    }
-
-    return [];
-};
+import { ProjectCanvasSaveHandler } from '../Project/fs/Canvas';
+import { ProjectInstrumentsHandler } from '../Project/fs/Instruments';
 
 export const Home = () => {
     const { project, loadProject } = useProject();
@@ -109,11 +72,9 @@ export const Home = () => {
 
     useEffect(() => {
         if (project) {
-            const bundlesPath = path.join(project.paths.project, project.paths.bundlesSrc);
-            const instrumentPath = path.join(project.paths.project, project.paths.instrumentSrc);
-            setAvailableInstruments(getInstruments(bundlesPath, instrumentPath));
+            setAvailableInstruments(ProjectInstrumentsHandler.loadAllInstruments(project));
         } else {
-            setAvailableInstruments(getInstruments(undefined, undefined));
+            setAvailableInstruments([]);
         }
     }, [project]);
 
@@ -152,7 +113,19 @@ export const Home = () => {
                     {availableInstruments.map((instrument) => (
                         <button
                             type="button"
-                            onClick={() => setSelectedInstruments((insts) => [...insts, instrument])}
+                            onClick={() => {
+                                setSelectedInstruments((insts) => [...insts, instrument]);
+
+                                ProjectCanvasSaveHandler.addElement(project, {
+                                    __kind: 'instrument',
+                                    title: instrument.config.name,
+                                    instrumentName: instrument.config.name,
+                                    position: {
+                                        x: 0,
+                                        y: 0,
+                                    },
+                                });
+                            }}
                         >
                             {instrument.config.name}
                         </button>

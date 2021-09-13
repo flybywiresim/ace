@@ -1,8 +1,8 @@
 import React, { createContext, FC, useContext, useState } from 'react';
 import path from 'path';
 import fs from 'fs';
-import { Project } from '../types/Project';
 import { ipcRenderer } from 'electron';
+import { Project } from '../types/Project';
 
 type ProjectContextType = {
     loadProject: (path: string) => void;
@@ -20,6 +20,11 @@ export const ProjectProvider: FC = ({ children }) => {
         if (!fs.existsSync(`${location}/.ace/project.json`)) window.alert(`Project Doesn't exist in: ${location}`);
 
         const project = JSON.parse(fs.readFileSync(path.join(location, '.ace/project.json'), { encoding: 'utf8' })) as Project;
+
+        project.paths.instrumentSrc = path.join(project.paths.project, project.paths.instrumentSrc);
+        project.paths.bundlesSrc = path.join(project.paths.project, project.paths.bundlesSrc);
+        project.paths.htmlUiSrc = path.join(project.paths.project, project.paths.htmlUiSrc);
+
         ipcRenderer.send('load-project', path.join(project.paths.project, project.paths.htmlUiSrc));
         setProject(project);
     };

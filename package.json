@@ -105,6 +105,7 @@
     "worker-loader": "^3.0.8"
   },
   "dependencies": {
+    "@tabler/icons": "^1.41.2",
     "cors": "^2.8.5",
     "electron-squirrel-startup": "^1.0.0",
     "express": "^4.17.1",

@@ -1,5 +1,6 @@
 import React, { FC, useRef, MouseEvent as Bruh, useState, useEffect, useCallback, WheelEvent } from 'react';
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
+import { IconTrash } from '@tabler/icons';
 
 export const PanelCanvas: FC = ({ children }) => {
     const transformWrapperRef = useRef<HTMLElement>(null);
@@ -116,9 +117,10 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
                 onMouseMove={handleMouseMove}
                 style={{ position: 'absolute' }}
             >
-                <span className="flex flex-row justify-between">
+                <span className="flex flex-row justify-between items-center">
                     <h1 className="text-3xl mb-6">{title}</h1>
-                    <button type="button" onClick={onDelete}>Delete</button>
+
+                    <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
                 </span>
 
                 <span className="block border-2 border-[#00c2cc] overflow-hidden">

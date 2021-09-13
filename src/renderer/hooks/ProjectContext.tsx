@@ -25,7 +25,7 @@ export const ProjectProvider: FC = ({ children }) => {
         project.paths.bundlesSrc = path.join(project.paths.project, project.paths.bundlesSrc);
         project.paths.htmlUiSrc = path.join(project.paths.project, project.paths.htmlUiSrc);
 
-        ipcRenderer.send('load-project', path.join(project.paths.project, project.paths.htmlUiSrc));
+        ipcRenderer.send('load-project', project.paths.htmlUiSrc);
         setProject(project);
     };
 

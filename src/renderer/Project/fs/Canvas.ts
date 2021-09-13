@@ -61,4 +61,12 @@ export class ProjectCanvasSaveHandler {
 
         ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
     }
+
+    public static removeElement(project: Project, elementToDelete: InstrumentFrame): void {
+        const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
+
+        currentPanel.elements = currentPanel.elements.filter((element) => element.__uuid !== elementToDelete.__uuid);
+
+        ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
+    }
 }

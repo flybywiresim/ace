@@ -22,6 +22,17 @@ export class ProjectInstrumentsHandler {
 
         const config = ProjectInstrumentsHandler.loadInstrumentConfig(instrumentSourceFolder);
 
+        if (!config.name) {
+            config.name = name;
+        }
+
+        if (!config.dimensions) {
+            config.dimensions = {
+                width: 768,
+                height: 768,
+            };
+        }
+
         const instrumentBundlesFolder = path.join(project.paths.bundlesSrc, name);
 
         if (!fs.existsSync(instrumentBundlesFolder)) {

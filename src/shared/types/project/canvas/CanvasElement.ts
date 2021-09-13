@@ -5,6 +5,11 @@ export interface CanvasElement<TKind extends string> {
     __kind: TKind,
 
     /**
+     * UUID of this element
+     */
+    __uuid: string,
+
+    /**
      * Position of element on canvas
      */
     position: {

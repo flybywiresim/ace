@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { remote } from 'electron';
 import { useHistory } from 'react-router-dom';
 import { useProject } from '../hooks/ProjectContext';
@@ -9,12 +9,32 @@ import { SimVarEditorContext, SimVarEditorContextProps } from './SimVars/SimVarE
 import { SimVarPopover } from './SimVars/SimVarPopover';
 import { ProjectCanvasSaveHandler } from '../Project/fs/Canvas';
 import { ProjectInstrumentsHandler } from '../Project/fs/Instruments';
+import { CanvasElementFactory } from '../Project/canvas/ElementFactory';
 
 export const Home = () => {
     const { project, loadProject } = useProject();
 
+    const doLoadProjectCanvasSave = useCallback(() => {
+        const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
+
+        const canvasElements = canvasSave.elements.map((element) => {
+            if (element.__kind === 'instrument') {
+                return ProjectInstrumentsHandler.loadInstrumentByName(project, element.instrumentName);
+            }
+            throw new Error(`[PanelCanvas] Unknown element kind: ${element.__kind}`);
+        });
+
+        setSelectedInstruments(canvasElements);
+    }, [project]);
+
     const [availableInstruments, setAvailableInstruments] = useState<Instrument[]>([]);
     const [selectedInstruments, setSelectedInstruments] = useState<Instrument[]>([]);
+
+    useEffect(() => {
+        if (project) {
+            doLoadProjectCanvasSave();
+        }
+    }, [project]);
 
     const history = useHistory();
 
@@ -116,15 +136,14 @@ export const Home = () => {
                             onClick={() => {
                                 setSelectedInstruments((insts) => [...insts, instrument]);
 
-                                ProjectCanvasSaveHandler.addElement(project, {
-                                    __kind: 'instrument',
+                                ProjectCanvasSaveHandler.addElement(project, CanvasElementFactory.newInstrumentPanel({
                                     title: instrument.config.name,
                                     instrumentName: instrument.config.name,
                                     position: {
                                         x: 0,
                                         y: 0,
                                     },
-                                });
+                                }));
                             }}
                         >
                             {instrument.config.name}

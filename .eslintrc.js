@@ -29,6 +29,8 @@ module.exports = {
         'no-control-regex': 'off',
         'no-undef': 'off',
 
+        'no-underscore-dangle': 'off',
+
         // Irrelevant for our use
         'jsx-a11y/alt-text': 'off',
         'jsx-a11y/no-static-element-interactions': 'off',

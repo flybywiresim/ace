@@ -1,5 +1,7 @@
-import { CanvasElement } from './CanvasElement';
+import { InstrumentFrame } from './InstrumentFrame';
+
+export type PossibleCanvasElements = InstrumentFrame;
 
 export interface CanvasSaveFile {
-    elements: CanvasElement<string>[],
+    elements: PossibleCanvasElements[],
 }

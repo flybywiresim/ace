@@ -1,26 +1,17 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useParams } from 'react-router';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
 import { CanvasElementFactory } from '../../Project/canvas/ElementFactory';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
 import { InteractionToolbar } from './InteractionToolbar';
 import { PanelCanvas } from '../PanelCanvas';
 import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
-import { Project } from '../../types/Project';
-import { useParams } from 'react-router';
-import { ProjectData, useProjects } from '../../';
-
-export enum WorkspaceMode {
-    None,
-    SimVar,
-    Emmisive,
-    Edit,
-    FullScreen,
-}
+import { ProjectData, useProjects } from '../..';
 
 type WorkspaceType = {
     addInstrument: (instrument: string) => void;
-    mode: WorkspaceMode,
-    setMode: (mode: WorkspaceMode) => void,
+    inEditMode: boolean;
+    setInEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     project: ProjectData,
 }
 
@@ -30,7 +21,8 @@ export const useWorkspace = () => useContext(WorkspaceContext);
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
     const project = useProjects().projects.find((project) => project.name === name);
-    const [mode, setMode] = useState(WorkspaceMode.None);
+
+    const [inEditMode, setInEditMode] = useState(false);
 
     const doLoadProjectCanvasSave = useCallback(() => {
         const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
@@ -46,7 +38,6 @@ export const ProjectWorkspace = () => {
         }
     }, [project]);
 
-
     const handleAddInstrument = (instrument: string) => {
         const newInstrumentPanel = CanvasElementFactory.newInstrumentPanel({
             title: instrument,
@@ -59,17 +50,16 @@ export const ProjectWorkspace = () => {
 
         setCanvasElements((old) => [...old, newInstrumentPanel]);
         ProjectCanvasSaveHandler.addElement(project, newInstrumentPanel);
-    }
+    };
 
     const handleDeleteCanvasElement = (element: PossibleCanvasElements) => {
         setCanvasElements((old) => old.filter((el) => el.__uuid !== element.__uuid));
 
         ProjectCanvasSaveHandler.removeElement(project, element);
     };
-    
 
     return (
-        <WorkspaceContext.Provider value={{ addInstrument: handleAddInstrument, project, mode, setMode }}>
+        <WorkspaceContext.Provider value={{ addInstrument: handleAddInstrument, project, inEditMode, setInEditMode }}>
             <div className="w-full h-full flex">
                 <div className="absolute z-50 p-7">
                     <InteractionToolbar />
@@ -94,8 +84,8 @@ export const ProjectWorkspace = () => {
                         </>
                     )}
                     />
-                </div>            
+                </div>
             </div>
         </WorkspaceContext.Provider>
-    );  
+    );
 };

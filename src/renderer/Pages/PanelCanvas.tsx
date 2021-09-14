@@ -1,8 +1,8 @@
 import React, { FC, useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { IconTrash, IconArrowsMaximize } from '@tabler/icons';
+import { useWorkspace } from './ProjectHome';
 import useInterval from '../../utils/useInterval';
-import { useWorkspace, WorkspaceMode } from './ProjectHome';
 
 export interface PanelCanvasProps {
     render: (zoom: number) => JSX.Element;
@@ -93,15 +93,14 @@ export interface PanelCanvasElementProps {
 }
 
 export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZoom, onDelete, children }) => {
-    const [offsetX, setOffsetX] = useState(0);
-    const [offsetY, setOffsetY] = useState(0);
+    const [, setOffsetX] = useState(0);
+    const [, setOffsetY] = useState(0);
 
-    const { mode } = useWorkspace();
+    const { inEditMode } = useWorkspace();
 
     const canvasElementRef = useRef<HTMLDivElement>(null);
 
     const handlePanStart = (event: MouseEvent) => {
-        console.log('starting pan');
         document.body.addEventListener('mouseup', handlePanStop);
         document.body.addEventListener('mousemove', handleMouseMove);
         event.stopPropagation();
@@ -117,12 +116,12 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
         if (!canvasElementRef.current) {
             return;
         }
-        setOffsetX((old) => { 
+        setOffsetX((old) => {
             setOffsetY((old1) => {
                 canvasElementRef.current.style.transform = `translate(${old + event.movementX / canvasZoom}px, ${old1 + event.movementY / canvasZoom}px)`;
-                return (old1 + event.movementY / canvasZoom * 0.65)
+                return (old1 + (event.movementY / canvasZoom) * 0.65);
             });
-            return (old + event.movementX / canvasZoom * 0.65)
+            return (old + (event.movementX / canvasZoom) * 0.65);
         });
         event.stopPropagation();
     };
@@ -133,16 +132,16 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
                 ref={canvasElementRef}
                 style={{ position: 'absolute' }}
             >
-                {mode === WorkspaceMode.Edit && 
+                {inEditMode && (
                     <span className="flex flex-row justify-between items-center mb-5">
                         <h1 className="text-3xl">{title}</h1>
 
                         <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
                         <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
                     </span>
-                }
+                )}
 
-                <span className={`block ${mode === WorkspaceMode.Edit && 'border-2 border-[#00c2cc]'} overflow-hidden`}>
+                <span className={`block ${inEditMode && 'border-2 border-[#00c2cc]'} overflow-hidden`}>
                     {children}
                 </span>
             </span>

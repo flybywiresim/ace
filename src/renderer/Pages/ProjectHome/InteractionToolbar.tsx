@@ -1,52 +1,70 @@
 import React, { FC, useState } from 'react';
-import { IconArrowsMaximize, IconBulb, IconChevronLeft, IconPencil, IconVariable } from '@tabler/icons';
+import {
+    IconArrowsMaximize,
+    IconBulb,
+    IconChevronLeft,
+    IconPencil,
+    IconRefresh,
+    IconVariable,
+} from '@tabler/icons';
 import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Components/Toolbars';
 import { SimVarEditor, SimVarEditorProps } from '../SimVars/SimVarEditor';
 import { SimVarEditorContext, SimVarEditorContextProps } from '../SimVars/SimVarEditorContext';
 import { SimVarPopover } from '../SimVars/SimVarPopover';
 import { EditMenu } from './Components/EditMenu';
-import { useWorkspace, WorkspaceMode } from '.';
+import { useWorkspace } from '.';
 
 export const InteractionToolbar: FC = () => {
-    const { mode, setMode } = useWorkspace();
+    const { inEditMode, setInEditMode } = useWorkspace();
 
-    const handleClick = (newMode: WorkspaceMode) => {
-        if(newMode === mode) setMode(WorkspaceMode.None);
-        else setMode(newMode);
-    }
+    const handleSetEditMode = () => {
+        setInEditMode((old) => !old);
+    };
+
     return (
         <Toolbar>
-            <ToolbarItem onClick={() => handleClick(WorkspaceMode.SimVar)} visible={mode === WorkspaceMode.SimVar} renderPopover={() => (
-                <SimVarMenu />
-            )}
+            <ToolbarItem
+                color={ToolbarItemColors.GREEN}
+                renderPopover={() => (
+                    <SimVarMenu />
+                )}
             >
-                <IconVariable size={64} strokeWidth={1.5} />
-            </ToolbarItem>
-
-            <ToolbarItem color={ToolbarItemColors.RED}>
-                <IconBulb size={64} strokeWidth={1.5} />
-            </ToolbarItem>
-
-            <ToolbarSeparator />
-
-            <ToolbarItem onClick={() => handleClick(WorkspaceMode.Edit)} visible={mode === WorkspaceMode.Edit} color={ToolbarItemColors.PURPLE} renderPopover={() => (
-                <EditMenu/>
-            )}>
-                <IconPencil size={64} strokeWidth={1.5} />
+                <IconVariable size={56} strokeWidth={1.5} />
             </ToolbarItem>
 
             <ToolbarItem color={ToolbarItemColors.GREEN}>
-                <IconArrowsMaximize size={64} strokeWidth={1.5} />
+                <IconBulb size={56} strokeWidth={1.5} />
             </ToolbarItem>
 
             <ToolbarSeparator />
+
+            <ToolbarItem
+                visible={inEditMode}
+                onClick={handleSetEditMode}
+                color={ToolbarItemColors.PURPLE}
+                renderPopover={() => (
+                    <EditMenu />
+                )}
+            >
+                <IconPencil size={56} strokeWidth={1.5} />
+            </ToolbarItem>
+
+            <ToolbarItem color={ToolbarItemColors.PURPLE}>
+                <IconRefresh size={56} strokeWidth={1.5} />
+            </ToolbarItem>
+
+            <ToolbarSeparator />
+
+            <ToolbarItem color={ToolbarItemColors.GREEN}>
+                <IconArrowsMaximize size={56} strokeWidth={1.5} />
+            </ToolbarItem>
 
             <ToolbarItem color={ToolbarItemColors.TRANSLUCENT}>
                 <IconChevronLeft size={48} strokeWidth={1.25} />
             </ToolbarItem>
         </Toolbar>
     );
-}
+};
 
 const SimVarMenu: FC = () => {
     const [showNewSimVarPopover, setShowNewSimVarPopover] = useState(false);

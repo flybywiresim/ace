@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { useWorkspace } from "..";
-import React from "react";
-import { ProjectInstrumentsHandler } from "../../../Project/fs/Instruments";
+import React, { useEffect, useState } from 'react';
+import { useWorkspace } from '..';
+import { ProjectInstrumentsHandler } from '../../../Project/fs/Instruments';
 
 export const EditMenu = () => {
     const { addInstrument, project } = useWorkspace();
@@ -16,7 +15,7 @@ export const EditMenu = () => {
         }
     }, [project]);
 
-    return(
+    return (
         <div className="relative">
             {availableInstruments.map((instrument) => (
                 <button
@@ -30,4 +29,4 @@ export const EditMenu = () => {
             ))}
         </div>
     );
-}
+};

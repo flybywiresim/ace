@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
 import { CanvasElementFactory } from '../../Project/canvas/ElementFactory';
@@ -6,17 +6,8 @@ import { PossibleCanvasElements } from '../../../shared/types/project/canvas/Can
 import { InteractionToolbar } from './InteractionToolbar';
 import { PanelCanvas } from '../PanelCanvas';
 import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
-import { ProjectData, useProjects } from '../..';
-
-type WorkspaceType = {
-    addInstrument: (instrument: string) => void;
-    inEditMode: boolean;
-    setInEditMode: React.Dispatch<React.SetStateAction<boolean>>;
-    project: ProjectData,
-}
-
-export const WorkspaceContext = createContext<WorkspaceType>(undefined as any);
-export const useWorkspace = () => useContext(WorkspaceContext);
+import { useProjects } from '../..';
+import { WorkspaceContext } from './WorkspaceContext';
 
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();

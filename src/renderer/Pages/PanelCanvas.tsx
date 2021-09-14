@@ -1,7 +1,7 @@
 import React, { FC, useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { IconTrash, IconArrowsMaximize } from '@tabler/icons';
-import { useWorkspace } from './ProjectHome';
+import { useWorkspace } from './ProjectHome/WorkspaceContext';
 import useInterval from '../../utils/useInterval';
 
 export interface PanelCanvasProps {

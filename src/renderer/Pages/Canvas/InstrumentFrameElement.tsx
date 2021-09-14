@@ -3,7 +3,7 @@ import { PanelCanvasElement } from '../PanelCanvas';
 import { LocalShim } from '../../shims/LocalShim';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
-import { useWorkspace } from '../ProjectHome';
+import { useWorkspace } from '../ProjectHome/WorkspaceContext';
 
 export interface InstrumentFile {
     name: string,
@@ -80,8 +80,8 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             for (let i = 0; i < lastTimeout; i++) {
                 iframeWindow.clearTimeout(i);
             }
-            
-            iframeDocument.head.innerHTML = `<base href="http://localhost:39511/" />`;
+
+            iframeDocument.head.innerHTML = '<base href="http://localhost:39511/" />';
             iframeDocument.body.innerHTML = '';
             iframeDocument.body.style.margin = '0';
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useWorkspace } from '..';
+import { useWorkspace } from '../WorkspaceContext';
 import { ProjectInstrumentsHandler } from '../../../Project/fs/Instruments';
 
 export const EditMenu = () => {

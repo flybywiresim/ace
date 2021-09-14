@@ -12,7 +12,8 @@ import { SimVarEditor, SimVarEditorProps } from '../SimVars/SimVarEditor';
 import { SimVarEditorContext, SimVarEditorContextProps } from '../SimVars/SimVarEditorContext';
 import { SimVarPopover } from '../SimVars/SimVarPopover';
 import { EditMenu } from './Components/EditMenu';
-import { useWorkspace } from '.';
+import { useWorkspace } from './WorkspaceContext';
+import { LiveReloadMenu } from './Components/LiveReloadMenu';
 
 export const InteractionToolbar: FC = () => {
     const { inEditMode, setInEditMode } = useWorkspace();

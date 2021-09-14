@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react';
+import React, { FC } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useProjects } from './index';
 
@@ -23,7 +23,7 @@ const ApplicationTabs: FC = () => {
 
             <div className="flex flex-row items-center gap-x-0.5">
                 <Tab onClick={() => history.push('/')} selected={history.location.pathname.length === 1}>Home</Tab>
-                {projects.map(project => (
+                {projects.map((project) => (
                     <Tab onClick={() => history.push(`/project/${project.name}`)} selected={history.location.pathname.includes(project.name)}>{project.name}</Tab>
                 ))}
             </div>

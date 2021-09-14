@@ -1,17 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { HashRouter as Router, Route, useHistory, useParams } from 'react-router-dom';
+import { HashRouter as Router, Route, useHistory } from 'react-router-dom';
+import fs from 'fs';
+import path from 'path';
+import { ipcRenderer } from 'electron';
 import { ApplicationFrame } from './ApplicationFrame';
 import { Home } from './Pages/Home';
 import { CreateProject } from './Pages/createproject';
-import fs from 'fs';
-import { ipcRenderer } from 'electron';
 import './index.scss';
-import path from 'path';
 import { Project } from './types/Project';
 import { ProjectWorkspace } from './Pages/ProjectHome';
 
-export type ProjectData = Project & { location: string }; 
+export type ProjectData = Project & { location: string };
 
 type ProjectContextType = {
     projects: ProjectData[],
@@ -30,11 +30,11 @@ export const Main = () => {
         if (!fs.existsSync(`${location}/.ace/project.json`)) {
             window.alert(`Project Doesn't exist in: ${location}`);
             return;
-        };
+        }
 
         const project = JSON.parse(fs.readFileSync(path.join(location, '.ace/project.json'), { encoding: 'utf8' })) as Project;
 
-        if(projects.find((p) => p.name === project.name)) {
+        if (projects.find((p) => p.name === project.name)) {
             window.alert(`Project with name ${project.name} already loaded`);
             return;
         }
@@ -44,7 +44,7 @@ export const Main = () => {
 
         ipcRenderer.send('load-project', project.paths.htmlUiSrc);
         history.push(`/project/${project.name}`);
-        setProjects(p => [...p, { ...project, location }]);
+        setProjects((p) => [...p, { ...project, location }]);
     };
 
     const createProject = async (name: string, location: string, instrumentsSrc: string, bundlesSrc: string, htmlUiSrc: string) => {
@@ -61,16 +61,15 @@ export const Main = () => {
 
         console.log(project);
         if (!fs.existsSync(path.join(location, '.ace'))) fs.mkdirSync(path.join(location, '.ace'));
-        fs.writeFileSync(path.join(location, '.ace/project.json'), JSON.stringify(project, null, "\t"));
+        fs.writeFileSync(path.join(location, '.ace/project.json'), JSON.stringify(project, null, '\t'));
         loadProject(location);
     };
 
     useEffect(() => {
-        if(!projects.length)
-            history.push('/');
+        if (!projects.length) history.push('/');
     }, [projects]);
 
-    return(
+    return (
         <ProjectContext.Provider value={{ loadProject, createProject, projects }}>
             <ApplicationFrame>
                 <Route exact path="/" component={Home} />
@@ -81,5 +80,5 @@ export const Main = () => {
             </ApplicationFrame>
         </ProjectContext.Provider>
     );
-}
+};
 ReactDOM.render(<Router><Main /></Router>, document.body);

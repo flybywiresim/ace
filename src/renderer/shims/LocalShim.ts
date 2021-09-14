@@ -2,7 +2,7 @@ import { SimulatorInterface } from './SimulatorInterface';
 
 export class LocalShim implements SimulatorInterface {
     public SimVar = {
-        GetSimVarValue(key: any, unit: any) {
+        GetSimVarValue(key: any) {
             try {
                 const item = window.localStorage.getItem(key);
                 return item ? JSON.parse(item) : 0 || '';
@@ -18,7 +18,7 @@ export class LocalShim implements SimulatorInterface {
                 console.log(error);
             }
         },
-        GetGameVarValue(key: any, unit: any): string {
+        GetGameVarValue(): string {
             return 'whoopdy woo';
         },
     }

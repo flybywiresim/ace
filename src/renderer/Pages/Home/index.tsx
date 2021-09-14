@@ -1,11 +1,11 @@
 import React, { FC } from 'react';
 import { remote } from 'electron';
 import { useHistory } from 'react-router-dom';
-import { useProject } from '../../hooks/ProjectContext';
+import { useProjects } from '../../index';
 
 export const Home: FC = () => {
     const history = useHistory();
-    const { loadProject } = useProject();
+    const { loadProject } = useProjects();
 
     const handleOpenProject = async () => {
         const result = await remote.dialog.showOpenDialog({
@@ -18,8 +18,6 @@ export const Home: FC = () => {
         }
 
         loadProject(result.filePaths[0]);
-
-        history.push('/project');
     };
 
     return (

@@ -2,8 +2,8 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import { PanelCanvasElement } from '../PanelCanvas';
 import { LocalShim } from '../../shims/LocalShim';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
-import { useProject } from '../../hooks/ProjectContext';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
+import { useWorkspace } from '../ProjectHome';
 
 export interface InstrumentFile {
     name: string,
@@ -35,7 +35,7 @@ export interface InstrumentFrameElementProps {
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onDelete }) => {
-    const { project } = useProject();
+    const { project } = useWorkspace();
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
 
@@ -80,8 +80,8 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             for (let i = 0; i < lastTimeout; i++) {
                 iframeWindow.clearTimeout(i);
             }
-
-            iframeDocument.head.innerHTML = '<base href="http://localhost:39511" />';
+            
+            iframeDocument.head.innerHTML = `<base href="http://localhost:39511/" />`;
             iframeDocument.body.innerHTML = '';
             iframeDocument.body.style.margin = '0';
 

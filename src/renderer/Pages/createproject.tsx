@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom';
 import { remote } from 'electron';
 import path from 'path';
 import { isHtmlUiFolderSuitable, isInstrumentsFolderSuitable, isProjectFolderSuitable } from '../../utils/project';
-import { useProject } from '../hooks/ProjectContext';
+import { useProjects } from '../index';
 
 export const CreateProject = () => {
     const [name, setName] = useState('');
@@ -12,7 +12,7 @@ export const CreateProject = () => {
     const [htmlUiLocation, setHtmlUiLocation] = useState('');
     const [bundlesLocation, setBundlesLocation] = useState('');
 
-    const { createProject } = useProject();
+    const { createProject } = useProjects();
     const history = useHistory();
 
     return (

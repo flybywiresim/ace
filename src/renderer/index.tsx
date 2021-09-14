@@ -1,52 +1,73 @@
-/**
- * This file will automatically be loaded by webpack and run in the "renderer" context.
- * To learn more about the differences between the "main" and the "renderer" context in
- * Electron, visit:
- *
- * https://electronjs.org/docs/tutorial/application-architecture#main-and-renderer-processes
- *
- * By default, Node.js integration in this file is disabled. When enabling Node.js integration
- * in a renderer process, please be aware of potential security implications. You can read
- * more about security risks here:
- *
- * https://electronjs.org/docs/tutorial/security
- *
- * To enable Node.js integration in this file, open up `main.js` and enable the `nodeIntegration`
- * flag:
- *
- * ```
- *  // Create the browser window.
- *  mainWindow = new BrowserWindow({
- *    width: 800,
- *    height: 600,
- *    webPreferences: {
- *      nodeIntegration: true
- *    }
- *  });
- * ```
- */
-
-import React from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { HashRouter as Router, Route } from 'react-router-dom';
+import { HashRouter as Router, Route, useHistory, useParams } from 'react-router-dom';
 import { ApplicationFrame } from './ApplicationFrame';
 import { Home } from './Pages/Home';
-import { Project } from './Pages/ProjectHome';
 import { CreateProject } from './Pages/createproject';
-import { ProjectProvider } from './hooks/ProjectContext';
-
+import fs from 'fs';
+import { ipcRenderer } from 'electron';
 import './index.scss';
+import path from 'path';
+import { Project } from './types/Project';
+import { ProjectWorkspace } from './Pages/ProjectHome';
 
-export const Main = () => (
-    <ProjectProvider>
-        <Router>
+export type ProjectData = Project & { location: string }; 
+
+type ProjectContextType = {
+    projects: ProjectData[],
+    loadProject: (path: string) => void;
+    createProject: (name: string, path: string, instrumentsSrc: string, bundlesSrc: string, htmlUiSrc: string) => void;
+}
+
+export const ProjectContext = createContext<ProjectContextType>(undefined as any);
+export const useProjects = () => useContext(ProjectContext);
+
+export const Main = () => {
+    const [projects, setProjects] = useState<ProjectData[]>([]);
+    const history = useHistory();
+
+    const loadProject = (location: string) => {
+        if (!fs.existsSync(`${location}/.ace/project.json`)) window.alert(`Project Doesn't exist in: ${location}`);
+
+        const project = JSON.parse(fs.readFileSync(path.join(location, '.ace/project.json'), { encoding: 'utf8' })) as Project;
+
+        project.paths.instrumentSrc = path.join(location, project.paths.instrumentSrc);
+        project.paths.bundlesSrc = path.join(location, project.paths.bundlesSrc);
+        project.paths.htmlUiSrc = path.join(location, project.paths.htmlUiSrc);
+
+        ipcRenderer.send('load-project', project.paths.htmlUiSrc);
+        history.push(`/project/${project.name}`);
+        setProjects(p => [...p, { ...project, location }]);
+    };
+
+    const createProject = async (name: string, location: string, instrumentsSrc: string, bundlesSrc: string, htmlUiSrc: string) => {
+        if (fs.existsSync(`${location}/.ace/project.json`)) return;
+
+        const project: Project = {
+            name,
+            paths: {
+                instrumentSrc: path.relative(location, instrumentsSrc),
+                bundlesSrc: path.relative(location, bundlesSrc),
+                htmlUiSrc: path.relative(location, htmlUiSrc),
+            },
+        };
+
+        console.log(project);
+        if (!fs.existsSync(path.join(location, '.ace'))) fs.mkdirSync(path.join(location, '.ace'));
+        fs.writeFileSync(path.join(location, '.ace/project.json'), JSON.stringify(project, null, "\t"));
+        loadProject(location);
+    };
+
+    return(
+        <ProjectContext.Provider value={{ loadProject, createProject, projects }}>
             <ApplicationFrame>
                 <Route exact path="/" component={Home} />
-                <Route exact path="/project" component={Project} />
+                <Route path="/project/:name">
+                    <ProjectWorkspace />
+                </Route>
                 <Route exact path="/create-project" component={CreateProject} />
             </ApplicationFrame>
-        </Router>
-
-    </ProjectProvider>
-);
-ReactDOM.render(<Main />, document.body);
+        </ProjectContext.Provider>
+    );
+}
+ReactDOM.render(<Router><Main /></Router>, document.body);

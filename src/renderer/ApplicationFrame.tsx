@@ -1,6 +1,6 @@
 import React, { FC, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useProject } from './hooks/ProjectContext';
+import { useProjects } from './index';
 
 export const ApplicationFrame: FC = ({ children }) => (
     <main className="w-full h-full flex flex-col">
@@ -12,13 +12,7 @@ export const ApplicationFrame: FC = ({ children }) => (
 
 const ApplicationTabs: FC = () => {
     const history = useHistory();
-    const { project } = useProject();
-
-    useEffect(() => {
-        if (!project) {
-            history.push('/');
-        }
-    }, [project]);
+    const { projects } = useProjects();
 
     return (
         <section className="flex flex-row items-center bg-navy-lighter shadow-md">
@@ -28,10 +22,10 @@ const ApplicationTabs: FC = () => {
             </span>
 
             <div className="flex flex-row items-center gap-x-0.5">
-                <Tab selected={!project}>Home</Tab>
-                {project && (
-                    <Tab selected>{project.name}</Tab>
-                )}
+                <Tab onClick={() => history.push('/')} selected={history.location.pathname.length === 1}>Home</Tab>
+                {projects.map(project => (
+                    <Tab onClick={() => history.push(`/project/${project.name}`)} selected={history.location.pathname.includes(project.name)}>{project.name}</Tab>
+                ))}
             </div>
         </section>
     );
@@ -39,10 +33,11 @@ const ApplicationTabs: FC = () => {
 
 interface TabProps {
     selected?: boolean,
+    onClick?: () => void,
 }
 
-const Tab: FC<TabProps> = ({ selected = false, children }) => (
-    <span className={`w-36 h-full flex flex-row justify-center bg-navy-lightest pb-3 border-t-4 ${selected ? 'border-teal' : 'border-transparent'} py-2`}>
+const Tab: FC<TabProps> = ({ selected = false, children, onClick }) => (
+    <span onClick={onClick} className={`w-36 h-full flex flex-row justify-center bg-navy-lightest pb-3 border-t-4 ${selected ? 'border-teal' : 'border-transparent'} py-2`}>
         <span className="text-lg font-medium">
             {children}
         </span>

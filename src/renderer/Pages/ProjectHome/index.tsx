@@ -1,21 +1,25 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { useProject } from '../../hooks/ProjectContext';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
 import { CanvasElementFactory } from '../../Project/canvas/ElementFactory';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
 import { InteractionToolbar } from './InteractionToolbar';
 import { PanelCanvas } from '../PanelCanvas';
 import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
+import { Project } from '../../types/Project';
+import { useParams } from 'react-router';
+import { ProjectData, useProjects } from '../../';
 
 type WorkspaceType = {
     addInstrument: (instrument: string) => void;
+    project: ProjectData,
 }
 
 export const WorkspaceContext = createContext<WorkspaceType>(undefined as any);
 export const useWorkspace = () => useContext(WorkspaceContext);
 
-export const Project = () => {
-    const { project } = useProject();
+export const ProjectWorkspace = () => {
+    const { name } = useParams<{ name: string }>();
+    const project = useProjects().projects.find((project) => project.name === name);
 
     const doLoadProjectCanvasSave = useCallback(() => {
         const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
@@ -54,7 +58,7 @@ export const Project = () => {
     
 
     return (
-        <WorkspaceContext.Provider value={{ addInstrument: handleAddInstrument }}>
+        <WorkspaceContext.Provider value={{ addInstrument: handleAddInstrument, project }}>
             <div className="w-full h-full flex">
                 <div className="absolute z-50 p-7">
                     <InteractionToolbar />

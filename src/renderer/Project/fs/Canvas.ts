@@ -3,7 +3,7 @@ import fs from 'fs';
 import { v4 as UUID } from 'uuid';
 import { Project } from '../../types/Project';
 import { CanvasSaveFile, PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
-import { ProjectData } from '../../hooks/ProjectContext';
+import { ProjectData } from '../../index';
 
 export class ProjectCanvasSaveHandler {
     private static canvasFilePath(project: ProjectData): string {

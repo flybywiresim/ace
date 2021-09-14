@@ -1,6 +1,6 @@
-import React, { FC, useRef, MouseEvent as Bruh, useState, useEffect, useCallback, WheelEvent } from 'react';
+import React, { FC, useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
-import { IconTrash } from '@tabler/icons';
+import { IconTrash, IconArrowsMaximize } from '@tabler/icons';
 import useInterval from '../../utils/useInterval';
 import { useWorkspace, WorkspaceMode } from './ProjectHome';
 
@@ -36,7 +36,7 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
     const doEmulateDoubleClick = useCallback(() => {
         if (transformContainerRef.current) {
             transformContainerRef.current.childNodes.forEach((node) => {
-                const wheelEvent = new MouseEvent('dblclick', { clientX: currentDoubleClickX, clientY: currentDoubleClickY });
+                const wheelEvent = new globalThis.MouseEvent('dblclick', { clientX: currentDoubleClickX, clientY: currentDoubleClickY });
 
                 node.dispatchEvent(wheelEvent);
             });
@@ -98,30 +98,32 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
 
     const { mode } = useWorkspace();
 
-    const [isPanning, setPanning] = useState(false);
-
     const canvasElementRef = useRef<HTMLDivElement>(null);
 
-    const handlePanStart = (event: Bruh) => {
-        setPanning(true);
+    const handlePanStart = (event: MouseEvent) => {
+        console.log('starting pan');
+        document.body.addEventListener('mouseup', handlePanStop);
+        document.body.addEventListener('mousemove', handleMouseMove);
         event.stopPropagation();
     };
 
-    const handlePanStop = (event: Bruh) => {
-        setPanning(false);
+    const handlePanStop = (event: globalThis.MouseEvent) => {
+        document.body.removeEventListener('mouseup', handlePanStop);
+        document.body.removeEventListener('mousemove', handleMouseMove);
         event.stopPropagation();
     };
 
-    const handleMouseMove = (event: Bruh<HTMLDivElement>) => {
-        if (!isPanning || !canvasElementRef.current) {
+    const handleMouseMove = (event: globalThis.MouseEvent) => {
+        if (!canvasElementRef.current) {
             return;
         }
-
-        setOffsetX((old) => old + event.movementX / canvasZoom);
-        setOffsetY((old) => old + event.movementY / canvasZoom);
-
-        canvasElementRef.current.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-
+        setOffsetX((old) => { 
+            setOffsetY((old1) => {
+                canvasElementRef.current.style.transform = `translate(${old + event.movementX / canvasZoom}px, ${old1 + event.movementY / canvasZoom}px)`;
+                return (old1 + event.movementY / canvasZoom * 0.65)
+            });
+            return (old + event.movementX / canvasZoom * 0.65)
+        });
         event.stopPropagation();
     };
 
@@ -129,16 +131,13 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
         <span className="absolute">
             <span
                 ref={canvasElementRef}
-                onMouseDown={handlePanStart}
-                onMouseUp={handlePanStop}
-                onMouseLeave={handlePanStop}
-                onMouseMove={handleMouseMove}
                 style={{ position: 'absolute' }}
             >
                 {mode === WorkspaceMode.Edit && 
                     <span className="flex flex-row justify-between items-center mb-5">
                         <h1 className="text-3xl">{title}</h1>
 
+                        <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
                         <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
                     </span>
                 }

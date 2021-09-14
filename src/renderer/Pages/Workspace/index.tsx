@@ -16,22 +16,25 @@ export const Workspace: FC<WorkspaceProps> = ({ canvasElements, onDeleteCanvasEl
         </div>
 
         <div className="relative w-full h-full z-40">
-            <PanelCanvas>
-                {canvasElements.map((canvasElement) => {
-                    if (canvasElement.__kind === 'instrument') {
-                        return (
-                            <InstrumentFrameElement
-                                key={canvasElement.title}
-                                instrumentFrame={canvasElement}
-                                zoom={1}
-                                onDelete={() => onDeleteCanvasElement(canvasElement)}
-                            />
-                        );
-                    }
+            <PanelCanvas render={(zoom) => (
+                <>
+                    {canvasElements.map((canvasElement) => {
+                        if (canvasElement.__kind === 'instrument') {
+                            return (
+                                <InstrumentFrameElement
+                                    key={canvasElement.title}
+                                    instrumentFrame={canvasElement}
+                                    zoom={zoom}
+                                    onDelete={() => onDeleteCanvasElement(canvasElement)}
+                                />
+                            );
+                        }
 
-                    return null;
-                })}
-            </PanelCanvas>
+                        return null;
+                    })}
+                </>
+            )}
+            />
         </div>
     </>
 );

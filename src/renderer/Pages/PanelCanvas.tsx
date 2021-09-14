@@ -1,10 +1,24 @@
 import React, { FC, useRef, MouseEvent as Bruh, useState, useEffect, useCallback, WheelEvent } from 'react';
-import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
+import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { IconTrash } from '@tabler/icons';
+import useInterval from '../../utils/useInterval';
 
-export const PanelCanvas: FC = ({ children }) => {
-    const transformWrapperRef = useRef<HTMLElement>(null);
+export interface PanelCanvasProps {
+    render: (zoom: number) => JSX.Element;
+}
+
+export const PanelCanvas = ({ render }: PanelCanvasProps) => {
+    const transformContainerRef = useRef<HTMLElement>(null);
+    const transformWrapperRef = useRef<ReactZoomPanPinchRef>(null);
     const transformContentRef = useRef<HTMLElement>(null);
+
+    const [zoom, setZoom] = useState(1);
+
+    useInterval(() => {
+        if (transformWrapperRef.current) {
+            setZoom(transformWrapperRef.current.state.scale);
+        }
+    }, 100);
 
     useEffect(() => {
         const element = document.querySelector('.react-transform-component') as HTMLElement;
@@ -19,8 +33,8 @@ export const PanelCanvas: FC = ({ children }) => {
     const [currentDoubleClickY, setCurrentDoubleClickY] = useState(0);
 
     const doEmulateDoubleClick = useCallback(() => {
-        if (transformWrapperRef.current) {
-            transformWrapperRef.current.childNodes.forEach((node) => {
+        if (transformContainerRef.current) {
+            transformContainerRef.current.childNodes.forEach((node) => {
                 const wheelEvent = new MouseEvent('dblclick', { clientX: currentDoubleClickX, clientY: currentDoubleClickY });
 
                 node.dispatchEvent(wheelEvent);
@@ -45,8 +59,9 @@ export const PanelCanvas: FC = ({ children }) => {
     }, [currentDoubleClickMode, doEmulateDoubleClick]);
 
     return (
-        <section className="w-full h-full bg-gray-900" ref={transformWrapperRef} onWheel={handleWheel}>
+        <section className="w-full h-full bg-gray-900" ref={transformContainerRef} onWheel={handleWheel}>
             <TransformWrapper
+                ref={transformWrapperRef}
                 limitToBounds={false}
                 minScale={0}
                 doubleClick={{
@@ -63,7 +78,7 @@ export const PanelCanvas: FC = ({ children }) => {
 
                     }}
                 >
-                    {children}
+                    {render(zoom)}
                 </TransformComponent>
             </TransformWrapper>
         </section>

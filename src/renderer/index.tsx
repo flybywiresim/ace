@@ -27,10 +27,17 @@ export const Main = () => {
     const history = useHistory();
 
     const loadProject = (location: string) => {
-        if (!fs.existsSync(`${location}/.ace/project.json`)) window.alert(`Project Doesn't exist in: ${location}`);
+        if (!fs.existsSync(`${location}/.ace/project.json`)) {
+            window.alert(`Project Doesn't exist in: ${location}`);
+            return;
+        };
 
         const project = JSON.parse(fs.readFileSync(path.join(location, '.ace/project.json'), { encoding: 'utf8' })) as Project;
 
+        if(projects.find((p) => p.name === project.name)) {
+            window.alert(`Project with name ${project.name} already loaded`);
+            return;
+        }
         project.paths.instrumentSrc = path.join(location, project.paths.instrumentSrc);
         project.paths.bundlesSrc = path.join(location, project.paths.bundlesSrc);
         project.paths.htmlUiSrc = path.join(location, project.paths.htmlUiSrc);
@@ -57,6 +64,11 @@ export const Main = () => {
         fs.writeFileSync(path.join(location, '.ace/project.json'), JSON.stringify(project, null, "\t"));
         loadProject(location);
     };
+
+    useEffect(() => {
+        if(!projects.length)
+            history.push('/');
+    }, [projects]);
 
     return(
         <ProjectContext.Provider value={{ loadProject, createProject, projects }}>

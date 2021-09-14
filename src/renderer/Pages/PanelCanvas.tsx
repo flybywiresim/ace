@@ -2,6 +2,7 @@ import React, { FC, useRef, MouseEvent as Bruh, useState, useEffect, useCallback
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { IconTrash } from '@tabler/icons';
 import useInterval from '../../utils/useInterval';
+import { useWorkspace, WorkspaceMode } from './ProjectHome';
 
 export interface PanelCanvasProps {
     render: (zoom: number) => JSX.Element;
@@ -95,6 +96,8 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
     const [offsetX, setOffsetX] = useState(0);
     const [offsetY, setOffsetY] = useState(0);
 
+    const { mode } = useWorkspace();
+
     const [isPanning, setPanning] = useState(false);
 
     const canvasElementRef = useRef<HTMLDivElement>(null);
@@ -132,13 +135,15 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
                 onMouseMove={handleMouseMove}
                 style={{ position: 'absolute' }}
             >
-                <span className="flex flex-row justify-between items-center mb-5">
-                    <h1 className="text-3xl">{title}</h1>
+                {mode === WorkspaceMode.Edit && 
+                    <span className="flex flex-row justify-between items-center mb-5">
+                        <h1 className="text-3xl">{title}</h1>
 
-                    <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
-                </span>
+                        <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
+                    </span>
+                }
 
-                <span className="block border-2 border-[#00c2cc] overflow-hidden">
+                <span className={`block ${mode === WorkspaceMode.Edit && 'border-2 border-[#00c2cc]'} overflow-hidden`}>
                     {children}
                 </span>
             </span>

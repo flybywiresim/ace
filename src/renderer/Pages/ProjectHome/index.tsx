@@ -9,8 +9,18 @@ import { Project } from '../../types/Project';
 import { useParams } from 'react-router';
 import { ProjectData, useProjects } from '../../';
 
+export enum WorkspaceMode {
+    None,
+    SimVar,
+    Emmisive,
+    Edit,
+    FullScreen,
+}
+
 type WorkspaceType = {
     addInstrument: (instrument: string) => void;
+    mode: WorkspaceMode,
+    setMode: (mode: WorkspaceMode) => void,
     project: ProjectData,
 }
 
@@ -20,6 +30,7 @@ export const useWorkspace = () => useContext(WorkspaceContext);
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
     const project = useProjects().projects.find((project) => project.name === name);
+    const [mode, setMode] = useState(WorkspaceMode.None);
 
     const doLoadProjectCanvasSave = useCallback(() => {
         const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
@@ -58,7 +69,7 @@ export const ProjectWorkspace = () => {
     
 
     return (
-        <WorkspaceContext.Provider value={{ addInstrument: handleAddInstrument, project }}>
+        <WorkspaceContext.Provider value={{ addInstrument: handleAddInstrument, project, mode, setMode }}>
             <div className="w-full h-full flex">
                 <div className="absolute z-50 p-7">
                     <InteractionToolbar />

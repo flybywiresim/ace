@@ -4,6 +4,7 @@ import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Com
 import { SimVarEditor, SimVarEditorProps } from '../SimVars/SimVarEditor';
 import { SimVarEditorContext, SimVarEditorContextProps } from '../SimVars/SimVarEditorContext';
 import { SimVarPopover } from '../SimVars/SimVarPopover';
+import { EditMenu } from './Components/EditMenu';
 
 export const InteractionToolbar: FC = () => (
     <Toolbar>
@@ -20,7 +21,9 @@ export const InteractionToolbar: FC = () => (
 
         <ToolbarSeparator />
 
-        <ToolbarItem color={ToolbarItemColors.PURPLE}>
+        <ToolbarItem color={ToolbarItemColors.PURPLE} renderPopover={() => (
+            <EditMenu/>
+        )}>
             <IconPencil size={64} strokeWidth={1.5} />
         </ToolbarItem>
 

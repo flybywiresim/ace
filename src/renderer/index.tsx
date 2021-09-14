@@ -28,18 +28,25 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.scss';
 import { HashRouter as Router, Route } from 'react-router-dom';
-import { Home } from './Pages/home';
-import { ProjectProvider } from './hooks/ProjectContext';
+import { ApplicationFrame } from './ApplicationFrame';
+import { Home } from './Pages/Home';
+import { Project } from './Pages/ProjectHome';
 import { CreateProject } from './Pages/createproject';
+import { ProjectProvider } from './hooks/ProjectContext';
+
+import './index.scss';
 
 export const Main = () => (
     <ProjectProvider>
         <Router>
-            <Route exact path="/" component={Home} />
-            <Route exact path="/createproject" component={CreateProject} />
+            <ApplicationFrame>
+                <Route exact path="/" component={Home} />
+                <Route exact path="/project" component={Project} />
+                <Route exact path="/create-project" component={CreateProject} />
+            </ApplicationFrame>
         </Router>
+
     </ProjectProvider>
 );
 ReactDOM.render(<Main />, document.body);

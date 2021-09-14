@@ -26,7 +26,7 @@ export const isHtmlUiFolderSuitable = (htmlUi: string, projectFolder: string): b
         return false;
     }
 
-    if(htmlUi.substring(htmlUi.length - 7) !== 'html_ui') {
+    if (htmlUi.substring(htmlUi.length - 7) !== 'html_ui') {
         window.alert(`Selected folder is not called html_ui: ${htmlUi}`);
         return false;
     }

@@ -27,7 +27,7 @@ export const Home: FC = () => {
             <button className="w-40 h-12" type="button" onClick={handleOpenProject}>
                 Open Project
             </button>
-            <button className="w-40 h-12" type="button" onClick={() => history.push('/createproject')}>
+            <button className="w-40 h-12" type="button" onClick={() => history.push('/create-project')}>
                 Create Project
             </button>
         </div>

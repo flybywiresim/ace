@@ -2,6 +2,7 @@ import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-insta
 import { app, BrowserWindow, ipcMain } from 'electron';
 import express from 'express';
 import cors from 'cors';
+
 const PORT = 39511;
 let server: any;
 
@@ -20,12 +21,15 @@ const createWindow = (): void => {
     const mainWindow = new BrowserWindow({
         height: 600,
         width: 800,
+        fullscreenable: true,
         webPreferences: {
             nodeIntegration: true,
             enableRemoteModule: true,
             contextIsolation: false,
         },
     });
+
+    mainWindow.setMenuBarVisibility(false);
 
     // and load the index.html of the app.
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
@@ -44,10 +48,9 @@ const createWindow = (): void => {
 app.on('ready', createWindow);
 
 ipcMain.on('load-project', (event, arg) => {
-    if(server)
-        server.close(() => console.log('server closed'));
+    if (server) server.close(() => console.log('server closed'));
     server = express();
-    server.use(cors()); 
+    server.use(cors());
     server.use(express.static(arg));
     server = server.listen(PORT, () => console.log(`Server listening on port: ${PORT} with: ${arg}`));
 });

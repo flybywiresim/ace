@@ -50,7 +50,7 @@ export const InteractionToolbar: FC = () => {
                 <IconPencil size={56} strokeWidth={1.5} />
             </ToolbarItem>
 
-            <ToolbarItem color={ToolbarItemColors.PURPLE}>
+            <ToolbarItem color={ToolbarItemColors.PURPLE} renderPopover={LiveReloadMenu}>
                 <IconRefresh size={56} strokeWidth={1.5} />
             </ToolbarItem>
 

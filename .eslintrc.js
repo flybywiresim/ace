@@ -30,6 +30,8 @@ module.exports = {
         'no-undef': 'off',
 
         'no-underscore-dangle': 'off',
+        'no-useless-constructor': 'off',
+        'no-empty-function': 'off',
 
         // Irrelevant for our use
         'jsx-a11y/alt-text': 'off',

@@ -67,7 +67,7 @@ export const Main = () => {
 
     useEffect(() => {
         if (!projects.length) history.push('/');
-    }, [projects]);
+    }, [history, projects]);
 
     return (
         <ProjectContext.Provider value={{ loadProject, createProject, projects }}>

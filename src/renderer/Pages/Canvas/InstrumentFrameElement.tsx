@@ -1,4 +1,5 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
+import path from 'path';
 import { PanelCanvasElement } from '../PanelCanvas';
 import { LocalShim } from '../../shims/LocalShim';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
@@ -35,14 +36,28 @@ export interface InstrumentFrameElementProps {
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onDelete }) => {
-    const { project } = useWorkspace();
+    const { project, liveReloadDispatcher } = useWorkspace();
+
+    useEffect(() => {
+        console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Hooking into a new LiveReloadDispatcher.`);
+
+        const sub = liveReloadDispatcher.subscribe(instrumentFrame.instrumentName, (fileName, contents) => {
+            console.log(`[InstrumentFrameElement(${instrumentFrame.title})] File updated: ${fileName}.`);
+
+            loadedInstrument.files.find((file) => file.name === path.basename(fileName)).contents = contents;
+
+            doLoadInstrument();
+        });
+
+        return () => liveReloadDispatcher.unsubscribe(sub);
+    }, [liveReloadDispatcher]);
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
 
     const iframeRef = useRef<HTMLIFrameElement>();
     const lastUpdate = useRef(Date.now());
 
-    useEffect(() => {
+    const doLoadInstrument = useCallback(() => {
         if (iframeRef.current && loadedInstrument.config.name) {
             const iframeWindow = iframeRef.current.contentWindow;
             const iframeDocument = iframeRef.current.contentDocument;
@@ -96,7 +111,9 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                 lastUpdate.current = newUpdate;
             }, 50);
         }
-    }, [iframeRef, loadedInstrument?.config.name, loadedInstrument.files]);
+    }, [loadedInstrument.config.name, loadedInstrument.files]);
+
+    useEffect(doLoadInstrument, [doLoadInstrument]);
 
     return (
         <PanelCanvasElement title={loadedInstrument.config.name} canvasZoom={zoom} onDelete={onDelete}>

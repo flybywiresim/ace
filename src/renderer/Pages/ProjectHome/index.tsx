@@ -8,6 +8,8 @@ import { PanelCanvas } from '../PanelCanvas';
 import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
 import { useProjects } from '../..';
 import { WorkspaceContext } from './WorkspaceContext';
+import { ProjectLiveReloadHandler } from '../../Project/fs/LiveReload';
+import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
 
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
@@ -49,34 +51,61 @@ export const ProjectWorkspace = () => {
         ProjectCanvasSaveHandler.removeElement(project, element);
     };
 
-    return (
-        <WorkspaceContext.Provider value={{ addInstrument: handleAddInstrument, project, inEditMode, setInEditMode }}>
-            <div className="w-full h-full flex">
-                <div className="absolute z-50 p-7">
-                    <InteractionToolbar />
-                </div>
+    const [liveReloadConfigHandler, setLiveReloadConfigHandler] = useState<ProjectLiveReloadHandler>(null);
+    const [liveReloadDispatcher, setLiveReloadDispatcher] = useState<LiveReloadDispatcher>(null);
 
-                <div className="relative w-full h-full z-40">
-                    <PanelCanvas render={(zoom) => (
-                        <>
-                            {canvasElements.map((canvasElement) => {
-                                if (canvasElement.__kind === 'instrument') {
-                                    return (
-                                        <InstrumentFrameElement
-                                            key={canvasElement.title}
-                                            instrumentFrame={canvasElement}
-                                            zoom={zoom}
-                                            onDelete={() => handleDeleteCanvasElement(canvasElement)}
-                                        />
-                                    );
-                                }
-                                return null;
-                            })}
-                        </>
-                    )}
-                    />
+    useEffect(() => {
+        if (project) {
+            setLiveReloadConfigHandler(new ProjectLiveReloadHandler(project));
+            setLiveReloadDispatcher(new LiveReloadDispatcher(project));
+        }
+    }, [project]);
+
+    const startLiveReload = useCallback(() => {
+        if (liveReloadDispatcher) {
+            liveReloadDispatcher.startWatching();
+        }
+    }, [liveReloadDispatcher]);
+
+    return (
+        <WorkspaceContext.Provider value={{
+            addInstrument: handleAddInstrument,
+            project,
+            inEditMode,
+            setInEditMode,
+            liveReloadDispatcher,
+            startLiveReload,
+            handlers: { liveReload: liveReloadConfigHandler },
+        }}
+        >
+            {project && (
+                <div className="w-full h-full flex">
+                    <div className="absolute z-50 p-7">
+                        <InteractionToolbar />
+                    </div>
+
+                    <div className="relative w-full h-full z-40">
+                        <PanelCanvas render={(zoom) => (
+                            <>
+                                {canvasElements.map((canvasElement) => {
+                                    if (canvasElement.__kind === 'instrument') {
+                                        return (
+                                            <InstrumentFrameElement
+                                                key={canvasElement.title}
+                                                instrumentFrame={canvasElement}
+                                                zoom={zoom}
+                                                onDelete={() => handleDeleteCanvasElement(canvasElement)}
+                                            />
+                                        );
+                                    }
+                                    return null;
+                                })}
+                            </>
+                        )}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
         </WorkspaceContext.Provider>
     );
 };

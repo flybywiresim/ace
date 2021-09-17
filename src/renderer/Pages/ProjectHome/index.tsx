@@ -15,6 +15,20 @@ export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
     const project = useProjects().projects.find((project) => project.name === name);
 
+    const [inInteractionMode, setInInteractionMode] = useState(false);
+
+    useEffect(() => {
+        const handler = (ev: KeyboardEvent) => {
+            if (ev.key.toUpperCase() === 'Z') {
+                setInInteractionMode((old) => !old);
+            }
+        };
+
+        window.addEventListener('keydown', handler, true);
+
+        return () => window.removeEventListener('keydown', handler);
+    }, []);
+
     const [inEditMode, setInEditMode] = useState(false);
 
     const doLoadProjectCanvasSave = useCallback(() => {
@@ -72,6 +86,8 @@ export const ProjectWorkspace = () => {
             addInstrument: handleAddInstrument,
             project,
             inEditMode,
+            inInteractionMode,
+            setInInteractionMode,
             setInEditMode,
             liveReloadDispatcher,
             startLiveReload,

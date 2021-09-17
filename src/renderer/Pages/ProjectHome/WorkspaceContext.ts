@@ -5,6 +5,8 @@ import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispat
 
 type WorkspaceContextType = {
     addInstrument: (instrument: string) => void;
+    inInteractionMode: boolean;
+    setInInteractionMode: React.Dispatch<React.SetStateAction<boolean>>;
     inEditMode: boolean;
     setInEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     project: ProjectData,

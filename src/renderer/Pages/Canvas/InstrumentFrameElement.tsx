@@ -36,7 +36,7 @@ export interface InstrumentFrameElementProps {
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onDelete }) => {
-    const { project, liveReloadDispatcher } = useWorkspace();
+    const { project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
 
     useEffect(() => {
         console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Hooking into a new LiveReloadDispatcher.`);
@@ -56,6 +56,23 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
 
     const iframeRef = useRef<HTMLIFrameElement>();
     const lastUpdate = useRef(Date.now());
+
+    useEffect(() => {
+        if (iframeRef.current) {
+            const handle = (ev: KeyboardEvent) => {
+                if (ev.key.toUpperCase() === 'Z') {
+                    setInInteractionMode((old) => !old);
+                }
+            };
+
+            iframeRef.current.contentWindow.addEventListener('keydown', handle, true);
+
+            const refCopy = iframeRef.current;
+            return () => refCopy.contentWindow.removeEventListener('keydown', handle);
+        }
+
+        return null;
+    }, [setInInteractionMode]);
 
     const doLoadInstrument = useCallback(() => {
         if (iframeRef.current && loadedInstrument.config.name) {
@@ -122,6 +139,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                 ref={iframeRef}
                 width={loadedInstrument.config.dimensions.width}
                 height={loadedInstrument.config.dimensions.height}
+                style={{ pointerEvents: inInteractionMode ? 'auto' : 'none' }}
             />
         </PanelCanvasElement>
     );

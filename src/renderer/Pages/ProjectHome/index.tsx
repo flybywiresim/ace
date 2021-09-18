@@ -19,7 +19,7 @@ export const ProjectWorkspace = () => {
 
     useEffect(() => {
         const handler = (ev: KeyboardEvent) => {
-            if (ev.key.toUpperCase() === 'Z') {
+            if (ev.key.toUpperCase() === 'ENTER') {
                 setInInteractionMode((old) => !old);
             }
         };

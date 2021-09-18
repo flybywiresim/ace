@@ -60,7 +60,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     useEffect(() => {
         if (iframeRef.current) {
             const handle = (ev: KeyboardEvent) => {
-                if (ev.key.toUpperCase() === 'Z') {
+                if (ev.key.toUpperCase() === 'ENTER') {
                     setInInteractionMode((old) => !old);
                 }
             };

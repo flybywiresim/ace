@@ -1,8 +1,10 @@
-import React, { FC, useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent } from 'react';
+import React, { useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent, PropsWithChildren } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { IconTrash, IconArrowsMaximize } from '@tabler/icons';
-import { useWorkspace } from './ProjectHome/WorkspaceContext';
+import { useThrottle } from 'react-use';
 import useInterval from '../../utils/useInterval';
+import { useWorkspace } from './ProjectHome/WorkspaceContext';
+import { PossibleCanvasElements } from '../../shared/types/project/canvas/CanvasSaveFile';
 
 export const PANEL_CANVAS_SIZE = 30_000;
 
@@ -105,15 +107,24 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
     );
 };
 
-export interface PanelCanvasElementProps {
+export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
+    element: T,
     title?: string;
     canvasZoom: number;
     onDelete: () => void;
+    onUpdate: (el: T) => void;
 }
 
-export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZoom, onDelete, children }) => {
-    const [, setOffsetX] = useState(0);
-    const [, setOffsetY] = useState(0);
+export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, title, canvasZoom, onDelete, onUpdate, children }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
+    const [offsetX, setOffsetX] = useState(() => element.position.x);
+    const [offsetY, setOffsetY] = useState(() => element.position.y);
+
+    const throttledOffsetX = useThrottle(offsetX, 750);
+    const throttledOffsetY = useThrottle(offsetY, 750);
+
+    useEffect(() => {
+        onUpdate({ ...element, position: { x: throttledOffsetX, y: throttledOffsetY } });
+    }, [element, onUpdate, throttledOffsetX, throttledOffsetY]);
 
     const { inEditMode } = useWorkspace();
 
@@ -151,18 +162,22 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
         <span className="absolute">
             <span
                 ref={canvasElementRef}
-                style={{ position: 'absolute', transform: `translate(${PANEL_CANVAS_SIZE / 2}px, ${PANEL_CANVAS_SIZE / 2}px)` }}
+                className="shadow-md"
+                style={{ position: 'absolute', transform: `translate(${(PANEL_CANVAS_SIZE / 2) + offsetX}px, ${(PANEL_CANVAS_SIZE / 2) + offsetY}px)` }}
             >
-                {inEditMode && (
-                    <span className="flex flex-row justify-between items-center mb-5">
-                        <h1 className="text-3xl">{title}</h1>
 
-                        <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
-                        <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
-                    </span>
-                )}
+                <span className="flex flex-row h-12 justify-between items-center mb-5">
+                    <h1 className="text-3xl">{title}</h1>
 
-                <span className={`block ${inEditMode && 'border-2 border-[#00c2cc]'} overflow-hidden`}>
+                    {inEditMode && (
+                        <>
+                            <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
+                            <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
+                        </>
+                    )}
+                </span>
+
+                <span className="block -top-12 border border-[#00c2cc] hover:border-green-500 overflow-hidden">
                     {children}
                 </span>
             </span>

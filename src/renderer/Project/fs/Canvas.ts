@@ -61,6 +61,8 @@ export class ProjectCanvasSaveHandler {
     }
 
     public static addElement(project: ProjectData, element: PossibleCanvasElements): void {
+        console.log(`[ProjectCanvasSaveHandler] Saved new element '${element.title}'.`);
+
         const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
 
         currentPanel.elements.push(element);
@@ -69,9 +71,22 @@ export class ProjectCanvasSaveHandler {
     }
 
     public static removeElement(project: ProjectData, elementToDelete: PossibleCanvasElements): void {
+        console.log(`[ProjectCanvasSaveHandler] Deleted element '${elementToDelete.title}'.`);
+
         const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
 
         currentPanel.elements = currentPanel.elements.filter((element) => element.__uuid !== elementToDelete.__uuid);
+
+        ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
+    }
+
+    public static updateElement(project: ProjectData, elementToUpdate: PossibleCanvasElements): void {
+        console.log(`[ProjectCanvasSaveHandler] Updated element '${elementToUpdate.title}'.`);
+
+        const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
+
+        currentPanel.elements = currentPanel.elements.filter((element) => element.__uuid !== elementToUpdate.__uuid);
+        currentPanel.elements.push(elementToUpdate);
 
         ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
     }

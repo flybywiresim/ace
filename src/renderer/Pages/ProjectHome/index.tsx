@@ -66,6 +66,16 @@ export const ProjectWorkspace = () => {
         ProjectCanvasSaveHandler.removeElement(project, element);
     };
 
+    const handleUpdateCanvasElement = (element: PossibleCanvasElements) => {
+        const savedElement = canvasElements.find((it) => it.__uuid === element.__uuid);
+
+        for (const [k, v] of Object.entries(element)) {
+            (savedElement as Record<string, any>)[k] = v;
+        }
+
+        ProjectCanvasSaveHandler.updateElement(project, element);
+    };
+
     const [liveReloadConfigHandler, setLiveReloadConfigHandler] = useState<ProjectLiveReloadHandler>(null);
     const [liveReloadDispatcher, setLiveReloadDispatcher] = useState<LiveReloadDispatcher>(null);
 
@@ -114,6 +124,7 @@ export const ProjectWorkspace = () => {
                                                 instrumentFrame={canvasElement}
                                                 zoom={zoom}
                                                 onDelete={() => handleDeleteCanvasElement(canvasElement)}
+                                                onUpdate={handleUpdateCanvasElement}
                                             />
                                         );
                                     }

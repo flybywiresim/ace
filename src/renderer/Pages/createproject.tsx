@@ -20,7 +20,7 @@ export const CreateProject = () => {
             <h3>Project Name: </h3>
             <input
                 value={name}
-                className="mb-2 pl-1 rounded-md text-black"
+                className="mb-2 pl-1 rounded-md text-white"
                 onChange={(e) => setName(e.target.value)}
             />
 

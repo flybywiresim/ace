@@ -68,3 +68,16 @@ input[type=range] {
 .webkit-drag {
   -webkit-app-region: drag;
 }
+
+.drop {
+  animation: drop 2.5s ease-out;
+
+  @keyframes drop {
+    from, to {
+      top: 0;
+    }
+    8%, 92% {
+      top: 4.5em;
+    }
+  }
+}

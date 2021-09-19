@@ -4,12 +4,14 @@ import { HashRouter as Router, Route, useHistory } from 'react-router-dom';
 import fs from 'fs';
 import path from 'path';
 import { ipcRenderer } from 'electron';
+import { Provider } from 'react-redux';
 import { ApplicationFrame } from './ApplicationFrame';
 import { Home } from './Pages/Home';
 import { CreateProject } from './Pages/createproject';
 import './index.scss';
 import { Project } from './types/Project';
 import { ProjectWorkspace } from './Pages/ProjectHome';
+import { store } from './Store';
 
 export type ProjectData = Project & { location: string };
 
@@ -70,15 +72,17 @@ export const Main = () => {
     }, [history, projects]);
 
     return (
-        <ProjectContext.Provider value={{ loadProject, createProject, projects }}>
-            <ApplicationFrame>
-                <Route exact path="/" component={Home} />
-                <Route path="/project/:name">
-                    <ProjectWorkspace />
-                </Route>
-                <Route exact path="/create-project" component={CreateProject} />
-            </ApplicationFrame>
-        </ProjectContext.Provider>
+        <Provider store={store}>
+            <ProjectContext.Provider value={{ loadProject, createProject, projects }}>
+                <ApplicationFrame>
+                    <Route exact path="/" component={Home} />
+                    <Route path="/project/:name">
+                        <ProjectWorkspace />
+                    </Route>
+                    <Route exact path="/create-project" component={CreateProject} />
+                </ApplicationFrame>
+            </ProjectContext.Provider>
+        </Provider>
     );
 };
 ReactDOM.render(<Router><Main /></Router>, document.body);

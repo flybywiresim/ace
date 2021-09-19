@@ -11,12 +11,21 @@ import { WorkspaceContext } from './WorkspaceContext';
 import { ProjectLiveReloadHandler } from '../../Project/fs/LiveReload';
 import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
 import { Grid } from '../Canvas/Grid';
+import { useAppDispatch } from '../../Store';
+import { pushNotification } from '../../Store/actions/notifications.actions';
+import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
 
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
     const project = useProjects().projects.find((project) => project.name === name);
 
     const [inInteractionMode, setInInteractionMode] = useState(false);
+
+    const dispatch = useAppDispatch();
+
+    useChangeDebounce(() => {
+        dispatch(pushNotification(`Interaction Mode: ${inInteractionMode ? 'ON' : 'OFF'}`));
+    }, 500, [inInteractionMode]);
 
     useEffect(() => {
         const handler = (ev: KeyboardEvent) => {
@@ -107,11 +116,11 @@ export const ProjectWorkspace = () => {
         >
             {project && (
                 <div className="w-full h-full flex overflow-hidden">
-                    <div className="absolute z-50 p-7">
+                    <div className="absolute z-40 p-7">
                         <InteractionToolbar />
                     </div>
 
-                    <div className="relative w-full h-full z-40">
+                    <div className="relative w-full h-full z-30">
                         <PanelCanvas render={({ zoom }) => (
                             <>
                                 <Grid />

@@ -1,12 +1,16 @@
 import { remote } from 'electron';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { WindowsControl } from 'react-windows-controls';
 import { useProjects } from './index';
+import { Notification, NotificationsContainer } from './Notifications';
+import { useAppDispatch, useAppSelector } from './Store';
+import { popNotification } from './Store/actions/notifications.actions';
 
 export const ApplicationFrame: FC = ({ children }) => (
     <main className="w-full h-full flex flex-col">
         <ApplicationTabs />
+        <ApplicationNotifications />
 
         {children}
     </main>
@@ -29,7 +33,7 @@ const ApplicationTabs: FC = () => {
     };
 
     return (
-        <section className="flex flex-row items-center bg-navy-lighter shadow-md">
+        <section className="flex flex-row items-center bg-navy-lighter shadow-md z-50">
             <span className="w-40 flex flex-row justify-center text-2xl font-mono">
                 <span>ACE</span>
                 <span className="text-teal">2</span>
@@ -65,3 +69,31 @@ const Tab: FC<TabProps> = ({ selected = false, children, onClick }) => (
         </span>
     </span>
 );
+
+const ApplicationNotifications: FC = () => {
+    const firstNotification: string = useAppSelector((store) => store.notifications[0]);
+    const dispatch = useAppDispatch();
+
+    const [currentText, setCurrentText] = useState(null);
+
+    useEffect(() => {
+        setCurrentText(firstNotification);
+
+        const timeout = setTimeout(() => {
+            setCurrentText(null);
+            dispatch(popNotification());
+        }, 2_500);
+
+        return () => clearTimeout(timeout);
+    }, [dispatch, firstNotification]);
+
+    return (
+        <NotificationsContainer>
+            {currentText && (
+                <Notification>
+                    <span>{currentText}</span>
+                </Notification>
+            )}
+        </NotificationsContainer>
+    );
+};

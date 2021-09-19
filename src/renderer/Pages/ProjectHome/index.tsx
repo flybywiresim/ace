@@ -10,6 +10,7 @@ import { useProjects } from '../..';
 import { WorkspaceContext } from './WorkspaceContext';
 import { ProjectLiveReloadHandler } from '../../Project/fs/LiveReload';
 import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
+import { Grid } from '../Canvas/Grid';
 
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
@@ -95,14 +96,16 @@ export const ProjectWorkspace = () => {
         }}
         >
             {project && (
-                <div className="w-full h-full flex">
+                <div className="w-full h-full flex overflow-hidden">
                     <div className="absolute z-50 p-7">
                         <InteractionToolbar />
                     </div>
 
                     <div className="relative w-full h-full z-40">
-                        <PanelCanvas render={(zoom) => (
+                        <PanelCanvas render={({ zoom }) => (
                             <>
+                                <Grid />
+
                                 {canvasElements.map((canvasElement) => {
                                     if (canvasElement.__kind === 'instrument') {
                                         return (

@@ -4,8 +4,14 @@ import { IconTrash, IconArrowsMaximize } from '@tabler/icons';
 import { useWorkspace } from './ProjectHome/WorkspaceContext';
 import useInterval from '../../utils/useInterval';
 
+export const PANEL_CANVAS_SIZE = 30_000;
+
+export interface PanelCanvasRenderProps {
+    zoom: number;
+}
+
 export interface PanelCanvasProps {
-    render: (zoom: number) => JSX.Element;
+    render: (props: PanelCanvasRenderProps) => JSX.Element;
 }
 
 export const PanelCanvas = ({ render }: PanelCanvasProps) => {
@@ -14,10 +20,14 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
     const transformContentRef = useRef<HTMLElement>(null);
 
     const [zoom, setZoom] = useState(1);
+    const [, setOffsetX] = useState(0);
+    const [, setOffsetY] = useState(0);
 
     useInterval(() => {
         if (transformWrapperRef.current) {
             setZoom(transformWrapperRef.current.state.scale);
+            setOffsetX(transformWrapperRef.current.state.positionX);
+            setOffsetY(transformWrapperRef.current.state.positionY);
         }
     }, 100);
 
@@ -60,13 +70,16 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
     }, [currentDoubleClickMode, doEmulateDoubleClick]);
 
     return (
-        <section className="w-full h-full bg-gray-900" ref={transformContainerRef} onWheel={handleWheel}>
+        <section className="w-full h-full bg-gray-900 overflow-hidden" ref={transformContainerRef} onWheel={handleWheel}>
             <TransformWrapper
                 ref={transformWrapperRef}
-                limitToBounds={false}
-                minScale={0}
+                limitToBounds
+                initialPositionX={-PANEL_CANVAS_SIZE / 2}
+                initialPositionY={-PANEL_CANVAS_SIZE / 2}
+                minScale={0.045}
                 doubleClick={{
                     mode: currentDoubleClickMode,
+                    step: 0.4,
                 }}
                 wheel={{
                     disabled: true,
@@ -74,12 +87,18 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
             >
                 <TransformComponent
                     wrapperStyle={{
-                        minWidth: '100%',
-                        minHeight: '100%',
-
+                        width: '100%',
+                        height: '100%',
                     }}
                 >
-                    {render(zoom)}
+                    <div style={{
+                        overflow: 'hidden',
+                        width: `${PANEL_CANVAS_SIZE}px`,
+                        height: `${PANEL_CANVAS_SIZE}px`,
+                    }}
+                    >
+                        {render({ zoom })}
+                    </div>
                 </TransformComponent>
             </TransformWrapper>
         </section>
@@ -118,7 +137,9 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
         }
         setOffsetX((old) => {
             setOffsetY((old1) => {
-                canvasElementRef.current.style.transform = `translate(${old + event.movementX / canvasZoom}px, ${old1 + event.movementY / canvasZoom}px)`;
+                canvasElementRef.current.style.transform = `translate(${(PANEL_CANVAS_SIZE / 2) + old + event.movementX / canvasZoom}px, `
+                    + ` ${(PANEL_CANVAS_SIZE / 2) + old1 + event.movementY / canvasZoom}px)`;
+
                 return (old1 + (event.movementY / canvasZoom) * 0.65);
             });
             return (old + (event.movementX / canvasZoom) * 0.65);
@@ -130,7 +151,7 @@ export const PanelCanvasElement: FC<PanelCanvasElementProps> = ({ title, canvasZ
         <span className="absolute">
             <span
                 ref={canvasElementRef}
-                style={{ position: 'absolute' }}
+                style={{ position: 'absolute', transform: `translate(${PANEL_CANVAS_SIZE / 2}px, ${PANEL_CANVAS_SIZE / 2}px)` }}
             >
                 {inEditMode && (
                     <span className="flex flex-row justify-between items-center mb-5">

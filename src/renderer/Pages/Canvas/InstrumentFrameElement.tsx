@@ -91,7 +91,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
 
             rootTag.append(mountTag);
 
-            const pfdTag = iframeDocument.createElement('a35-x-ecam');
+            const pfdTag = iframeDocument.createElement(`${project.name}-${instrumentFrame.instrumentName}`);
             pfdTag.setAttribute('url', 'a?Index=1');
 
             const scriptTag = iframeDocument.createElement('script');

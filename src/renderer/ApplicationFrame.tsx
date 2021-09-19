@@ -1,5 +1,7 @@
+import { remote } from 'electron';
 import React, { FC } from 'react';
 import { useHistory } from 'react-router-dom';
+import { WindowsControl } from 'react-windows-controls';
 import { useProjects } from './index';
 
 export const ApplicationFrame: FC = ({ children }) => (
@@ -14,9 +16,21 @@ const ApplicationTabs: FC = () => {
     const history = useHistory();
     const { projects } = useProjects();
 
+    const handleMinimize = () => {
+        remote.getCurrentWindow().minimize();
+    };
+
+    const handleMaximize = () => {
+        remote.getCurrentWindow().maximize();
+    };
+
+    const handleClose = () => {
+        remote.getCurrentWindow().close();
+    };
+
     return (
         <section className="flex flex-row items-center bg-navy-lighter shadow-md">
-            <span className="w-32 flex flex-row justify-center text-2xl font-mono">
+            <span className="w-40 flex flex-row justify-center text-2xl font-mono">
                 <span>ACE</span>
                 <span className="text-teal">2</span>
             </span>
@@ -27,6 +41,14 @@ const ApplicationTabs: FC = () => {
                     <Tab onClick={() => history.push(`/project/${project.name}`)} selected={history.location.pathname.includes(project.name)}>{project.name}</Tab>
                 ))}
             </div>
+
+            <span className="w-full h-full webkit-drag" />
+
+            <span className="h-full flex flex-row ml-auto">
+                <WindowsControl minimize whiteIcon onClick={handleMinimize} />
+                <WindowsControl maximize whiteIcon onClick={handleMaximize} />
+                <WindowsControl close whiteIcon onClick={handleClose} />
+            </span>
         </section>
     );
 };

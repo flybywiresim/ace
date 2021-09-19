@@ -5,17 +5,21 @@ export class LocalShim implements SimulatorInterface {
         GetSimVarValue(key: any) {
             try {
                 const item = window.localStorage.getItem(key);
-                return item ? JSON.parse(item) : 0 || '';
+                return item ? JSON.parse(item) : 0;
             } catch (error) {
                 console.log(error);
-                return 0 || '';
+                return 0;
             }
         },
         SetSimVarValue(key: any, unit: any, value: any) {
             try {
                 window.localStorage.setItem(key, JSON.stringify(value));
+
+                return new Promise(((resolve) => resolve(null)));
             } catch (error) {
                 console.log(error);
+
+                return new Promise((_, reject) => reject());
             }
         },
         GetGameVarValue(): string {
@@ -27,15 +31,32 @@ export class LocalShim implements SimulatorInterface {
         trigger(name: string, ...args: any[]) {
             console.log(`Coherent triggered: ${name}, with args: ${args}`);
         },
+        on(name: string) {
+            console.log(`Coherent on trigger: ${name}`);
+
+            return {
+                clear: () => {},
+            };
+        },
         call<T>(name: string, ...args: any[]): Promise<T> {
             console.log(`Coherent Called: ${name}, with args: ${args}`);
             return null;
         },
     }
 
+    public RegisterViewListener = (listener: any) => {
+        console.log(`Coherent RegisterViewListener called: ${listener}`);
+    }
+
     public Simplane = {
+        getPressureValue() {
+            return 1013;
+        },
         getPressureSelectedMode() {
             return 'Std';
+        },
+        getPressureSelectedUnits() {
+            return 'millibar';
         },
         getAutoPilotDisplayedAltitudeLockValue() {
             return 0;

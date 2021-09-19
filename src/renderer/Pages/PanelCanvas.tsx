@@ -115,6 +115,8 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     onUpdate: (el: T) => void;
 }
 
+const roundToGrid = (input: number): number => Math.round(input / 30) * 30;
+
 export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, title, canvasZoom, onDelete, onUpdate, children }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
     const [offsetX, setOffsetX] = useState(() => element.position.x);
     const [offsetY, setOffsetY] = useState(() => element.position.y);
@@ -147,12 +149,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
             return;
         }
         setOffsetX((old) => {
-            setOffsetY((old1) => {
-                canvasElementRef.current.style.transform = `translate(${(PANEL_CANVAS_SIZE / 2) + old + event.movementX / canvasZoom}px, `
-                    + ` ${(PANEL_CANVAS_SIZE / 2) + old1 + event.movementY / canvasZoom}px)`;
-
-                return (old1 + (event.movementY / canvasZoom) * 0.65);
-            });
+            setOffsetY((old1) => (old1 + (event.movementY / canvasZoom) * 0.65));
             return (old + (event.movementX / canvasZoom) * 0.65);
         });
         event.stopPropagation();
@@ -163,7 +160,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
             <span
                 ref={canvasElementRef}
                 className="shadow-md"
-                style={{ position: 'absolute', transform: `translate(${(PANEL_CANVAS_SIZE / 2) + offsetX}px, ${(PANEL_CANVAS_SIZE / 2) + offsetY}px)` }}
+                style={{ position: 'absolute', transitionDuration: '0.1s', transform: `translate(${roundToGrid((PANEL_CANVAS_SIZE / 2) + offsetX)}px, ${roundToGrid((PANEL_CANVAS_SIZE / 2) + offsetY) - 8}px)` }}
             >
 
                 <span className="flex flex-row h-12 justify-between items-center mb-5">

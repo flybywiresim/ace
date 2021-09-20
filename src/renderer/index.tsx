@@ -12,6 +12,7 @@ import './index.scss';
 import { Project } from './types/Project';
 import { ProjectWorkspace } from './Pages/ProjectHome';
 import { store } from './Store';
+import { RecentlyOpenedProjects } from './Project/recently-opened';
 
 export type ProjectData = Project & { location: string };
 
@@ -43,6 +44,14 @@ export const Main = () => {
         project.paths.instrumentSrc = path.join(location, project.paths.instrumentSrc);
         project.paths.bundlesSrc = path.join(location, project.paths.bundlesSrc);
         project.paths.htmlUiSrc = path.join(location, project.paths.htmlUiSrc);
+
+        // Save project to recently opened projects
+        let recentlyOpenedProjects = RecentlyOpenedProjects.load();
+
+        recentlyOpenedProjects = recentlyOpenedProjects.filter(({ name }) => name !== project.name);
+        recentlyOpenedProjects.push({ name: project.name, location });
+
+        RecentlyOpenedProjects.save(recentlyOpenedProjects);
 
         ipcRenderer.send('load-project', project.paths.htmlUiSrc);
         history.push(`/project/${project.name}`);

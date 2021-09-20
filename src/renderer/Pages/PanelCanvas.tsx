@@ -160,6 +160,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
             <span
                 ref={canvasElementRef}
                 className="shadow-md"
+                // eslint-disable-next-line max-len
                 style={{ position: 'absolute', transitionDuration: '0.1s', transform: `translate(${roundToGrid((PANEL_CANVAS_SIZE / 2) + offsetX)}px, ${roundToGrid((PANEL_CANVAS_SIZE / 2) + offsetY) - 8}px)` }}
             >
 

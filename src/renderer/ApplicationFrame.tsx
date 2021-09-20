@@ -1,3 +1,4 @@
+import { IconArtboard, IconX } from '@tabler/icons';
 import { remote } from 'electron';
 import React, { FC, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -18,7 +19,7 @@ export const ApplicationFrame: FC = ({ children }) => (
 
 const ApplicationTabs: FC = () => {
     const history = useHistory();
-    const { projects } = useProjects();
+    const { projects, closeProject } = useProjects();
 
     const handleMinimize = () => {
         remote.getCurrentWindow().minimize();
@@ -42,7 +43,14 @@ const ApplicationTabs: FC = () => {
             <div className="flex flex-row items-center gap-x-0.5">
                 <Tab onClick={() => history.push('/')} selected={history.location.pathname.length === 1}>Home</Tab>
                 {projects.map((project) => (
-                    <Tab onClick={() => history.push(`/project/${project.name}`)} selected={history.location.pathname.includes(project.name)}>{project.name}</Tab>
+                    <Tab
+                        onClick={() => history.push(`/project/${project.name}`)}
+                        onClose={() => closeProject(project)}
+                        selected={history.location.pathname.includes(project.name)}
+                        icon={<IconArtboard size={23} strokeWidth={1.75} />}
+                    >
+                        {project.name}
+                    </Tab>
                 ))}
             </div>
 
@@ -58,16 +66,35 @@ const ApplicationTabs: FC = () => {
 };
 
 interface TabProps {
+    icon?: JSX.Element,
     selected?: boolean,
     onClick?: () => void,
+    onClose?: () => void,
 }
 
-const Tab: FC<TabProps> = ({ selected = false, children, onClick }) => (
-    <span onClick={onClick} className={`w-36 h-full flex flex-row justify-center bg-navy-lightest pb-3 border-t-4 ${selected ? 'border-teal' : 'border-transparent'} py-2`}>
-        <span className="text-lg font-medium">
+const Tab: FC<TabProps> = ({ selected = false, children, onClick, onClose, icon }) => (
+    <div
+        onClick={onClick}
+        // eslint-disable-next-line max-len
+        className={`relative px-4 h-full flex flex-row group justify-center items-center select-none cursor-pointer bg-navy-lightest border-t-4 ${selected ? 'border-teal' : 'border-transparent'} py-2`}
+    >
+        {icon && (
+            <div className="mr-3 mt-0.5">
+                {icon}
+            </div>
+        )}
+        <div className="text-lg font-medium">
             {children}
-        </span>
-    </span>
+        </div>
+        {onClose && (
+            <IconX
+                size={18}
+                className="ml-4 mt-[3px] transition duration-300 text-gray-500 group-hover:text-white hover:!text-red-500"
+                strokeWidth={1.5}
+                onClick={() => onClose()}
+            />
+        )}
+    </div>
 );
 
 const ApplicationNotifications: FC = () => {

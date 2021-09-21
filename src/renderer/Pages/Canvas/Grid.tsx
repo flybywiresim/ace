@@ -27,6 +27,23 @@ export const Grid = memo(() => {
     return (
         <svg className="absolute" viewBox="0 0 10000 10000" width="30000px" height="30000px">
             {lines}
+
+            <line
+                x1={0}
+                y1={5000}
+                x2={10000}
+                y2={5000}
+                stroke="#00c2cc"
+                strokeWidth={0.15}
+            />
+            <line
+                x1={5000}
+                y1={0}
+                x2={5000}
+                y2={10000}
+                stroke="#00c2cc"
+                strokeWidth={0.15}
+            />
         </svg>
     );
 });

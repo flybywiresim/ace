@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
+import { PANEL_CANVAS_SIZE } from '../PanelCanvas';
 
-const GRID_LINE_SIZE = 10;
+export const GRID_SVG_SIZE = 10_000;
+export const GRID_LINE_SIZE = 10;
 
 export const Grid = memo(() => {
     const lines = [];
@@ -25,7 +27,7 @@ export const Grid = memo(() => {
     }
 
     return (
-        <svg className="absolute" viewBox="0 0 10000 10000" width="30000px" height="30000px">
+        <svg className="absolute" viewBox={`0 0 ${GRID_SVG_SIZE} ${GRID_SVG_SIZE}`} width={`${PANEL_CANVAS_SIZE}px`} height={`${PANEL_CANVAS_SIZE}px`}>
             {lines}
 
             <line

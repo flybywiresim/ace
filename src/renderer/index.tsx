@@ -18,6 +18,7 @@ export type ProjectData = Project & { location: string };
 
 type ProjectContextType = {
     projects: ProjectData[],
+    closeProject: (removedValue: ProjectData) => void,
     loadProject: (path: string) => void;
     createProject: (name: string, path: string, instrumentsSrc: string, bundlesSrc: string, htmlUiSrc: string) => void;
 }
@@ -28,6 +29,10 @@ export const useProjects = () => useContext(ProjectContext);
 export const Main = () => {
     const [projects, setProjects] = useState<ProjectData[]>([]);
     const history = useHistory();
+
+    function closeProject(removedValue: ProjectData) {
+        setProjects((projects) => (projects.filter((project) => project.name !== removedValue.name)));
+    }
 
     const loadProject = (location: string) => {
         if (!fs.existsSync(`${location}/.ace/project.json`)) {
@@ -82,7 +87,7 @@ export const Main = () => {
 
     return (
         <Provider store={store}>
-            <ProjectContext.Provider value={{ loadProject, createProject, projects }}>
+            <ProjectContext.Provider value={{ loadProject, createProject, closeProject, projects }}>
                 <ApplicationFrame>
                     <Route exact path="/" component={Home} />
                     <Route path="/project/:name">

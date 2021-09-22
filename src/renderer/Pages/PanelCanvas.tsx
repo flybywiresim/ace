@@ -5,6 +5,7 @@ import { useThrottle } from 'react-use';
 import useInterval from '../../utils/useInterval';
 import { useWorkspace } from './ProjectHome/WorkspaceContext';
 import { PossibleCanvasElements } from '../../shared/types/project/canvas/CanvasSaveFile';
+import { GRID_LINE_SIZE, GRID_SVG_SIZE } from './Canvas/Grid';
 
 export const PANEL_CANVAS_SIZE = 30_000;
 
@@ -79,6 +80,10 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
                 initialPositionX={-PANEL_CANVAS_SIZE / 2}
                 initialPositionY={-PANEL_CANVAS_SIZE / 2}
                 minScale={0.045}
+                velocityAnimation={{
+                    sensitivity: 0.75,
+                    equalToMove: true,
+                }}
                 doubleClick={{
                     mode: currentDoubleClickMode,
                     step: 0.4,
@@ -115,8 +120,6 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     onUpdate: (el: T) => void;
 }
 
-const roundToGrid = (input: number): number => Math.round(input / 30) * 30;
-
 export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, title, canvasZoom, onDelete, onUpdate, children }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
     const [offsetX, setOffsetX] = useState(() => element.position.x);
     const [offsetY, setOffsetY] = useState(() => element.position.y);
@@ -124,9 +127,25 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
     const throttledOffsetX = useThrottle(offsetX, 750);
     const throttledOffsetY = useThrottle(offsetY, 750);
 
+    const roundToGrid = useCallback((input: number): number => {
+        const PROJECTED_GRID_CELL_SIZE = (PANEL_CANVAS_SIZE / GRID_SVG_SIZE) * GRID_LINE_SIZE;
+
+        return Math.round(input / PROJECTED_GRID_CELL_SIZE) * PROJECTED_GRID_CELL_SIZE;
+    }, []);
+
+    // Handle updating the saved element when the throttled position is updated
     useEffect(() => {
         onUpdate({ ...element, position: { x: throttledOffsetX, y: throttledOffsetY } });
     }, [element, onUpdate, throttledOffsetX, throttledOffsetY]);
+
+    const [editPositionX, setEditPositionX] = useState(() => element.position.x);
+    const [editPositionY, setEditPositionY] = useState(() => element.position.y);
+
+    // Handle setting element position as edit movement changes
+    useEffect(() => {
+        setOffsetX(roundToGrid(editPositionX));
+        setOffsetY(roundToGrid(editPositionY));
+    }, [editPositionX, editPositionY]);
 
     const { inEditMode } = useWorkspace();
 
@@ -148,10 +167,10 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
         if (!canvasElementRef.current) {
             return;
         }
-        setOffsetX((old) => {
-            setOffsetY((old1) => (old1 + (event.movementY / canvasZoom) * 0.65));
-            return (old + (event.movementX / canvasZoom) * 0.65);
-        });
+
+        setEditPositionX((old) => old + event.movementX / canvasZoom);
+        setEditPositionY((old) => old + event.movementY / canvasZoom);
+
         event.stopPropagation();
     };
 
@@ -160,11 +179,13 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
             <span
                 ref={canvasElementRef}
                 className="shadow-md"
-                // eslint-disable-next-line max-len
-                style={{ position: 'absolute', transitionDuration: '0.1s', transform: `translate(${roundToGrid((PANEL_CANVAS_SIZE / 2) + offsetX)}px, ${roundToGrid((PANEL_CANVAS_SIZE / 2) + offsetY) - 8}px)` }}
+                style={{
+                    position: 'absolute',
+                    transitionDuration: '0.1s',
+                    transform: `translate(${(PANEL_CANVAS_SIZE / 2) + offsetX}px, ${(PANEL_CANVAS_SIZE / 2) + offsetY}px)`,
+                }}
             >
-
-                <span className="flex flex-row h-12 justify-between items-center mb-5">
+                <span className="absolute flex flex-row h-12 -top-16 justify-between items-center">
                     <h1 className="text-3xl">{title}</h1>
 
                     {inEditMode && (
@@ -175,7 +196,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
                     )}
                 </span>
 
-                <span className="block -top-12 border border-[#00c2cc] hover:border-green-500 overflow-hidden">
+                <span className="block border border-[#00c2cc] hover:border-green-500 overflow-hidden">
                     {children}
                 </span>
             </span>

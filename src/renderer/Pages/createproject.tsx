@@ -116,7 +116,7 @@ export const CreateProject = () => {
                 <button
                     type="button"
                     onClick={async () => {
-                        createProject(name, location, instrumentsLocation, bundlesLocation, htmlUiLocation);
+                        createProject(name.replace(/\s/g, '-'), location, instrumentsLocation, bundlesLocation, htmlUiLocation);
                         history.push('/');
                     }}
                 >

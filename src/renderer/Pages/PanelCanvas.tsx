@@ -127,6 +127,8 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
     const throttledOffsetX = useThrottle(offsetX, 750);
     const throttledOffsetY = useThrottle(offsetY, 750);
 
+    const TITLE_FONTSIZE = 14;
+
     const roundToGrid = useCallback((input: number): number => {
         const PROJECTED_GRID_CELL_SIZE = (PANEL_CANVAS_SIZE / GRID_SVG_SIZE) * GRID_LINE_SIZE;
 
@@ -186,7 +188,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
                 }}
             >
                 <span className="absolute flex flex-row h-12 -top-16 justify-between items-center">
-                    <h1 style={{ fontSize: `${14 * (1 / canvasZoom)}px` }}>{title}</h1>
+                    <h1 style={{ fontSize: `${TITLE_FONTSIZE * (1 / canvasZoom)}px` }}>{title}</h1>
 
                     {inEditMode && (
                         <>

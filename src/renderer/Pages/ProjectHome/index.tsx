@@ -21,23 +21,17 @@ export const ProjectWorkspace = () => {
 
     const [inInteractionMode, setInInteractionMode] = useState(false);
 
+    const [shift, setShift] = useState(false);
+    const [control, setControl] = useState(false);
+
+    const [canvasElements, setCanvasElements] = useState<PossibleCanvasElements[]>([]);
+    const [selectedCanvasElements, setSelectedCanvasElements] = useState<PossibleCanvasElements[]>([]);
+
     const dispatch = useAppDispatch();
 
     useChangeDebounce(() => {
         dispatch(pushNotification(`Interaction Mode: ${inInteractionMode ? 'ON' : 'OFF'}`));
     }, 500, [inInteractionMode]);
-
-    useEffect(() => {
-        const handler = (ev: KeyboardEvent) => {
-            if (ev.key.toUpperCase() === 'ENTER') {
-                setInInteractionMode((old) => !old);
-            }
-        };
-
-        window.addEventListener('keydown', handler, true);
-
-        return () => window.removeEventListener('keydown', handler);
-    }, []);
 
     const [inEditMode, setInEditMode] = useState(false);
 
@@ -46,8 +40,6 @@ export const ProjectWorkspace = () => {
 
         setCanvasElements(canvasSave.elements);
     }, [project]);
-
-    const [canvasElements, setCanvasElements] = useState<PossibleCanvasElements[]>([]);
 
     useEffect(() => {
         if (project) {
@@ -87,6 +79,56 @@ export const ProjectWorkspace = () => {
 
     const [liveReloadConfigHandler, setLiveReloadConfigHandler] = useState<ProjectLiveReloadHandler>(null);
     const [liveReloadDispatcher, setLiveReloadDispatcher] = useState<LiveReloadDispatcher>(null);
+
+    function tryAddElementToSelected(addition: PossibleCanvasElements) {
+        if (!selectedCanvasElements.includes(addition)) {
+            setSelectedCanvasElements((canvasElements) => [...canvasElements, addition]);
+        }
+    }
+
+    useEffect(() => {
+        function downHandler(event: KeyboardEvent) {
+            if (event.key.toUpperCase() === 'SHIFT') {
+                setShift(true);
+            }
+            if (event.key.toUpperCase() === 'CONTROL') {
+                setControl(true);
+            }
+            if (event.key.toUpperCase() === 'ENTER') {
+                setInInteractionMode((old) => !old);
+            }
+            if (event.key.toUpperCase() === 'DELETE') {
+                for (const element of selectedCanvasElements) {
+                    handleDeleteCanvasElement(element);
+                }
+            }
+        }
+
+        function upHandler(event:KeyboardEvent) {
+            if (event.key.toUpperCase() === 'SHIFT') {
+                setShift(false);
+            }
+            if (event.key.toUpperCase() === 'CONTROL') {
+                setControl(false);
+            }
+        }
+
+        window.addEventListener('keydown', downHandler);
+        window.addEventListener('keyup', upHandler);
+
+        return () => {
+            window.removeEventListener('keydown', downHandler);
+            window.removeEventListener('keyup', upHandler);
+        };
+    }, [selectedCanvasElements]);
+
+    function handleElementClick(element: PossibleCanvasElements) {
+        if (shift) {
+            tryAddElementToSelected(element);
+        } else {
+            setSelectedCanvasElements([element]);
+        }
+    }
 
     useEffect(() => {
         if (project) {
@@ -128,13 +170,15 @@ export const ProjectWorkspace = () => {
                                 {canvasElements.map((canvasElement) => {
                                     if (canvasElement.__kind === 'instrument') {
                                         return (
-                                            <InstrumentFrameElement
-                                                key={canvasElement.title}
-                                                instrumentFrame={canvasElement}
-                                                zoom={zoom}
-                                                onDelete={() => handleDeleteCanvasElement(canvasElement)}
-                                                onUpdate={handleUpdateCanvasElement}
-                                            />
+                                            <div onClick={() => handleElementClick(canvasElement)}>
+                                                <InstrumentFrameElement
+                                                    key={canvasElement.title}
+                                                    instrumentFrame={canvasElement}
+                                                    zoom={zoom}
+                                                    onDelete={() => handleDeleteCanvasElement(canvasElement)}
+                                                    onUpdate={handleUpdateCanvasElement}
+                                                />
+                                            </div>
                                         );
                                     }
                                     return null;

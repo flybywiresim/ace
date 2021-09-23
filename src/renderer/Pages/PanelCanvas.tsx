@@ -186,7 +186,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
                 }}
             >
                 <span className="absolute flex flex-row h-12 -top-16 justify-between items-center">
-                    <h1 className="text-3xl">{title}</h1>
+                    <h1 style={{ fontSize: `${14 * (1 / canvasZoom)}px` }}>{title}</h1>
 
                     {inEditMode && (
                         <>

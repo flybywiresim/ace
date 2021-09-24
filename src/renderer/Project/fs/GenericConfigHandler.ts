@@ -16,7 +16,11 @@ export abstract class GenericConfigHandler<T> {
 
     public loadConfig(): T {
         if (!fs.existsSync(this.filePath)) {
-            return this.createConfig();
+            const newConfig = this.createConfig();
+
+            this.saveConfig(newConfig);
+
+            return newConfig;
         }
 
         const configContents = fs.readFileSync(this.filePath).toString();

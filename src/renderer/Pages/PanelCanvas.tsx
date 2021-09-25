@@ -81,8 +81,8 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
                 initialPositionY={-PANEL_CANVAS_SIZE / 2}
                 minScale={0.045}
                 velocityAnimation={{
-                    sensitivity: 0.75,
-                    equalToMove: true,
+                    disabled: true,
+                    sensitivity: 0,
                 }}
                 doubleClick={{
                     mode: currentDoubleClickMode,

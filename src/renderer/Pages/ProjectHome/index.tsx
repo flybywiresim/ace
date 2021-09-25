@@ -14,6 +14,7 @@ import { Grid } from '../Canvas/Grid';
 import { useAppDispatch } from '../../Store';
 import { pushNotification } from '../../Store/actions/notifications.actions';
 import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
+import { SimVarControlsHandler } from '../../Project/fs/SimVarControlsHandler';
 
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
@@ -129,11 +130,14 @@ export const ProjectWorkspace = () => {
             setSelectedCanvasElements([element]);
         }
     }
+    const [simVarControlsHandler, setSimVarControlsHandler] = useState<SimVarControlsHandler>(null);
 
     useEffect(() => {
         if (project) {
             setLiveReloadConfigHandler(new ProjectLiveReloadHandler(project));
             setLiveReloadDispatcher(new LiveReloadDispatcher(project));
+
+            setSimVarControlsHandler(new SimVarControlsHandler(project));
         }
     }, [project]);
 
@@ -153,7 +157,10 @@ export const ProjectWorkspace = () => {
             setInEditMode,
             liveReloadDispatcher,
             startLiveReload,
-            handlers: { liveReload: liveReloadConfigHandler },
+            handlers: {
+                liveReload: liveReloadConfigHandler,
+                simVarControls: simVarControlsHandler,
+            },
         }}
         >
             {project && (

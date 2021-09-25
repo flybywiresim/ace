@@ -1,19 +1,14 @@
 import React, { FC, useState } from 'react';
-import {
-    IconArrowsMaximize,
-    IconBulb,
-    IconChevronLeft,
-    IconPencil,
-    IconRefresh,
-    IconVariable,
-} from '@tabler/icons';
+import { v4 as UUID } from 'uuid';
+import { IconArrowsMaximize, IconBulb, IconChevronLeft, IconPencil, IconRefresh, IconVariable } from '@tabler/icons';
 import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Components/Toolbars';
-import { SimVarEditor, SimVarEditorProps } from '../SimVars/SimVarEditor';
-import { SimVarEditorContext, SimVarEditorContextProps } from '../SimVars/SimVarEditorContext';
-import { SimVarPopover } from '../SimVars/SimVarPopover';
+import { SimVarControlElement } from '../SimVars/SimVarControlElement';
+import { SimVarControlEditor } from '../SimVars/SimVarControlEditor';
 import { EditMenu } from './Components/EditMenu';
 import { useWorkspace } from './WorkspaceContext';
 import { LiveReloadMenu } from './Components/LiveReloadMenu';
+import { SimVarControl, SimVarControlStyleTypes } from '../../../shared/types/project/SimVarControl';
+import { SimVarPrefix } from '../../../shared/types/SimVar';
 
 export const InteractionToolbar: FC = () => {
     const { inEditMode, setInEditMode } = useWorkspace();
@@ -68,93 +63,76 @@ export const InteractionToolbar: FC = () => {
 };
 
 const SimVarMenu: FC = () => {
-    const [showNewSimVarPopover, setShowNewSimVarPopover] = useState(false);
-    const [newName, setNewName] = useState<string>();
-    const [newUnit, setNewUnit] = useState<string>();
-    const [newSimVar, setNewSimVar] = useState<string>();
-    const [newType, setNewType] = useState<string>();
-    const [newMin, setNewMin] = useState<number>();
-    const [newMax, setNewMax] = useState<number>();
-    const [newStep, setNewStep] = useState<number>();
+    const { handlers: { simVarControls } } = useWorkspace();
 
-    const context: SimVarEditorContextProps = {
-        name: newName,
-        setName: setNewName,
-        unit: newUnit,
-        setUnit: setNewUnit,
-        simVar: newSimVar,
-        setSimVar: setNewSimVar,
-        type: newType,
-        setType: setNewType,
-        min: newMin,
-        setMin: setNewMin,
-        max: newMax,
-        setMax: setNewMax,
-        step: newStep,
-        setStep: setNewStep,
+    const [newEditorShown, setNewEditorShown] = useState(false);
+
+    const [simVarEditors, setSimVarEditors] = useState<SimVarControl[]>(() => simVarControls.loadConfig().elements);
+
+    const handleControlEdit = (newControl: SimVarControl) => {
+        simVarControls.updateObject(newControl);
+
+        setSimVarEditors((old) => {
+            const newArray = old.filter(({ __uuid }) => __uuid !== newControl.__uuid);
+
+            newArray.push(newControl);
+
+            return newArray;
+        });
     };
 
-    const [simVarEditors, setSimVarEditors] = useState<SimVarEditorProps[]>([]);
+    const handleAddControl = (newControl: SimVarControl) => {
+        simVarControls.addObject(newControl);
 
-    const onSave = () => {
-        setSimVarEditors((editors) => [
-            ...editors,
-            {
-                initialState: context.type === 'number' || context.type === 'range' ? 0 : '',
-                name: context.name,
-                unit: context.unit,
-                simVar: context.simVar,
-                type: context.type,
-                min: context.min,
-                max: context.max,
-                step: context.step,
-            },
-        ]);
-        setShowNewSimVarPopover(false);
-        setNewName('');
-        setNewUnit('');
-        setNewSimVar('');
-        setNewType('');
-        setNewMin(0);
-        setNewMax(0);
-        setNewStep(0);
+        setSimVarEditors((old) => {
+            const newArray = old.filter(({ __uuid }) => __uuid !== newControl.__uuid);
+
+            newArray.push(newControl);
+
+            return newArray;
+        });
     };
 
     return (
-        <section className="w-72">
+        <section className="w-[420px]">
             <h2 className="mb-3 font-medium">SimVars</h2>
-            <SimVarEditor name="Altitude" unit="ft" simVar="INDICATED ALTITUDE" initialState={0} type="range" min={0} max={41000} />
-            <SimVarEditor name="Airspeed" unit="kn" simVar="AIRSPEED INDICATED" initialState={0} type="range" min={0} max={400} />
-            <SimVarEditor name="Heading" unit="deg" simVar="PLANE HEADING DEGREES TRUE" initialState={0} type="range" min={0} max={359} />
-            <SimVarEditor name="Pitch" unit="deg" simVar="PLANE PITCH DEGREES" initialState={0} type="range" min={-90} max={90} />
-            <SimVarEditor name="Roll" unit="deg" simVar="PLANE BANK DEGREES" initialState={0} type="range" min={-90} max={90} />
-            {simVarEditors.map((props) => (
-                <SimVarEditor
-                    initialState={props.type}
-                    name={props.name}
-                    unit={props.unit}
-                    simVar={props.simVar}
-                    type={props.type}
-                    min={props.min}
-                    max={props.max}
-                    step={props.step}
+
+            {simVarEditors.map((control) => (
+                <SimVarControlElement
+                    key={control.__uuid}
+                    simVarControl={control}
+                    onEdit={handleControlEdit}
                 />
             ))}
+
             <div className="relative">
                 <button
                     type="button"
                     className="w-full mt-3"
-                    onClick={() => setShowNewSimVarPopover(true)}
+                    onClick={() => setNewEditorShown(true)}
                 >
                     Add SimVars
                 </button>
-                <SimVarEditorContext.Provider value={context}>
-                    <SimVarPopover
-                        show={showNewSimVarPopover}
-                        onCancel={() => setShowNewSimVarPopover(false)}
-                        onSave={onSave}
+
+                {newEditorShown && (
+                    <SimVarControlEditor
+                        originalControl={{
+                            __uuid: UUID(),
+                            title: 'Example Title',
+                            varPrefix: SimVarPrefix.A,
+                            varName: 'EXAMPLE SIMVAR',
+                            varUnit: 'number',
+                            style: {
+                                type: SimVarControlStyleTypes.RANGE,
+                                min: 0,
+                                max: 100,
+                                step: 1,
+                            },
+                        }}
+                        onCancel={() => setNewEditorShown(false)}
+                        onSave={handleAddControl}
                     />
-                </SimVarEditorContext.Provider>
+                )}
             </div>
         </section>
     );

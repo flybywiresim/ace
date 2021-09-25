@@ -1,6 +1,6 @@
 import React, { FC, FocusEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { SimVarControlEditor } from './SimVarControlEditor';
-import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../shared/types/project/SimVarControl';
+import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../../../shared/types/project/SimVarControl';
 
 export type SimVarEditorProps = {
     name: string;

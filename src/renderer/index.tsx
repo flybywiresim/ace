@@ -10,7 +10,7 @@ import { Home } from './Pages/Home';
 import { CreateProject } from './Pages/createproject';
 import './index.scss';
 import { Project } from './types/Project';
-import { ProjectWorkspace } from './Pages/ProjectHome';
+import { ProjectWorkspace } from './Pages/ProjectHome/ProjectWorkspace';
 import { store } from './Store';
 import { RecentlyOpenedProjects } from './Project/recently-opened';
 

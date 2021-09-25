@@ -33,25 +33,11 @@ export interface InstrumentFrameElementProps {
     instrumentFrame: InstrumentFrame,
     zoom: number,
     onDelete: () => void,
-    onUpdate: (el: InstrumentFrame) => void
+    onUpdate: (el: InstrumentFrame) => void,
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onDelete, onUpdate }) => {
     const { project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
-
-    useEffect(() => {
-        console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Hooking into a new LiveReloadDispatcher.`);
-
-        const sub = liveReloadDispatcher.subscribe(instrumentFrame.instrumentName, (fileName, contents) => {
-            console.log(`[InstrumentFrameElement(${instrumentFrame.title})] File updated: ${fileName}.`);
-
-            loadedInstrument.files.find((file) => file.name === path.basename(fileName)).contents = contents;
-
-            doLoadInstrument();
-        });
-
-        return () => liveReloadDispatcher.unsubscribe(sub);
-    }, [liveReloadDispatcher]);
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
 
@@ -129,9 +115,23 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                 lastUpdate.current = newUpdate;
             }, 50);
         }
-    }, [loadedInstrument.config.name, loadedInstrument.files]);
+    }, [instrumentFrame.instrumentName, loadedInstrument.config.name, loadedInstrument.files, project.name]);
 
     useEffect(doLoadInstrument, [doLoadInstrument]);
+
+    useEffect(() => {
+        console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Hooking into a new LiveReloadDispatcher.`);
+
+        const sub = liveReloadDispatcher.subscribe(instrumentFrame.instrumentName, (fileName, contents) => {
+            console.log(`[InstrumentFrameElement(${instrumentFrame.title})] File updated: ${fileName}.`);
+
+            loadedInstrument.files.find((file) => file.name === path.basename(fileName)).contents = contents;
+
+            doLoadInstrument();
+        });
+
+        return () => liveReloadDispatcher.unsubscribe(sub);
+    }, [doLoadInstrument, instrumentFrame.instrumentName, instrumentFrame.title, liveReloadDispatcher, loadedInstrument.files]);
 
     return (
         <PanelCanvasElement<InstrumentFrame>

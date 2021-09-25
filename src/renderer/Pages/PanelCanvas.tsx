@@ -120,7 +120,14 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     onUpdate: (el: T) => void;
 }
 
-export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, title, canvasZoom, onDelete, onUpdate, children }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
+export const PanelCanvasElement = <T extends PossibleCanvasElements>({
+    element,
+    title,
+    canvasZoom,
+    onDelete,
+    onUpdate,
+    children,
+}: PropsWithChildren<PanelCanvasElementProps<T>>) => {
     const [offsetX, setOffsetX] = useState(() => element.position.x);
     const [offsetY, setOffsetY] = useState(() => element.position.y);
 
@@ -129,11 +136,11 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
 
     const TITLE_FONTSIZE = 14;
 
-    const roundToGrid = useCallback((input: number): number => {
+    const roundToGrid = (input: number): number => {
         const PROJECTED_GRID_CELL_SIZE = (PANEL_CANVAS_SIZE / GRID_SVG_SIZE) * GRID_LINE_SIZE;
 
         return Math.round(input / PROJECTED_GRID_CELL_SIZE) * PROJECTED_GRID_CELL_SIZE;
-    }, []);
+    };
 
     // Handle updating the saved element when the throttled position is updated
     useEffect(() => {
@@ -176,8 +183,12 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({ element, 
         event.stopPropagation();
     };
 
+    const handleMouseDown = (e: React.MouseEvent) => {
+        (e as any).canvasTarget = element;
+    };
+
     return (
-        <span className="absolute">
+        <span className="absolute" onMouseDown={handleMouseDown}>
             <span
                 ref={canvasElementRef}
                 className="shadow-md"

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../shared/types/project/SimVarControl';
+import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../../../shared/types/project/SimVarControl';
 
 type SimVarControlEditorProps = {
     originalControl: SimVarControl,
@@ -56,7 +56,7 @@ export const SimVarControlEditor: React.FC<SimVarControlEditorProps> = ({ origin
             varUnit: newVarUnit,
             style: newStyle,
         });
-    }, [newTitle, newVarName, newStyle, newVarUnit, onSave, originalControl.__uuid]);
+    }, [onSave, originalControl.__uuid, originalControl.varPrefix, newTitle, newVarName, newVarUnit, newStyle]);
 
     return (
         <div ref={popoverRef} className="absolute -top-1/2 left-full bg-gray-700 bg-opacity-50 backdrop-blur-md rounded-md p-5 ml-3">

@@ -10,6 +10,8 @@ export class LiveReloadDispatcher {
     ) {
     }
 
+    public started = false;
+
     public startWatching() {
         const allProjectInstruments = ProjectInstrumentsHandler.loadAllInstruments(this.project);
 
@@ -17,9 +19,23 @@ export class LiveReloadDispatcher {
             for (const file of instrument.files) {
                 console.log(`[LiveReloadDispatcher] Watching '${file.path}'...`);
 
-                fs.watch(file.path, this.handleFileUpdate.bind(this, instrument.config.name, file.path));
+                this.watchers.push(
+                    fs.watch(file.path, this.handleFileUpdate.bind(this, instrument.config.name, file.path)),
+                );
             }
         }
+
+        this.started = true;
+    }
+
+    public stopWatching() {
+        for (const watcher of this.watchers) {
+            watcher.close();
+        }
+
+        console.log('[LiveReloadDispatcher] Closed all watchers.');
+
+        this.started = false;
     }
 
     private handleFileUpdate(instrumentName: string, fileName: string) {
@@ -34,6 +50,8 @@ export class LiveReloadDispatcher {
 
     private subscriptions: { [k: string]: LiveReloadSubscriptionHandler; } = {};
 
+    private watchers: fs.FSWatcher[] = [];
+
     public subscribe(forInstrument: string, handler: LiveReloadSubscriptionHandler) {
         this.subscriptions[forInstrument] = handler;
 
@@ -41,6 +59,7 @@ export class LiveReloadDispatcher {
     }
 
     public unsubscribe(handler: LiveReloadSubscriptionHandler) {
+        // FIXME memory leak, cancel actual FsWatcher
         this.subscriptions[
             Object.entries(this.subscriptions)
                 .find((ent) => ent[1] === handler)[0]

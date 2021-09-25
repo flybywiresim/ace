@@ -24,9 +24,12 @@ export interface ContextMenuItemProps {
     inop?: boolean,
 }
 
-export const ContextMenuItem: FC<ContextMenuItemProps> = ({ inop = false, children }) => (
-    <div className={`flex items-center gap-x-4 text-[1.225em] cursor-pointer hover:bg-navy-light hover:text-teal ${inop ? 'opacity-60 pointer-events-none' : ''}`}>
-        {children}
+export const ContextMenuItem: FC<ContextMenuItemProps & React.HTMLAttributes<HTMLDivElement>> = (props) => (
+    <div
+        {...props}
+        className={`flex items-center gap-x-4 text-[1.225em] cursor-pointer hover:bg-navy-light hover:text-teal ${props.inop ? 'opacity-60 pointer-events-none' : ''}`}
+    >
+        {props.children}
     </div>
 );
 

@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
 import { CanvasElementFactory } from '../../Project/canvas/ElementFactory';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
-import { InteractionToolbar } from './InteractionToolbar';
+import { InteractionToolbar } from './Components/InteractionToolbar';
 import { PanelCanvas } from '../PanelCanvas';
 import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
 import { useProjects } from '../..';
@@ -15,6 +15,7 @@ import { useAppDispatch } from '../../Store';
 import { pushNotification } from '../../Store/actions/notifications.actions';
 import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControlsHandler';
+import { CanvasContextMenu } from './Components/CanvasContextMenu';
 
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
@@ -46,7 +47,7 @@ export const ProjectWorkspace = () => {
         if (project) {
             doLoadProjectCanvasSave();
         }
-    }, [project]);
+    }, [doLoadProjectCanvasSave, project]);
 
     const handleAddInstrument = (instrument: string) => {
         const newInstrumentPanel = CanvasElementFactory.newInstrumentPanel({
@@ -135,7 +136,12 @@ export const ProjectWorkspace = () => {
     useEffect(() => {
         if (project) {
             setLiveReloadConfigHandler(new ProjectLiveReloadHandler(project));
-            setLiveReloadDispatcher(new LiveReloadDispatcher(project));
+
+            setLiveReloadDispatcher((old) => {
+                old?.stopWatching();
+
+                return new LiveReloadDispatcher(project);
+            });
 
             setSimVarControlsHandler(new SimVarControlsHandler(project));
         }
@@ -143,9 +149,35 @@ export const ProjectWorkspace = () => {
 
     const startLiveReload = useCallback(() => {
         if (liveReloadDispatcher) {
+            if (liveReloadDispatcher.started) {
+                liveReloadDispatcher.stopWatching();
+            }
             liveReloadDispatcher.startWatching();
         }
     }, [liveReloadDispatcher]);
+
+    const [contextMenuTarget, setContextMenuTarget] = useState<PossibleCanvasElements>(null);
+    const [contextMenuOpen, setContextMenuOpen] = useState(false);
+    const [contextMenuX, setContextMenuX] = useState(0);
+    const [contextMenuY, setContextMenuY] = useState(0);
+
+    const handleCanvasClick = (e: React.MouseEvent) => {
+        setContextMenuOpen((old) => {
+            if (old) {
+                return false;
+            }
+
+            return e.button === 2;
+        });
+
+        if (e.button === 2) {
+            setContextMenuTarget((e as any).canvasTarget ?? null);
+            setContextMenuX(e.clientX + 25);
+            setContextMenuY(e.clientY - 40);
+        }
+
+        return false;
+    };
 
     return (
         <WorkspaceContext.Provider value={{
@@ -169,7 +201,14 @@ export const ProjectWorkspace = () => {
                         <InteractionToolbar />
                     </div>
 
-                    <div className="relative w-full h-full z-30">
+                    <div className="relative w-full h-full z-30" onMouseDown={handleCanvasClick}>
+                        <CanvasContextMenu
+                            rightClickedElement={contextMenuTarget}
+                            open={contextMenuOpen}
+                            x={contextMenuX}
+                            y={contextMenuY}
+                        />
+
                         <PanelCanvas render={({ zoom }) => (
                             <>
                                 <Grid />

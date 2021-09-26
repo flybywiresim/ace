@@ -117,6 +117,7 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     title?: string;
     canvasZoom: number;
     onUpdate: (el: T) => void;
+    selected: boolean;
 }
 
 export const PanelCanvasElement = <T extends PossibleCanvasElements>({
@@ -125,6 +126,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     canvasZoom,
     onUpdate,
     children,
+    selected,
 }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
     const [offsetX, setOffsetX] = useState(() => element.position.x);
     const [offsetY, setOffsetY] = useState(() => element.position.y);
@@ -204,7 +206,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
                     )}
                 </span>
 
-                <span className="block border border-[#00c2cc] hover:border-green-500 overflow-hidden">
+                <span className={`block border ${selected && 'border-8'} border-[#00c2cc] hover:border-green-500 overflow-hidden`}>
                     {children}
                 </span>
             </span>

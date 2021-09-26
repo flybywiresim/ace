@@ -34,9 +34,10 @@ export interface InstrumentFrameElementProps {
     zoom: number,
     onDelete: () => void,
     onUpdate: (el: InstrumentFrame) => void,
+    selected: boolean
 }
 
-export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onDelete, onUpdate }) => {
+export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onDelete, onUpdate, selected }) => {
     const { project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
@@ -140,6 +141,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             canvasZoom={zoom}
             onDelete={onDelete}
             onUpdate={onUpdate}
+            selected={selected}
         >
             <iframe
                 title="Instrument Frame"

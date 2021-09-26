@@ -223,6 +223,7 @@ export const ProjectWorkspace = () => {
                                                     zoom={zoom}
                                                     onDelete={() => handleDeleteCanvasElement(canvasElement)}
                                                     onUpdate={handleUpdateCanvasElement}
+                                                    selected={selectedCanvasElements.includes(canvasElement)}
                                                 />
                                             </div>
                                         );

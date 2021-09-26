@@ -29,7 +29,7 @@ export const CanvasContextMenu: FC<CanvasContextMenuProps> = ({ rightClickedElem
         }
     }, [open]);
 
-    return open && (
+    return (
         <>
             <ContextMenu open={open} x={x} y={y}>
                 {rightClickedElement && (

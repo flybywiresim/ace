@@ -130,14 +130,24 @@ export const ProjectWorkspace = () => {
             return e.button === 2;
         });
 
-        if (e.button === 2 && contextMenuRef.current) {
-            if (e.clientX >= window.innerWidth - contextMenuRef.current.firstElementChild.clientWidth) {
-                setContextMenuX(e.clientX - contextMenuRef.current.firstElementChild.clientWidth);
-                setContextMenuY(e.clientY - 40);
+        if (e.button === 2) {
+            let x: number;
+            let y: number;
+
+            if (contextMenuRef.current.firstElementChild) {
+                x = e.clientX >= window.innerWidth - contextMenuRef.current.firstElementChild.clientWidth
+                    ? e.clientX - contextMenuRef.current.firstElementChild.clientWidth
+                    : e.clientX;
+                y = e.clientY >= window.innerHeight - contextMenuRef.current.firstElementChild.clientHeight
+                    ? e.clientY - contextMenuRef.current.firstElementChild.clientHeight
+                    : e.clientY;
             } else {
-                setContextMenuX(e.clientX);
-                setContextMenuY(e.clientY - 40);
+                x = e.clientX + 25;
+                y = e.clientY - 40;
             }
+
+            setContextMenuX(x);
+            setContextMenuY(y);
             setContextMenuTarget((e as any).canvasTarget ?? null);
         }
 

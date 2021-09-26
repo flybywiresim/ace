@@ -116,7 +116,6 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     element: T,
     title?: string;
     canvasZoom: number;
-    onDelete: () => void;
     onUpdate: (el: T) => void;
     selected: boolean;
 }
@@ -125,7 +124,6 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     element,
     title,
     canvasZoom,
-    onDelete,
     onUpdate,
     children,
     selected,
@@ -204,10 +202,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
                     <h1 style={{ fontSize: `${TITLE_FONTSIZE * (1 / canvasZoom)}px` }}>{title}</h1>
 
                     {inEditMode && (
-                        <>
-                            <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
-                            <IconTrash className="hover:text-red-500 hover:cursor-pointer" onClick={onDelete} />
-                        </>
+                        <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
                     )}
                 </span>
 

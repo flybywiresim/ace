@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
 import { CanvasElementFactory } from '../../Project/canvas/ElementFactory';
@@ -156,6 +156,7 @@ export const ProjectWorkspace = () => {
         }
     }, [liveReloadDispatcher]);
 
+    const contextMenuRef = useRef<HTMLDivElement>(null);
     const [contextMenuTarget, setContextMenuTarget] = useState<PossibleCanvasElements>(null);
     const [contextMenuOpen, setContextMenuOpen] = useState(false);
     const [contextMenuX, setContextMenuX] = useState(0);
@@ -171,9 +172,24 @@ export const ProjectWorkspace = () => {
         });
 
         if (e.button === 2) {
+            let x: number;
+            let y: number;
+
+            if (contextMenuRef.current.firstElementChild) {
+                x = e.clientX >= window.innerWidth - contextMenuRef.current.firstElementChild.clientWidth
+                    ? e.clientX - contextMenuRef.current.firstElementChild.clientWidth
+                    : e.clientX;
+                y = e.clientY >= window.innerHeight - contextMenuRef.current.firstElementChild.clientHeight
+                    ? e.clientY - contextMenuRef.current.firstElementChild.clientHeight
+                    : e.clientY;
+            } else {
+                x = e.clientX + 25;
+                y = e.clientY - 40;
+            }
+
+            setContextMenuX(x);
+            setContextMenuY(y);
             setContextMenuTarget((e as any).canvasTarget ?? null);
-            setContextMenuX(e.clientX + 25);
-            setContextMenuY(e.clientY - 40);
         }
 
         return false;
@@ -182,6 +198,7 @@ export const ProjectWorkspace = () => {
     return (
         <WorkspaceContext.Provider value={{
             addInstrument: handleAddInstrument,
+            removeCanvasElement: handleDeleteCanvasElement,
             project,
             inEditMode,
             inInteractionMode,
@@ -202,12 +219,14 @@ export const ProjectWorkspace = () => {
                     </div>
 
                     <div className="relative w-full h-full z-30" onMouseDown={handleCanvasClick}>
-                        <CanvasContextMenu
-                            rightClickedElement={contextMenuTarget}
-                            open={contextMenuOpen}
-                            x={contextMenuX}
-                            y={contextMenuY}
-                        />
+                        <div ref={contextMenuRef}>
+                            <CanvasContextMenu
+                                rightClickedElement={contextMenuTarget}
+                                open={contextMenuOpen}
+                                x={contextMenuX}
+                                y={contextMenuY}
+                            />
+                        </div>
 
                         <PanelCanvas render={({ zoom }) => (
                             <>

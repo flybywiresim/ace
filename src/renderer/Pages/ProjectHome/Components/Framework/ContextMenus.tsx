@@ -9,9 +9,9 @@ export interface ContextMenuProps {
 export const ContextMenu: FC<ContextMenuProps> = ({ open, x, y, children }) => {
     const handleClick = (e: React.MouseEvent) => e.stopPropagation();
 
-    return open && (
+    return (
         <div
-            className="min-w-[260px] absolute bg-navy-lighter border-opacity-50 rounded-md shadow-md z-50 overflow-hidden divide-y-2 divide-gray-700"
+            className={`min-w-[260px] absolute bg-navy-lighter border-opacity-50 rounded-md shadow-md z-50 overflow-hidden divide-y-2 divide-gray-700 ${!open && 'invisible'}`}
             style={{ left: `${x}px`, top: `${y}px` }}
             onMouseDown={handleClick}
         >

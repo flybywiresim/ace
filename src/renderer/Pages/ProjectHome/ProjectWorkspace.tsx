@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
 import { CanvasElementFactory } from '../../Project/canvas/ElementFactory';
@@ -115,6 +115,7 @@ export const ProjectWorkspace = () => {
         }
     }, [liveReloadDispatcher]);
 
+    const contextMenuRef = useRef<HTMLDivElement>(null);
     const [contextMenuTarget, setContextMenuTarget] = useState<PossibleCanvasElements>(null);
     const [contextMenuOpen, setContextMenuOpen] = useState(false);
     const [contextMenuX, setContextMenuX] = useState(0);
@@ -129,10 +130,15 @@ export const ProjectWorkspace = () => {
             return e.button === 2;
         });
 
-        if (e.button === 2) {
+        if (e.button === 2 && contextMenuRef.current) {
+            if (e.clientX >= window.innerWidth - contextMenuRef.current.firstElementChild.clientWidth) {
+                setContextMenuX(e.clientX - contextMenuRef.current.firstElementChild.clientWidth);
+                setContextMenuY(e.clientY - 40);
+            } else {
+                setContextMenuX(e.clientX);
+                setContextMenuY(e.clientY - 40);
+            }
             setContextMenuTarget((e as any).canvasTarget ?? null);
-            setContextMenuX(e.clientX + 25);
-            setContextMenuY(e.clientY - 40);
         }
 
         return false;
@@ -161,12 +167,14 @@ export const ProjectWorkspace = () => {
                     </div>
 
                     <div className="relative w-full h-full z-30" onMouseDown={handleCanvasClick}>
-                        <CanvasContextMenu
-                            rightClickedElement={contextMenuTarget}
-                            open={contextMenuOpen}
-                            x={contextMenuX}
-                            y={contextMenuY}
-                        />
+                        <div ref={contextMenuRef}>
+                            <CanvasContextMenu
+                                rightClickedElement={contextMenuTarget}
+                                open={contextMenuOpen}
+                                x={contextMenuX}
+                                y={contextMenuY}
+                            />
+                        </div>
 
                         <PanelCanvas render={({ zoom }) => (
                             <>

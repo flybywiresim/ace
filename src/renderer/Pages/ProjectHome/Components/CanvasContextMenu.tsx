@@ -89,38 +89,42 @@ interface CanvasElementContextMenuSectionProps {
     rightClickedElement: PossibleCanvasElements,
 }
 
-const CanvasElementContextMenuSection: FC<CanvasElementContextMenuSectionProps> = ({ rightClickedElement }) => (
-    <>
-        <h4 className="px-3.5 py-2 text-gray-300">{rightClickedElement.title}</h4>
+const CanvasElementContextMenuSection: FC<CanvasElementContextMenuSectionProps> = ({ rightClickedElement }) => {
+    const { removeCanvasElement } = useWorkspace();
 
-        <div className="flex flex-col divide-y-[1px] divide-navy-lightest">
-            <ContextMenuItem inop>
-                <ContextMenuItemIcon className="text-red-500 bg-red-500 bg-opacity-10">
-                    <IconTrash size={32} strokeWidth={1.25} />
-                </ContextMenuItemIcon>
+    return (
+        <>
+            <h4 className="px-3.5 py-2 text-gray-300">{rightClickedElement.title}</h4>
 
-                <span className="text-red-500">Delete</span>
-            </ContextMenuItem>
-        </div>
+            <div className="flex flex-col divide-y-[1px] divide-navy-lightest">
+                <ContextMenuItem onClick={() => removeCanvasElement(rightClickedElement)}>
+                    <ContextMenuItemIcon className="text-red-500 bg-red-500 bg-opacity-10">
+                        <IconTrash size={32} strokeWidth={1.25} />
+                    </ContextMenuItemIcon>
 
-        <div className="flex flex-col divide-y-[1px] divide-navy-lightest">
-            <ContextMenuItem inop>
-                <ContextMenuItemIcon className="bg-teal bg-opacity-5">
-                    <IconMaximize size={32} strokeWidth={1.25} />
-                </ContextMenuItemIcon>
+                    <span className="text-red-500">Delete</span>
+                </ContextMenuItem>
+            </div>
 
-                Fill Screen
-            </ContextMenuItem>
-            <ContextMenuItem inop>
-                <ContextMenuItemIcon className="bg-teal bg-opacity-5">
-                    <IconResize size={32} strokeWidth={1.25} />
-                </ContextMenuItemIcon>
+            <div className="flex flex-col divide-y-[1px] divide-navy-lightest">
+                <ContextMenuItem inop>
+                    <ContextMenuItemIcon className="bg-teal bg-opacity-5">
+                        <IconMaximize size={32} strokeWidth={1.25} />
+                    </ContextMenuItemIcon>
 
-                Resize
-            </ContextMenuItem>
-        </div>
-    </>
-);
+                    Fill Screen
+                </ContextMenuItem>
+                <ContextMenuItem inop>
+                    <ContextMenuItemIcon className="bg-teal bg-opacity-5">
+                        <IconResize size={32} strokeWidth={1.25} />
+                    </ContextMenuItemIcon>
+
+                    Resize
+                </ContextMenuItem>
+            </div>
+        </>
+    );
+};
 
 const CanvasContextMenuAddInstrumentSubmenu: FC<ContextMenuProps> = ({ open, x, y }) => {
     const { addInstrument, project } = useWorkspace();

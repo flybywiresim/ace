@@ -32,11 +32,10 @@ export interface InstrumentDimensions {
 export interface InstrumentFrameElementProps {
     instrumentFrame: InstrumentFrame,
     zoom: number,
-    onDelete: () => void,
     onUpdate: (el: InstrumentFrame) => void,
 }
 
-export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onDelete, onUpdate }) => {
+export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onUpdate }) => {
     const { project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
@@ -138,7 +137,6 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             element={instrumentFrame}
             title={loadedInstrument.config.name}
             canvasZoom={zoom}
-            onDelete={onDelete}
             onUpdate={onUpdate}
         >
             <iframe

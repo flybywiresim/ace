@@ -157,6 +157,7 @@ export const ProjectWorkspace = () => {
     return (
         <WorkspaceContext.Provider value={{
             addInstrument: handleAddInstrument,
+            removeCanvasElement: handleDeleteCanvasElement,
             project,
             inEditMode,
             inInteractionMode,

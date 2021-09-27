@@ -198,7 +198,6 @@ export const ProjectWorkspace = () => {
                                                 key={canvasElement.title}
                                                 instrumentFrame={canvasElement}
                                                 zoom={zoom}
-                                                onDelete={() => handleDeleteCanvasElement(canvasElement)}
                                                 onUpdate={handleUpdateCanvasElement}
                                             />
                                         );

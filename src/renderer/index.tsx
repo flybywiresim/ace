@@ -8,6 +8,7 @@ import { Provider } from 'react-redux';
 import { ApplicationFrame } from './ApplicationFrame';
 import { Home } from './Pages/Home';
 import { CreateProject } from './Pages/createproject';
+import { AceConfig } from './Pages/AceConfig';
 import './index.scss';
 import { Project } from './types/Project';
 import { ProjectWorkspace } from './Pages/ProjectHome/ProjectWorkspace';
@@ -94,6 +95,7 @@ export const Main = () => {
                         <ProjectWorkspace />
                     </Route>
                     <Route exact path="/create-project" component={CreateProject} />
+                    <Route exact path="/ace-config" component={AceConfig} />
                 </ApplicationFrame>
             </ProjectContext.Provider>
         </Provider>

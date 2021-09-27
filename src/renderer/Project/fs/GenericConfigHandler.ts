@@ -1,17 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { ProjectData } from '../../index';
 
 export abstract class GenericConfigHandler<T> {
     constructor(
-        private project: ProjectData,
+        private path: string,
     ) {
     }
 
     abstract get fileName(): string;
 
-    private get filePath() {
-        return path.join(this.project.location, '.ace', this.fileName);
+    protected get filePath() {
+        return path.join(this.path, '.ace', this.fileName);
     }
 
     public loadConfig(): T {

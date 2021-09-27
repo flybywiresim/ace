@@ -102,7 +102,7 @@ export const ProjectWorkspace = () => {
                 return new LiveReloadDispatcher(project);
             });
 
-            setSimVarControlsHandler(new SimVarControlsHandler(project));
+            setSimVarControlsHandler(new SimVarControlsHandler(project.location));
         }
     }, [project]);
 

@@ -48,6 +48,7 @@ const ApplicationTabs: FC = () => {
                         onClose={() => closeProject(project)}
                         selected={history.location.pathname.includes(project.name)}
                         icon={<IconArtboard size={23} strokeWidth={1.75} />}
+                        key={project.name}
                     >
                         {project.name}
                     </Tab>

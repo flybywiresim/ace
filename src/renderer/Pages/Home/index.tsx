@@ -59,7 +59,7 @@ const RecentProjects: FC = () => {
 
             <div className="w-full flex flex-col gap-y-3">
                 {projects.map(({ name, location }) => (
-                    <RecentProjectEntry name={name} location={location} />
+                    <RecentProjectEntry name={name} location={location} key={name} />
                 ))}
             </div>
         </div>

@@ -20,6 +20,7 @@ export const EditMenu = () => {
             {availableInstruments.map((instrument) => (
                 <button
                     type="button"
+                    key={instrument}
                     onClick={() => {
                         addInstrument(instrument);
                     }}

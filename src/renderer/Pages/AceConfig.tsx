@@ -15,10 +15,10 @@ export const AceConfig: React.FC = () => {
                 onClick={() => history.push('/')}
             />
             <div className="mx-10 my-10">
-                {Object.entries(aceConfig[0].loadConfig()).map((key, value) => (
+                {Object.entries(aceConfig[0].loadConfig()).map(([key, value]) => (
                     <div className="flex flex-row px-4 py-4 justify-between bg-navy-lighter rounded-lg">
                         <div>{key}</div>
-                        <div>{value}</div>
+                        <div>{(String)(value)}</div>
                     </div>
                 ))}
             </div>

@@ -102,7 +102,7 @@ export const ProjectWorkspace = () => {
                 return new LiveReloadDispatcher(project);
             });
 
-            setSimVarControlsHandler(new SimVarControlsHandler(project));
+            setSimVarControlsHandler(new SimVarControlsHandler(project.location));
         }
     }, [project]);
 
@@ -198,7 +198,6 @@ export const ProjectWorkspace = () => {
                                                 key={canvasElement.title}
                                                 instrumentFrame={canvasElement}
                                                 zoom={zoom}
-                                                onDelete={() => handleDeleteCanvasElement(canvasElement)}
                                                 onUpdate={handleUpdateCanvasElement}
                                             />
                                         );

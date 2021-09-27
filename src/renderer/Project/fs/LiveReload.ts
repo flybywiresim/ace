@@ -1,7 +1,7 @@
 import { LiveReloadConfig } from '../../../shared/types/project/LiveReloadConfig';
-import { GenericConfigHandler } from './GenericConfigHandler';
+import { GenericProjectHandler } from './GenericProjectHandler';
 
-export class ProjectLiveReloadHandler extends GenericConfigHandler<LiveReloadConfig> {
+export class ProjectLiveReloadHandler extends GenericProjectHandler<LiveReloadConfig> {
     get fileName(): string {
         return 'live-reload.json';
     }

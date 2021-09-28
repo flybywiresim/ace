@@ -8,7 +8,7 @@ import { Provider } from 'react-redux';
 import { ApplicationFrame } from './ApplicationFrame';
 import { Home } from './Pages/Home';
 import { CreateProject } from './Pages/createproject';
-import { AceConfigurationPanel } from './Pages/AceConfig';
+import { AceConfigurationPanel } from './Pages/AceConfigurationPanel';
 import './index.scss';
 import { Project } from './types/Project';
 import { ProjectWorkspace } from './Pages/ProjectHome/ProjectWorkspace';

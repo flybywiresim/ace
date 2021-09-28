@@ -2,7 +2,7 @@ import { remote } from 'electron';
 import path from 'path';
 import { GenericConfigHandler } from './GenericConfigHandler';
 
-interface AceConfig {
+export interface AceConfig {
     richPresenceEnabled: boolean;
 }
 

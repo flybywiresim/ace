@@ -34,27 +34,30 @@ export const AceConfigurationPanel: React.FC = () => {
                 {Object.entries(tempAceConfig).map(([key, value]) => (
                     <div className="flex flex-row px-4 py-4 bg-navy-lighter justify-between items-center rounded-lg">
                         <div className="w-1/3">{key}</div>
-                        <div className="w-1/3">{`${value}`}</div>
-                        {typeof value === 'boolean'
-                            ? (
-                                <Toggle
-                                    value={value}
-                                    onToggle={(newVal) => {
-                                        const temp = JSON.parse(JSON.stringify(tempAceConfig));
-                                        temp[key as keyof AceConfig] = newVal;
-                                        setTempAceConfig(temp);
-                                    }}
-                                />
-                            )
-                            : (
-                                <input
-                                    className={`px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
+                        <div className="w-1/3 text-center">{`${value}`}</div>
+                        <div className="w-1/3">
+                            <div className="ml-auto w-min">
+                                {typeof value === 'boolean'
+                                    ? (
+                                        <Toggle
+                                            value={value}
+                                            onToggle={(newVal) => {
+                                                const temp = JSON.parse(JSON.stringify(tempAceConfig));
+                                                temp[key as keyof AceConfig] = newVal;
+                                                setTempAceConfig(temp);
+                                            }}
+                                        />
+                                    )
+                                    : (
+                                        <input
+                                            className={`px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
                                 focus-within:border-teal-light-contrast`}
-                                    value={inputValue}
-                                    onChange={(event) => setInputValue(event.target.value)}
-                                />
-                            )}
-
+                                            value={inputValue}
+                                            onChange={(event) => setInputValue(event.target.value)}
+                                        />
+                                    )}
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>

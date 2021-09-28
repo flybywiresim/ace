@@ -63,9 +63,9 @@ export const AceConfigurationPanel: React.FC = () => {
             </div>
             {showSaveMenu
             && (
-                <div className="bg-navy-lighter flex flex-row items-center justify-center absolute bottom-5 inset-x-0 rounded-md py-2 mx-auto">
+                <div className="bg-navy-lighter flex flex-row items-center max-w-5xl justify-center absolute bottom-5 inset-x-0 rounded-md py-2 px-4 mx-auto">
                     <p>You currently have unsaved changes. Abandon or save them before exiting.</p>
-                    <div className="ml-20 space-x-2">
+                    <div className="ml-20 flex flex-row flex-shrink-0 items-center space-x-2">
                         <button
                             type="button"
                             className="bg-transparent hover:underline focus:shadow-none"

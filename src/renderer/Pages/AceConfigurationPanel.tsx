@@ -80,29 +80,31 @@ export const AceConfigurationPanel: React.FC = () => {
             {showSaveMenu
             && (
                 // eslint-disable-next-line max-len
-                <div className={`flex w-full flex-row items-center max-w-5xl transition duration-300 justify-center absolute bottom-5 inset-x-0 rounded-md mx-auto py-2 px-4 ${shakeMenu ? 'shake bg-teal' : 'bg-navy-lighter'}`}>
-                    <p>You currently have unsaved changes. Abandon or save them before exiting.</p>
-                    <div className="ml-20 flex flex-row flex-shrink-0 items-center space-x-2">
-                        <button
-                            type="button"
-                            className="bg-transparent hover:underline focus:shadow-none"
-                            onClick={() => {
-                                setTempAceConfig(aceConfig[0].loadConfig());
-                                setShowSaveMenu(false);
-                            }}
-                        >
-                            Abandon Changes
-                        </button>
-                        <button
-                            type="button"
-                            className="bg-teal-light-contrast bg-opacity-30 hover:bg-opacity-50 border border-teal px-4 py-1 rounded-md focus:shadow-none transition duration-300"
-                            onClick={() => {
-                                aceConfig[0].saveConfig(tempAceConfig);
-                                setShowSaveMenu(false);
-                            }}
-                        >
-                            Save Changes
-                        </button>
+                <div className="absolute bottom-5 mx-auto inset-x-0 pb-5 px-5 max-w-5xl">
+                    <div className={`flex w-full flex-row items-center transition duration-300 justify-center rounded-md mx-auto py-2 px-4 ${shakeMenu ? 'shake bg-teal' : 'bg-navy-lighter'}`}>
+                        <p>You currently have unsaved changes. Abandon or save them before exiting.</p>
+                        <div className="ml-20 flex flex-col sm:flex-row flex-shrink-0 items-center gap-x-2">
+                            <button
+                                type="button"
+                                className="bg-transparent hover:underline focus:shadow-none py-0 my-1"
+                                onClick={() => {
+                                    setTempAceConfig(aceConfig[0].loadConfig());
+                                    setShowSaveMenu(false);
+                                }}
+                            >
+                                Abandon Changes
+                            </button>
+                            <button
+                                type="button"
+                                className="bg-teal-light-contrast bg-opacity-30 hover:bg-opacity-50 my-1 border border-teal px-4 py-1 rounded-md focus:shadow-none transition duration-300"
+                                onClick={() => {
+                                    aceConfig[0].saveConfig(tempAceConfig);
+                                    setShowSaveMenu(false);
+                                }}
+                            >
+                                Save Changes
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

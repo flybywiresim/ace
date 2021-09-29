@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { remote } from 'electron';
 import { useHistory } from 'react-router-dom';
-import { IconArrowRight, IconFolder, IconFolderPlus, IconSettings } from '@tabler/icons';
+import { IconArrowRight, IconFolder, IconFolderPlus } from '@tabler/icons';
 import { useProjects } from '../../index';
 import { RecentlyOpenedProject, RecentlyOpenedProjects } from '../../Project/recently-opened';
 
@@ -24,11 +24,6 @@ export const Home: FC = () => {
 
     return (
         <div className="relative h-full flex flex-col justify-center">
-            <IconSettings
-                size={32}
-                className="absolute cursor-pointer top-4 right-4 stroke-current text-gray-500 hover:text-white transition duration-300"
-                onClick={() => history.push('/ace-config')}
-            />
             <div className="h-72 flex flex-row justify-center items-center divide-x divide-gray-600 space-x-12">
                 <div className="w-72 h-full flex flex-col gap-y-2">
                     <h1 className="text-5xl font-medium mb-1.5">Welcome.</h1>

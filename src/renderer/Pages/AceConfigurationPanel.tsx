@@ -38,7 +38,7 @@ export const AceConfigurationPanel: React.FC = () => {
                 className={`mx-4 my-4 stroke-current text-gray-500 ${JSON.stringify(aceConfig[0].loadConfig()) === JSON.stringify(tempAceConfig) && 'hover:text-white'} cursor-pointer`}
                 onClick={() => {
                     if (JSON.stringify(aceConfig[0].loadConfig()) === JSON.stringify(tempAceConfig)) {
-                        history.push('/');
+                        history.goBack();
                     } else {
                         setShakeMenu(true);
                         setTimeout(() => setShakeMenu(false), 500);

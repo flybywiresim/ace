@@ -31,22 +31,22 @@ export abstract class GenericConfigHandler<T> {
             throw new Error(`[ProjectConfigHandler] Cannot parse '${this.fileName}': ${e.message ?? e}`);
         }
 
-        function checkMissingValues(baseConfig: T): string[] {
-            const missingVals: string[] = [];
+        function checkMissingKey(baseConfig: T): string[] {
+            const missingKeys: string[] = [];
 
             if (!baseConfig) {
-                return missingVals;
+                return missingKeys;
             }
 
             const configObjKeys = Object.keys(configObject);
 
             Object.keys(baseConfig).forEach((key) => {
                 if (!configObjKeys.includes(key)) {
-                    missingVals.push(key);
+                    missingKeys.push(key);
                 }
             });
 
-            return missingVals;
+            return missingKeys;
         }
 
         function checkConfigExtras(baseConfig: T): string[] {
@@ -67,9 +67,9 @@ export abstract class GenericConfigHandler<T> {
             return extras;
         }
 
-        if (checkMissingValues(this.createConfig()).length) {
-            checkMissingValues(this.createConfig()).forEach((missingValue) => {
-                configObject[missingValue as keyof T] = this.createConfig()[missingValue as keyof T];
+        if (checkMissingKey(this.createConfig()).length) {
+            checkMissingKey(this.createConfig()).forEach((missingKey) => {
+                configObject[missingKey as keyof T] = this.createConfig()[missingKey as keyof T];
             });
             this.saveConfig(configObject);
         }

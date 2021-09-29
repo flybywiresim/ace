@@ -48,6 +48,9 @@ In ace, run:
 Run `npm i` to install dependencies in
 Then run `npm start` to start the program
 
+After running the program, select `New Project` and choose the locations of all your folders. 
+If your folders are setup for ACE beforehand, you can select `Open Project` and select your root directory.
+
 ## Upcoming Features
 
 ### Button panels

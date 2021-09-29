@@ -47,7 +47,10 @@ export const AceConfigurationPanel: React.FC = () => {
             />
             <div className="mx-10 my-10 space-y-4">
                 {Object.entries(tempAceConfig).map(([key, value]) => (
-                    <div className="flex flex-row px-4 py-4 bg-navy-lighter justify-between items-center rounded-lg">
+                    <div
+                        className="flex flex-row px-4 py-4 bg-navy-lighter justify-between items-center rounded-lg"
+                        key={key}
+                    >
                         <div className="w-1/3">{key}</div>
                         <div className="w-1/3 text-center">{`${aceConfig[0].loadConfig()[key as keyof AceConfig]}`}</div>
                         <div className="w-1/3">

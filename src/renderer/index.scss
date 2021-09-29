@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Nova+Mono&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nova+Mono&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -10,35 +10,38 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
   margin: auto;
   @apply w-full h-full bg-navy text-white;
 }
 
-button, select, input:not([type=range]) {
+button,
+select,
+input:not([type="range"]) {
   transition: 100ms;
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(#00C2CC, 0.5);
+    box-shadow: 0 0 0 3px rgba(#00c2cc, 0.5);
   }
 
-  @apply px-2 py-1 rounded-md bg-navy-dark
+  @apply px-2 py-1 rounded-md bg-navy-dark;
 }
 
 h1 {
-  @apply text-3xl
+  @apply text-3xl;
 }
 
 h2 {
-  @apply text-2xl
+  @apply text-2xl;
 }
 
 h3 {
-  @apply text-xl
+  @apply text-xl;
 }
 
-input[type=range] {
+input[type="range"] {
   -webkit-appearance: none;
 
   &::-webkit-slider-runnable-track {
@@ -52,7 +55,7 @@ input[type=range] {
     width: 1.1em;
     border-radius: 50%;
     margin-top: -0.45em;
-    background: #00C2CC;
+    background: #00c2cc;
     transition: 100ms;
 
     &:hover {
@@ -61,7 +64,7 @@ input[type=range] {
   }
 
   &:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 3px rgba(#00C2CC, 0.5);
+    box-shadow: 0 0 0 3px rgba(#00c2cc, 0.5);
   }
 }
 
@@ -73,11 +76,55 @@ input[type=range] {
   animation: drop 2.5s ease-out;
 
   @keyframes drop {
-    from, to {
+    from,
+    to {
       top: 0;
     }
-    8%, 92% {
+    8%,
+    92% {
       top: 4.5em;
+    }
+  }
+}
+
+.shake {
+  animation: shake 0.5s;
+
+  animation-iteration-count: infinite;
+
+  @keyframes shake {
+    0% {
+      transform: translate(1px, 1px) rotate(0deg);
+    }
+    10% {
+      transform: translate(-1px, -2px) rotate(-1deg);
+    }
+    20% {
+      transform: translate(-3px, 0px) rotate(1deg);
+    }
+    30% {
+      transform: translate(3px, 2px) rotate(0deg);
+    }
+    40% {
+      transform: translate(1px, -1px) rotate(1deg);
+    }
+    50% {
+      transform: translate(-1px, 2px) rotate(-1deg);
+    }
+    60% {
+      transform: translate(-3px, 1px) rotate(0deg);
+    }
+    70% {
+      transform: translate(3px, 1px) rotate(-1deg);
+    }
+    80% {
+      transform: translate(-1px, -1px) rotate(1deg);
+    }
+    90% {
+      transform: translate(1px, 2px) rotate(0deg);
+    }
+    100% {
+      transform: translate(1px, -2px) rotate(-1deg);
     }
   }
 }

@@ -10,6 +10,7 @@ export const AceConfigurationPanel: React.FC = () => {
 
     const [tempAceConfig, setTempAceConfig] = useState(aceConfig[0].loadConfig());
     const [showSaveMenu, setShowSaveMenu] = useState(false);
+    const [shakeMenu, setShakeMenu] = useState(false);
 
     useEffect(() => {
         const areDifferent = JSON.stringify(aceConfig[0].loadConfig()) !== JSON.stringify(tempAceConfig);
@@ -38,6 +39,9 @@ export const AceConfigurationPanel: React.FC = () => {
                 onClick={() => {
                     if (JSON.stringify(aceConfig[0].loadConfig()) === JSON.stringify(tempAceConfig)) {
                         history.push('/');
+                    } else {
+                        setShakeMenu(true);
+                        setTimeout(() => setShakeMenu(false), 500);
                     }
                 }}
             />
@@ -72,7 +76,8 @@ export const AceConfigurationPanel: React.FC = () => {
             </div>
             {showSaveMenu
             && (
-                <div className="bg-navy-lighter flex flex-row items-center max-w-5xl justify-center absolute bottom-5 inset-x-0 rounded-md py-2 px-4 mx-auto">
+                // eslint-disable-next-line max-len
+                <div className={`flex w-full flex-row items-center max-w-5xl transition duration-300 justify-center absolute bottom-5 inset-x-0 rounded-md mx-auto py-2 px-4 ${shakeMenu ? 'shake bg-teal' : 'bg-navy-lighter'}`}>
                     <p>You currently have unsaved changes. Abandon or save them before exiting.</p>
                     <div className="ml-20 flex flex-row flex-shrink-0 items-center space-x-2">
                         <button
@@ -87,7 +92,7 @@ export const AceConfigurationPanel: React.FC = () => {
                         </button>
                         <button
                             type="button"
-                            className="bg-green-500 hover:bg-green-600 px-4 py-1 rounded-md focus:shadow-none transition duration-300"
+                            className="bg-teal-light-contrast bg-opacity-30 hover:bg-opacity-50 border border-teal px-4 py-1 rounded-md focus:shadow-none transition duration-300"
                             onClick={() => {
                                 aceConfig[0].saveConfig(tempAceConfig);
                                 setShowSaveMenu(false);

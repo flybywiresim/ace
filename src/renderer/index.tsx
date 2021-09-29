@@ -14,6 +14,7 @@ import { Project } from './types/Project';
 import { ProjectWorkspace } from './Pages/ProjectHome/ProjectWorkspace';
 import { store } from './Store';
 import { RecentlyOpenedProjects } from './Project/recently-opened';
+import { AceConfigHandler } from './Project/fs/AceConfigHandler';
 
 export type ProjectData = Project & { location: string };
 

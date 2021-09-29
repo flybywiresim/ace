@@ -1,9 +1,10 @@
 import { v4 as UUID } from 'uuid';
-import { GenericListConfigHandler, ListConfig } from './GenericListConfigHandler';
+import { ListConfig } from './GenericListConfigHandler';
 import { SimVarControl, SimVarControlStyleTypes } from '../../../shared/types/project/SimVarControl';
 import { SimVarPrefix } from '../../../shared/types/SimVar';
+import { GenericProjectListConfigHandler } from './GenericProjectListConfigHandler';
 
-export class SimVarControlsHandler extends GenericListConfigHandler<SimVarControl> {
+export class SimVarControlsHandler extends GenericProjectListConfigHandler<SimVarControl> {
     get fileName(): string {
         return 'simvars.json';
     }

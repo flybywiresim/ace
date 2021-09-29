@@ -6,7 +6,7 @@ import { AceConfig, AceConfigHandler } from '../Project/fs/AceConfigHandler';
 
 export const AceConfigurationPanel: React.FC = () => {
     const history = useHistory();
-    const aceConfig = useState(() => new AceConfigHandler(''));
+    const aceConfig = useState(() => new AceConfigHandler());
 
     const [tempAceConfig, setTempAceConfig] = useState(aceConfig[0].loadConfig());
     const [showSaveMenu, setShowSaveMenu] = useState(false);

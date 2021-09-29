@@ -36,7 +36,7 @@ export const Main = () => {
     }
 
     const loadProject = (location: string) => {
-        const aceConfig = new AceConfigHandler('').loadConfig();
+        const aceConfig = new AceConfigHandler().loadConfig();
 
         if (!fs.existsSync(`${location}/.ace/project.json`)) {
             window.alert(`Project Doesn't exist in: ${location}`);

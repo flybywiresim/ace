@@ -7,8 +7,12 @@ export interface AceConfig {
 }
 
 export class AceConfigHandler extends GenericConfigHandler<AceConfig> {
+    constructor() {
+        super('');
+    }
+
     get fileName(): string {
-        return 'aceconfig';
+        return 'ace-config.json';
     }
 
     get filePath(): string {

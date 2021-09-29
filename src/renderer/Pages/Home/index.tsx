@@ -23,7 +23,7 @@ export const Home: FC = () => {
     };
 
     return (
-        <div className="h-full flex flex-col justify-center">
+        <div className="relative h-full flex flex-col justify-center">
             <div className="h-72 flex flex-row justify-center items-center divide-x divide-gray-600 space-x-12">
                 <div className="w-72 h-full flex flex-col gap-y-2">
                     <h1 className="text-5xl font-medium mb-1.5">Welcome.</h1>

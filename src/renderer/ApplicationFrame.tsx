@@ -1,4 +1,4 @@
-import { IconArtboard, IconX } from '@tabler/icons';
+import { IconArtboard, IconSettings, IconX } from '@tabler/icons';
 import { remote } from 'electron';
 import React, { FC, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -56,7 +56,16 @@ const ApplicationTabs: FC = () => {
 
             <span className="w-full h-full webkit-drag" />
 
-            <span className="h-full flex flex-row ml-auto">
+            <span className="h-full flex flex-row ml-auto items-center">
+                <div
+                    className="flex items-center justify-center mr-5 w-10 group transition bg-navy-lightest hover:bg-navy-light h-full duration-3000 cursor-pointer"
+                    onClick={() => history.push('/ace-config')}
+                >
+                    <IconSettings
+                        size={24}
+                        className="stroke-current text-gray-500 group-hover:text-white duration-300"
+                    />
+                </div>
                 <WindowsControl minimize whiteIcon onClick={handleMinimize} />
                 <WindowsControl maximize whiteIcon onClick={handleMaximize} />
                 <WindowsControl close whiteIcon onClick={handleClose} />

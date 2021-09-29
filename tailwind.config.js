@@ -2,9 +2,19 @@
 
 const defaultTheme = require('tailwindcss/defaultTheme');
 
+const reactComponentsClasses = require('./node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
+
 module.exports = {
     mode: 'jit',
-    purge: ['./src/**/*.{js,ts,jsx,tsx}'],
+    purge: {
+        enabled: true,
+        content: [
+            './src/**/*.{js,ts,jsx,tsx}',
+        ],
+        safelist: [
+            ...reactComponentsClasses,
+        ],
+    },
     darkMode: false, // or 'media' or 'class'
     theme: {
         fontFamily: {

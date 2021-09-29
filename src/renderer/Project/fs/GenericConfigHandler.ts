@@ -1,17 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { ProjectData } from '../../index';
 
 export abstract class GenericConfigHandler<T> {
     constructor(
-        private project: ProjectData,
+        private path: string,
     ) {
     }
 
     abstract get fileName(): string;
 
-    private get filePath() {
-        return path.join(this.project.location, '.ace', this.fileName);
+    protected get filePath() {
+        return path.join(this.path, '.ace', this.fileName);
     }
 
     public loadConfig(): T {
@@ -30,6 +29,57 @@ export abstract class GenericConfigHandler<T> {
             configObject = JSON.parse(configContents);
         } catch (e: any) {
             throw new Error(`[ProjectConfigHandler] Cannot parse '${this.fileName}': ${e.message ?? e}`);
+        }
+
+        function checkMissingKey(baseConfig: T): string[] {
+            const missingKeys: string[] = [];
+
+            if (!baseConfig) {
+                return missingKeys;
+            }
+
+            const configObjKeys = Object.keys(configObject);
+
+            Object.keys(baseConfig).forEach((key) => {
+                if (!configObjKeys.includes(key)) {
+                    missingKeys.push(key);
+                }
+            });
+
+            return missingKeys;
+        }
+
+        function checkConfigExtras(baseConfig: T): string[] {
+            const extras: string[] = [];
+
+            if (!baseConfig) {
+                return extras;
+            }
+
+            const baseConfigObjKeys = Object.keys(baseConfig);
+
+            Object.keys(configObject).forEach((key) => {
+                if (!baseConfigObjKeys.includes(key)) {
+                    extras.push(key);
+                }
+            });
+
+            return extras;
+        }
+
+        if (checkMissingKey(this.createConfig()).length) {
+            checkMissingKey(this.createConfig()).forEach((missingKey) => {
+                configObject[missingKey as keyof T] = this.createConfig()[missingKey as keyof T];
+            });
+            this.saveConfig(configObject);
+        }
+
+        if (checkConfigExtras(this.createConfig()).length) {
+            checkConfigExtras(this.createConfig()).forEach((extra) => {
+                delete configObject[extra as keyof T];
+                this.saveConfig(configObject);
+            });
+            this.saveConfig(configObject);
         }
 
         return configObject;

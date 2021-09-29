@@ -105,6 +105,7 @@
     "worker-loader": "^3.0.8"
   },
   "dependencies": {
+    "@flybywiresim/react-components": "^0.3.2",
     "@reduxjs/toolkit": "^1.6.1",
     "@tabler/icons": "^1.41.2",
     "cors": "^2.8.5",

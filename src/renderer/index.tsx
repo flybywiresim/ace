@@ -36,6 +36,8 @@ export const Main = () => {
     }
 
     const loadProject = (location: string) => {
+        const aceConfig = new AceConfigHandler('').loadConfig();
+
         if (!fs.existsSync(`${location}/.ace/project.json`)) {
             window.alert(`Project Doesn't exist in: ${location}`);
             return;
@@ -60,6 +62,11 @@ export const Main = () => {
         RecentlyOpenedProjects.save(recentlyOpenedProjects);
 
         ipcRenderer.send('load-project', project.paths.htmlUiSrc);
+
+        if (aceConfig.richPresenceEnabled) {
+            ipcRenderer.send('set-rpc-state', `Working on ${project.name}`);
+        }
+
         history.push(`/project/${project.name}`);
         setProjects((p) => [...p, { ...project, location }]);
     };

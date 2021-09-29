@@ -2,6 +2,7 @@ import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-insta
 import { app, BrowserWindow, ipcMain } from 'electron';
 import express from 'express';
 import cors from 'cors';
+import RPC from 'discord-rpc';
 
 const PORT = 39511;
 const statics: string[] = [];
@@ -75,5 +76,28 @@ app.on('activate', () => {
     }
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+// Discord RPC Handling
+
+const DISCORD_CLIENT_ID = '891850893530652712';
+
+const client = new RPC.Client({ transport: 'ipc' });
+
+console.log('Logging in to Discord RPC...');
+
+client.on('ready', () => {
+    client.setActivity({
+        largeImageKey: 'ace-icon-large',
+        state: 'Idling',
+    }).then();
+});
+
+// Log in to RPC with client id
+client.login({ clientId: DISCORD_CLIENT_ID }).catch(console.error);
+
+// Handle state updates from renderer
+ipcMain.on('set-rpc-state', (_, state: string) => {
+    client.setActivity({
+        largeImageKey: 'ace-icon-large',
+        state,
+    }).then();
+});

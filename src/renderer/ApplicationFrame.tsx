@@ -1,6 +1,6 @@
 import { IconArtboard, IconSettings, IconX } from '@tabler/icons';
 import { remote } from 'electron';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 import { WindowsControl } from 'react-windows-controls';
 import { useProjects } from './index';
@@ -8,18 +8,32 @@ import { Notification, NotificationsContainer } from './Notifications';
 import { useAppDispatch, useAppSelector } from './Store';
 import { popNotification } from './Store/actions/notifications.actions';
 
-export const ApplicationFrame: FC = ({ children }) => (
-    <main className="w-full h-full flex flex-col">
-        <ApplicationTabs />
-        <ApplicationNotifications />
+interface ApplicationTabsType {
+    locked: boolean;
+    setLocked: (newLockValue: boolean) => void;
+}
 
-        {children}
-    </main>
-);
+export const ApplicationTabsContext = React.createContext<ApplicationTabsType>(undefined as any);
+
+export const ApplicationFrame: FC = ({ children }) => {
+    const [isLocked, setIsLocked] = useState(false);
+
+    return (
+        <ApplicationTabsContext.Provider value={{ locked: isLocked, setLocked: setIsLocked }}>
+            <main className="w-full h-full flex flex-col">
+                <ApplicationTabs />
+                <ApplicationNotifications />
+
+                {children}
+            </main>
+        </ApplicationTabsContext.Provider>
+    );
+};
 
 const ApplicationTabs: FC = () => {
     const history = useHistory();
     const { projects, closeProject } = useProjects();
+    const { locked } = useContext(ApplicationTabsContext);
 
     const handleMinimize = () => {
         remote.getCurrentWindow().minimize();
@@ -41,10 +55,23 @@ const ApplicationTabs: FC = () => {
             </span>
 
             <div className="flex flex-row items-center gap-x-0.5">
-                <Tab onClick={() => history.push('/')} selected={history.location.pathname.length === 1}>Home</Tab>
+                <Tab
+                    onClick={() => {
+                        if (!locked) {
+                            history.push('/');
+                        }
+                    }}
+                    selected={history.location.pathname.length === 1}
+                >
+                    Home
+                </Tab>
                 {projects.map((project) => (
                     <Tab
-                        onClick={() => history.push(`/project/${project.name}`)}
+                        onClick={() => {
+                            if (!locked) {
+                                history.push(`/project/${project.name}`);
+                            }
+                        }}
                         onClose={() => closeProject(project)}
                         selected={history.location.pathname.includes(project.name)}
                         icon={<IconArtboard size={23} strokeWidth={1.75} />}

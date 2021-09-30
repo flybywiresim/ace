@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useHistory } from 'react-router';
 import { IconArrowNarrowLeft } from '@tabler/icons';
 import { Toggle } from '@flybywiresim/react-components';
 import { AceConfig, AceConfigHandler } from '../Project/fs/AceConfigHandler';
+import { ApplicationTabsContext } from '../ApplicationFrame';
 
 export const AceConfigurationPanel: React.FC = () => {
     const history = useHistory();
     const aceConfig = useState(() => new AceConfigHandler());
+    const { setLocked } = useContext(ApplicationTabsContext);
 
     const [tempAceConfig, setTempAceConfig] = useState(aceConfig[0].loadConfig());
     const [showSaveMenu, setShowSaveMenu] = useState(false);
@@ -14,6 +16,12 @@ export const AceConfigurationPanel: React.FC = () => {
 
     useEffect(() => {
         const areDifferent = JSON.stringify(aceConfig[0].loadConfig()) !== JSON.stringify(tempAceConfig);
+
+        if (areDifferent) {
+            setLocked(true);
+        } else {
+            setLocked(false);
+        }
 
         setShowSaveMenu(areDifferent);
     }, Object.values(tempAceConfig));

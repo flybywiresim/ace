@@ -108,6 +108,7 @@ export const AceConfigurationPanel: React.FC = () => {
                                 onClick={() => {
                                     aceConfig[0].saveConfig(tempAceConfig);
                                     setShowSaveMenu(false);
+                                    setLocked(false);
                                 }}
                             >
                                 Save Changes

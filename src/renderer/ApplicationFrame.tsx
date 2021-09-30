@@ -58,7 +58,7 @@ const ApplicationTabs: FC = () => {
 
             <span className="h-full flex flex-row ml-auto items-center">
                 <div
-                    className="flex items-center justify-center mr-5 w-10 group transition bg-navy-lightest hover:bg-navy-light h-full duration-3000 cursor-pointer"
+                    className="flex items-center justify-center mr-5 w-10 group transition bg-navy-lightest hover:bg-navy-light h-full duration-300 cursor-pointer"
                     onClick={() => history.push('/ace-config')}
                 >
                     <IconSettings

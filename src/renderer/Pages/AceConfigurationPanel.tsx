@@ -35,9 +35,9 @@ export const AceConfigurationPanel: React.FC = () => {
         <div className="h-full w-screen">
             <IconArrowNarrowLeft
                 size={32}
-                className={`mx-4 my-4 stroke-current text-gray-500 ${JSON.stringify(aceConfig[0].loadConfig()) === JSON.stringify(tempAceConfig) && 'hover:text-white'} cursor-pointer`}
+                className={`mx-4 my-4 stroke-current text-gray-500 ${!showSaveMenu && 'hover:text-white'} cursor-pointer`}
                 onClick={() => {
-                    if (JSON.stringify(aceConfig[0].loadConfig()) === JSON.stringify(tempAceConfig)) {
+                    if (!showSaveMenu) {
                         history.goBack();
                     } else {
                         setShakeMenu(true);

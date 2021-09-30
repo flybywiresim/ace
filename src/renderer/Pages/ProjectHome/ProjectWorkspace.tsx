@@ -14,7 +14,7 @@ import { Grid } from '../Canvas/Grid';
 import { useAppDispatch } from '../../Store';
 import { pushNotification } from '../../Store/actions/notifications.actions';
 import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
-import { SimVarControlsHandler } from '../../Project/fs/SimVarControlsHandler';
+import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { CanvasContextMenu } from './Components/CanvasContextMenu';
 
 export const ProjectWorkspace = () => {
@@ -102,7 +102,7 @@ export const ProjectWorkspace = () => {
                 return new LiveReloadDispatcher(project);
             });
 
-            setSimVarControlsHandler(new SimVarControlsHandler(project.location));
+            setSimVarControlsHandler(new SimVarControlsHandler(project));
         }
     }, [project]);
 

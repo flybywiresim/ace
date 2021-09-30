@@ -54,7 +54,7 @@ const ApplicationTabs: FC = () => {
                 <span className="text-teal">2</span>
             </span>
 
-            <div className="flex flex-row items-center gap-x-0.5">
+            <div className={`flex flex-row items-center gap-x-0.5 ${locked && 'text-gray-600'}`}>
                 <Tab
                     onClick={() => {
                         if (!locked) {

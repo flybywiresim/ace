@@ -26,7 +26,15 @@ input:not([type="range"]) {
     box-shadow: 0 0 0 3px rgba(#00c2cc, 0.5);
   }
 
-  @apply px-2 py-1 rounded-md bg-navy-dark;
+  @apply px-2 py-2 rounded-md bg-navy-medium border border-navy;
+}
+
+button {
+  @apply text-xl;
+
+  &[disabled] {
+    @apply text-opacity-50 bg-opacity-50 cursor-not-allowed;
+  }
 }
 
 h1 {
@@ -38,7 +46,7 @@ h2 {
 }
 
 h3 {
-  @apply text-xl;
+  @apply text-xl mt-4 mb-2.5;
 }
 
 input[type="range"] {
@@ -55,7 +63,7 @@ input[type="range"] {
     width: 1.1em;
     border-radius: 50%;
     margin-top: -0.45em;
-    background: #00c2cc;
+    background: rgb(16, 185, 129);
     transition: 100ms;
 
     &:hover {

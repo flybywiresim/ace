@@ -1,24 +1,14 @@
 import React, { FC, FocusEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { SimVarControlEditor } from './SimVarControlEditor';
-import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../../../shared/types/project/SimVarControl';
+import { IconPencil, IconTrash } from '@tabler/icons';
+import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../../../../shared/types/project/SimVarControl';
 
-export type SimVarEditorProps = {
-    name: string;
-    unit?: string;
-    simVar: string;
-    initialState?: any;
-    style: SimVarControlStyle;
-    max?: number;
-    min?: number;
-    step?: number;
-};
-
-interface SimVarEditorProps2 {
+interface SimVarEditorProps {
     simVarControl: SimVarControl,
-    onEdit: (newControl: SimVarControl) => void,
+    onEdit?: () => void,
+    onDelete?: () => void,
 }
 
-export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarControl, onEdit }) => {
+export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarControl, onEdit, onDelete }) => {
     const valueRef = useRef<HTMLSpanElement>();
 
     const normalizeTextValue = (state: string) => {
@@ -31,10 +21,25 @@ export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarContr
         return parsedFloat;
     };
 
+    const defaultValueForControlStyle = (style: SimVarControlStyle) => {
+        switch (style.type) {
+        case SimVarControlStyleTypes.CHECKBOX:
+            return false;
+        case SimVarControlStyleTypes.NUMBER:
+            return 0;
+        case SimVarControlStyleTypes.RANGE:
+            return (style.min + style.max) / 2;
+        case SimVarControlStyleTypes.TEXT_INPUT:
+            return '';
+        default:
+            return 0;
+        }
+    };
+
     const [state, handleSetState] = useState<any>(() => {
         const rawValue = window.localStorage.getItem(simVarControl.varName);
 
-        return normalizeTextValue(rawValue);
+        return normalizeTextValue(JSON.parse(rawValue) ?? defaultValueForControlStyle(simVarControl.style));
     });
 
     useEffect(() => {
@@ -47,14 +52,12 @@ export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarContr
         }
     }, [simVarControl.varName, state]);
 
-    const [editorShown, setEditorShown] = useState(false);
-
     return (
-        <div className="relative">
-            <div className="flex flex-col justify-start gap-y-1">
+        <div className="py-3.5">
+            <div className="flex flex-col justify-start gap-y-4">
                 <h1 className="text-lg font-medium">{simVarControl.title}</h1>
 
-                <div className="flex flex-row items-center gap-x-3">
+                <div className="flex flex-row justify-end items-center gap-x-3.5">
                     {(simVarControl.style.type === SimVarControlStyleTypes.TEXT_INPUT
                         || simVarControl.style.type === SimVarControlStyleTypes.NUMBER
                         || simVarControl.style.type === SimVarControlStyleTypes.RANGE
@@ -83,17 +86,19 @@ export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarContr
                         />
                     )}
 
-                    <button type="button" className="ml-auto text-teal-light ml-auto" onClick={() => setEditorShown((old) => !old)}>Edit</button>
+                    <IconTrash
+                        size={28}
+                        className="text-gray-500 cursor-pointer hover:text-green-500"
+                        onClick={onDelete}
+                    />
+
+                    <IconPencil
+                        size={28}
+                        className="text-gray-500 cursor-pointer hover:text-green-500"
+                        onClick={onEdit}
+                    />
                 </div>
             </div>
-
-            {editorShown && (
-                <SimVarControlEditor
-                    originalControl={simVarControl}
-                    onCancel={() => setEditorShown(false)}
-                    onSave={onEdit}
-                />
-            )}
         </div>
     );
 };
@@ -118,16 +123,22 @@ const EditableSimVarControlValue: FC<EditableSimVarControlValueProps> = ({ value
     }, [onInput]);
 
     return (
-        <code className="font-semibold text-teal-light">
+        <code className="mr-auto font-semibold">
             <span
                 ref={editSpanRef}
                 contentEditable
                 suppressContentEditableWarning
-                className="outline-none bg-navy-dark rounded-md p-1"
+                className="inline-block outline-none bg-navy-medium text-green-500 rounded-md px-2 py-1"
                 onBlur={handleBlur}
+                style={{
+                    minWidth: '4rem',
+                    maxWidth: '8rem',
+                }}
             />
             {' '}
-            {unit}
+            <span className="text-green-400">
+                {unit}
+            </span>
         </code>
     );
 };
@@ -141,13 +152,13 @@ interface RangeSimVarControlProps {
 }
 
 const RangeSimVarControl: FC<RangeSimVarControlProps> = ({ min, max, step, value, onInput }) => {
-    const valuePercentage = Math.round((value / max) * 100);
+    const valuePercentage = Math.round(((value - min) / (max - min)) * 100);
 
     return (
         <div className="mb-1 ml-auto">
             <input
-                style={{ background: `linear-gradient(to right, #136177 0%, #136177 ${valuePercentage}%, #36465E ${valuePercentage}%, #36465E 100%)` }}
-                className="w-full}"
+                style={{ background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${valuePercentage}%, #36465E ${valuePercentage}%, #36465E 100%)` }}
+                className="w-44"
                 type="range"
                 value={value}
                 onChange={(e) => onInput(parseInt(e.target.value))}

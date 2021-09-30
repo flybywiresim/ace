@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 
 export const Toolbar: FC = ({ children }) => (
-    <div className="flex flex-col gap-y-3">
+    <div className="h-full flex flex-col gap-y-3">
         {children}
     </div>
 );
@@ -88,7 +88,7 @@ export const ToolbarItem: FC<ToolbarItemProps> = ({ onClick, onToggle, color = T
             </span>
 
             {(popoverOpen || visible) && RenderPopover && (
-                <div className="absolute left-28 bg-navy px-4 py-2.5 rounded-md" style={{ top: `${buttonRect.current.y - buttonRect.current.height + 4}px` }}>
+                <div className="absolute min-w-max h-full left-28 flex" style={{ top: 0 }}>
                     <RenderPopover />
                 </div>
             )}
@@ -98,4 +98,10 @@ export const ToolbarItem: FC<ToolbarItemProps> = ({ onClick, onToggle, color = T
 
 export const ToolbarSeparator: FC = () => (
     <span className="w-[48px] h-[1.5px] ml-1 my-0.5 bg-navy-lightest" />
+);
+
+export const SideMenu: FC<{ className?: string }> = ({ className, children }) => (
+    <div className={`${className} flex flex-col h-full p-5 rounded-sm`} style={{ top: 0 }}>
+        {children}
+    </div>
 );

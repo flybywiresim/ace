@@ -3,7 +3,7 @@ import { ProjectData } from '../../index';
 import { ProjectLiveReloadHandler } from '../../Project/fs/LiveReload';
 import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
-// import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
+import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
 import { LocalShim } from '../../shims/LocalShim';
 
@@ -21,6 +21,7 @@ type WorkspaceContextType = {
     handlers: {
         liveReload: ProjectLiveReloadHandler,
         simVarControls: SimVarControlsHandler,
+        simVarPresetsHandler: SimVarPresetsHandler,
     }
 }
 

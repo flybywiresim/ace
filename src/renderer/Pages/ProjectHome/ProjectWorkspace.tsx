@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router';
+import React, { useCallback, useEffect, useState, useRef, FC } from 'react';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
-import { CanvasElementFactory } from '../../Project/canvas/ElementFactory';
+import { ElementFactory } from '../../Project/canvas/ElementFactory';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
 import { InteractionToolbar } from './Components/InteractionToolbar';
 import { PanelCanvas } from '../PanelCanvas';
 import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
-import { useProjects } from '../..';
+import { ProjectData } from '../..';
 import { WorkspaceContext } from './WorkspaceContext';
 import { ProjectLiveReloadHandler } from '../../Project/fs/LiveReload';
 import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
@@ -16,11 +15,17 @@ import { pushNotification } from '../../Store/actions/notifications.actions';
 import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { CanvasContextMenu } from './Components/CanvasContextMenu';
+import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
+import { useProjectDispatch } from './Store';
+import { loadControls } from './Store/actions/simVarElements.actions';
 import { LocalShim } from '../../shims/LocalShim';
+import { setProjectData } from './Store/actions/projectData.actions';
 
-export const ProjectWorkspace = () => {
-    const { name } = useParams<{ name: string }>();
-    const project = useProjects().projects.find((project) => project.name === name);
+export interface ProjectWorkspaceProps {
+    project: ProjectData,
+}
+
+export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     const [localShim] = useState(new LocalShim());
     const [inInteractionMode, setInInteractionMode] = useState(false);
 
@@ -59,7 +64,7 @@ export const ProjectWorkspace = () => {
     }, [doLoadProjectCanvasSave, project]);
 
     const handleAddInstrument = (instrument: string) => {
-        const newInstrumentPanel = CanvasElementFactory.newInstrumentPanel({
+        const newInstrumentPanel = ElementFactory.newInstrumentPanel({
             title: instrument,
             instrumentName: instrument,
             position: {
@@ -98,6 +103,7 @@ export const ProjectWorkspace = () => {
     }, [liveReloadDispatcher]);
 
     const [simVarControlsHandler, setSimVarControlsHandler] = useState<SimVarControlsHandler>(null);
+    const [simVarPresetsHandler, setSimVarPresetsHandler] = useState<SimVarPresetsHandler>(null);
 
     useEffect(() => {
         if (project) {
@@ -110,12 +116,31 @@ export const ProjectWorkspace = () => {
             });
 
             setSimVarControlsHandler(new SimVarControlsHandler(project));
+            setSimVarPresetsHandler(new SimVarPresetsHandler(project));
         }
 
         return () => {
             liveReloadDispatcherRef.current?.stopWatching();
         };
     }, [project]);
+
+    const projectDispatch = useProjectDispatch();
+
+    useEffect(() => {
+        projectDispatch(setProjectData(project));
+    }, [project, projectDispatch]);
+
+    useEffect(() => {
+        if (simVarControlsHandler) {
+            const controls = simVarControlsHandler.loadConfig()?.elements;
+
+            if (controls) {
+                projectDispatch(loadControls(controls));
+            } else {
+                throw new Error('[ProjectWorkspace] Could not load simvar controls from handler.');
+            }
+        }
+    }, [projectDispatch, simVarControlsHandler]);
 
     const startLiveReload = useCallback(() => {
         if (liveReloadDispatcher) {
@@ -180,12 +205,13 @@ export const ProjectWorkspace = () => {
             handlers: {
                 liveReload: liveReloadConfigHandler,
                 simVarControls: simVarControlsHandler,
+                simVarPresetsHandler,
             },
         }}
         >
             {project && (
                 <div className="w-full h-full flex overflow-hidden">
-                    <div className="absolute z-40 p-7">
+                    <div className="absolute z-40 p-7" style={{ height: 'calc(100% - 3rem)' }}>
                         <InteractionToolbar />
                     </div>
 

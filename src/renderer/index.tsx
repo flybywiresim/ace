@@ -15,6 +15,7 @@ import { ProjectWorkspace } from './Pages/ProjectHome/ProjectWorkspace';
 import { store } from './Store';
 import { RecentlyOpenedProjects } from './Project/recently-opened';
 import { AceConfigHandler } from './Project/fs/AceConfigHandler';
+import { ProjectWorkspaceContainer } from './Pages/ProjectHome/ProjectWorkspaceContainer';
 
 export type ProjectData = Project & { location: string };
 
@@ -110,7 +111,10 @@ export const Main = () => {
                 <ApplicationFrame>
                     <Route exact path="/" component={Home} />
                     <Route path="/project/:name">
-                        <ProjectWorkspace />
+                        <ProjectWorkspaceContainer render={(project) => (
+                            <ProjectWorkspace project={project} />
+                        )}
+                        />
                     </Route>
                     <Route exact path="/create-project" component={CreateProject} />
                     <Route exact path="/ace-config" component={AceConfigurationPanel} />

@@ -1,6 +1,6 @@
 import { IconArtboard, IconSettings, IconX } from '@tabler/icons';
-import { remote, ipcRenderer } from 'electron';
-import React, { FC, useEffect, useState, useContext } from 'react';
+import { ipcRenderer, remote } from 'electron';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { WindowsControl } from 'react-windows-controls';
 import { useProjects } from './index';
@@ -53,7 +53,7 @@ const ApplicationTabs: FC = () => {
     };
 
     return (
-        <section className="flex flex-row items-center bg-navy-lighter shadow-md z-50">
+        <section className="h-12 flex flex-row items-center bg-navy-lighter shadow-md z-50">
             <span className="w-40 flex flex-row justify-center text-2xl font-mono">
                 <span>ACE</span>
                 <span className="text-teal">2</span>
@@ -72,6 +72,7 @@ const ApplicationTabs: FC = () => {
                 </Tab>
                 {projects.map((project) => (
                     <Tab
+                        key={project.name}
                         onClick={() => {
                             if (!locked) {
                                 history.push(`/project/${project.name}`);

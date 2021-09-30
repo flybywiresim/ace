@@ -146,7 +146,7 @@ const CanvasContextMenuAddInstrumentSubmenu: FC<ContextMenuProps> = ({ open, x, 
     return (
         <ContextMenu open={open} x={x} y={y}>
             {availableInstruments.map((instrument) => (
-                <ContextMenuItem onClick={() => handleAddInstrument(instrument)}>
+                <ContextMenuItem key={instrument} onClick={() => handleAddInstrument(instrument)}>
                     <ContextMenuItemIcon className="text-purple-400 bg-purple-400 bg-opacity-5">
                         <IconRectangle size={28} strokeWidth={1.25} />
                     </ContextMenuItemIcon>

@@ -86,7 +86,7 @@ export abstract class GenericConfigHandler<T> {
     }
 
     public saveConfig(object: T): void {
-        const configContents = JSON.stringify(object);
+        const configContents = JSON.stringify(object, null, 4);
 
         fs.writeFileSync(this.filePath, configContents);
     }

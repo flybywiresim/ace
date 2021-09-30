@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useHistory } from 'react-router';
 import { IconArrowNarrowLeft } from '@tabler/icons';
 import { Toggle } from '@flybywiresim/react-components';
+import { ipcRenderer } from 'electron';
 import { AceConfig, AceConfigHandler } from '../Project/fs/AceConfigHandler';
 import { ApplicationTabsContext } from '../ApplicationFrame';
 
@@ -37,6 +38,16 @@ export const AceConfigurationPanel: React.FC = () => {
         const temp = JSON.parse(JSON.stringify(tempAceConfig));
         temp[key as keyof AceConfig] = newVal;
         setTempAceConfig(temp);
+    }
+
+    function onSave() {
+        if (tempAceConfig.richPresenceEnabled !== aceConfig[0].loadConfig().richPresenceEnabled) {
+            ipcRenderer.send('update-rpc-permission', tempAceConfig.richPresenceEnabled);
+        }
+
+        aceConfig[0].saveConfig(tempAceConfig);
+        setShowSaveMenu(false);
+        setLocked(false);
     }
 
     return (
@@ -105,11 +116,7 @@ export const AceConfigurationPanel: React.FC = () => {
                             <button
                                 type="button"
                                 className="bg-teal-light-contrast bg-opacity-30 hover:bg-opacity-50 my-1 border border-teal px-4 py-1 rounded-md focus:shadow-none transition duration-300"
-                                onClick={() => {
-                                    aceConfig[0].saveConfig(tempAceConfig);
-                                    setShowSaveMenu(false);
-                                    setLocked(false);
-                                }}
+                                onClick={onSave}
                             >
                                 Save Changes
                             </button>

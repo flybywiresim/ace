@@ -33,7 +33,13 @@ export const Main = () => {
     const history = useHistory();
 
     function closeProject(removedValue: ProjectData) {
+        const aceConfig = new AceConfigHandler().loadConfig();
+
         setProjects((projects) => (projects.filter((project) => project.name !== removedValue.name)));
+
+        if (aceConfig.richPresenceEnabled) {
+            ipcRenderer.send('set-rpc-state', 'Idling');
+        }
     }
 
     const loadProject = (location: string) => {

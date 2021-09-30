@@ -1,5 +1,5 @@
 import { IconArtboard, IconSettings, IconX } from '@tabler/icons';
-import { remote } from 'electron';
+import { remote, ipcRenderer } from 'electron';
 import React, { FC, useEffect, useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 import { WindowsControl } from 'react-windows-controls';
@@ -7,6 +7,7 @@ import { useProjects } from './index';
 import { Notification, NotificationsContainer } from './Notifications';
 import { useAppDispatch, useAppSelector } from './Store';
 import { popNotification } from './Store/actions/notifications.actions';
+import { AceConfigHandler } from './Project/fs/AceConfigHandler';
 
 interface ApplicationTabsType {
     locked: boolean;
@@ -17,6 +18,10 @@ export const ApplicationTabsContext = React.createContext<ApplicationTabsType>(u
 
 export const ApplicationFrame: FC = ({ children }) => {
     const [isLocked, setIsLocked] = useState(false);
+
+    useEffect(() => {
+        ipcRenderer.send('update-rpc-permission', new AceConfigHandler().loadConfig().richPresenceEnabled);
+    }, []);
 
     return (
         <ApplicationTabsContext.Provider value={{ locked: isLocked, setLocked: setIsLocked }}>

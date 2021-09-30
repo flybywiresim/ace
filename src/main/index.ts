@@ -84,13 +84,6 @@ const client = new RPC.Client({ transport: 'ipc' });
 
 console.log('Logging in to Discord RPC...');
 
-client.on('ready', () => {
-    client.setActivity({
-        largeImageKey: 'ace-icon-large',
-        state: 'Idling',
-    }).then();
-});
-
 // Log in to RPC with client id
 client.login({ clientId: DISCORD_CLIENT_ID }).catch(console.error);
 
@@ -99,5 +92,16 @@ ipcMain.on('set-rpc-state', (_, state: string) => {
     client.setActivity({
         largeImageKey: 'ace-icon-large',
         state,
-    }).then();
+    });
+});
+
+ipcMain.on('update-rpc-permission', (_, allowed: boolean) => {
+    if (allowed) {
+        client.setActivity({
+            largeImageKey: 'ace-icon-large',
+            state: 'Idling',
+        });
+    } else {
+        client.clearActivity();
+    }
 });

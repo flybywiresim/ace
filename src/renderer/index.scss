@@ -26,7 +26,11 @@ input:not([type="range"]) {
     box-shadow: 0 0 0 3px rgba(#00c2cc, 0.5);
   }
 
-  @apply px-2 py-1 rounded-md bg-navy-dark;
+  @apply px-2 py-2 rounded-md bg-navy-medium border border-navy;
+}
+
+button {
+  @apply text-xl;
 }
 
 h1 {
@@ -55,7 +59,7 @@ input[type="range"] {
     width: 1.1em;
     border-radius: 50%;
     margin-top: -0.45em;
-    background: #00c2cc;
+    background: rgb(16, 185, 129);
     transition: 100ms;
 
     &:hover {

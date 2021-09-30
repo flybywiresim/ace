@@ -16,6 +16,7 @@ import { pushNotification } from '../../Store/actions/notifications.actions';
 import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { CanvasContextMenu } from './Components/CanvasContextMenu';
+import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
 import { LocalShim } from '../../shims/LocalShim';
 
 export const ProjectWorkspace = () => {
@@ -98,6 +99,7 @@ export const ProjectWorkspace = () => {
     }, [liveReloadDispatcher]);
 
     const [simVarControlsHandler, setSimVarControlsHandler] = useState<SimVarControlsHandler>(null);
+    const [simVarPresetsHandler, setSimVarPresetsHandler] = useState<SimVarPresetsHandler>(null);
 
     useEffect(() => {
         if (project) {
@@ -110,6 +112,7 @@ export const ProjectWorkspace = () => {
             });
 
             setSimVarControlsHandler(new SimVarControlsHandler(project));
+            setSimVarPresetsHandler(new SimVarPresetsHandler(project));
         }
 
         return () => {
@@ -180,12 +183,13 @@ export const ProjectWorkspace = () => {
             handlers: {
                 liveReload: liveReloadConfigHandler,
                 simVarControls: simVarControlsHandler,
+                simVarPresetsHandler,
             },
         }}
         >
             {project && (
                 <div className="w-full h-full flex overflow-hidden">
-                    <div className="absolute z-40 p-7">
+                    <div className="absolute z-40 p-7" style={{ height: 'calc(100% - 3rem)' }}>
                         <InteractionToolbar />
                     </div>
 

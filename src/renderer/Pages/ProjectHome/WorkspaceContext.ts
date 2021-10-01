@@ -5,6 +5,7 @@ import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispat
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 // import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
+import { LocalShim } from '../../shims/LocalShim';
 
 type WorkspaceContextType = {
     addInstrument: (instrument: string) => void;
@@ -16,6 +17,7 @@ type WorkspaceContextType = {
     project: ProjectData,
     liveReloadDispatcher: LiveReloadDispatcher,
     startLiveReload: () => void,
+    localShim: LocalShim;
     handlers: {
         liveReload: ProjectLiveReloadHandler,
         simVarControls: SimVarControlsHandler,

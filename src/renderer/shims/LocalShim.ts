@@ -1,6 +1,9 @@
+import { Coherent } from './Coherent';
 import { SimulatorInterface } from './SimulatorInterface';
 
 export class LocalShim implements SimulatorInterface {
+    public Coherent = new Coherent();
+
     public SimVar = {
         GetSimVarValue(key: any) {
             try {
@@ -24,23 +27,6 @@ export class LocalShim implements SimulatorInterface {
         },
         GetGameVarValue(): string {
             return 'whoopdy woo';
-        },
-    }
-
-    public Coherent = {
-        trigger(name: string, ...args: any[]) {
-            console.log(`Coherent triggered: ${name}, with args: ${args}`);
-        },
-        on(name: string) {
-            console.log(`Coherent on trigger: ${name}`);
-
-            return {
-                clear: () => {},
-            };
-        },
-        call<T>(name: string, ...args: any[]): Promise<T> {
-            console.log(`Coherent Called: ${name}, with args: ${args}`);
-            return null;
         },
     }
 

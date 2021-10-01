@@ -36,7 +36,7 @@ export interface InstrumentFrameElementProps {
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onUpdate }) => {
-    const { project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
+    const { project, liveReloadDispatcher, inInteractionMode, setInInteractionMode, localShim } = useWorkspace();
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
 
@@ -67,7 +67,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
 
             iframeDocument.body.style.overflow = 'hidden';
 
-            Object.assign(iframeRef.current.contentWindow, new LocalShim());
+            Object.assign(iframeRef.current.contentWindow, localShim);
 
             const rootTag = iframeDocument.createElement('div');
             rootTag.id = 'ROOT_ELEMENT';

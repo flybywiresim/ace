@@ -16,11 +16,12 @@ import { pushNotification } from '../../Store/actions/notifications.actions';
 import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { CanvasContextMenu } from './Components/CanvasContextMenu';
+import { LocalShim } from '../../shims/LocalShim';
 
 export const ProjectWorkspace = () => {
     const { name } = useParams<{ name: string }>();
     const project = useProjects().projects.find((project) => project.name === name);
-
+    const [localShim] = useState(new LocalShim());
     const [inInteractionMode, setInInteractionMode] = useState(false);
 
     const dispatch = useAppDispatch();
@@ -165,6 +166,7 @@ export const ProjectWorkspace = () => {
             setInEditMode,
             liveReloadDispatcher,
             startLiveReload,
+            localShim,
             handlers: {
                 liveReload: liveReloadConfigHandler,
                 simVarControls: simVarControlsHandler,

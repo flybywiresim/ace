@@ -1,5 +1,4 @@
 export interface SimulatorInterface {
-
     SimVar: {
         GetSimVarValue(key: any, unit: any): string | number,
         SetSimVarValue(key: any, unit: any, value: any): void,
@@ -18,10 +17,7 @@ export interface SimulatorInterface {
         getNextWaypointETA(): number,
         getNextWaypointDistance(): number,
     };
-    Coherent: {
-        trigger(name: string, ...args: any[]): void,
-        call<T>(name: string, ...args: any[]): Promise<T>,
-    };
+
     Aircraft: {}
 
     GetStoredData(name: string): any

@@ -1,6 +1,6 @@
 import React, { useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent, PropsWithChildren } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
-import { IconTrash, IconArrowsMaximize } from '@tabler/icons';
+import { IconArrowsMaximize } from '@tabler/icons';
 import { useThrottle } from 'react-use';
 import useInterval from '../../utils/useInterval';
 import { useWorkspace } from './ProjectHome/WorkspaceContext';
@@ -73,7 +73,11 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
     }, [currentDoubleClickMode, doEmulateDoubleClick]);
 
     return (
-        <section className="w-full h-full bg-gray-900 overflow-hidden" ref={transformContainerRef} onWheel={handleWheel}>
+        <section
+            className="w-full h-full bg-gray-900 overflow-hidden"
+            ref={transformContainerRef}
+            onWheel={handleWheel}
+        >
             <TransformWrapper
                 ref={transformWrapperRef}
                 limitToBounds
@@ -161,6 +165,10 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     const canvasElementRef = useRef<HTMLDivElement>(null);
 
     const handlePanStart = (event: MouseEvent) => {
+        if (event.button !== 0) {
+            return;
+        }
+
         document.body.addEventListener('mouseup', handlePanStop);
         document.body.addEventListener('mousemove', handleMouseMove);
         event.stopPropagation();
@@ -188,7 +196,13 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     };
 
     return (
-        <span className="absolute" onMouseDown={handleMouseDown}>
+        <span
+            className="absolute"
+            onMouseDown={(event) => {
+                handleMouseDown(event);
+                handlePanStart(event);
+            }}
+        >
             <span
                 ref={canvasElementRef}
                 className="shadow-md"
@@ -200,10 +214,6 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
             >
                 <span className="absolute flex flex-row h-12 -top-16 justify-between items-center">
                     <h1 style={{ fontSize: `${TITLE_FONTSIZE * (1 / canvasZoom)}px` }}>{title}</h1>
-
-                    {inEditMode && (
-                        <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
-                    )}
                 </span>
 
                 <span className={`block border ${selected && 'border-8'} border-[#00c2cc] hover:border-green-500 overflow-hidden`}>

@@ -124,7 +124,11 @@ export const ProjectWorkspace = () => {
         };
     }, [selectedCanvasElements]);
 
-    function handleElementClick(element: PossibleCanvasElements) {
+    function handleElementClick(element: PossibleCanvasElements, event: React.MouseEvent) {
+        if (event.button === 0) {
+            setContextMenuOpen(false);
+        }
+
         if (shift) {
             tryAddElementToSelected(element);
         } else {
@@ -170,6 +174,11 @@ export const ProjectWorkspace = () => {
 
             return e.button === 2;
         });
+
+        if (e.button === 0) {
+            setSelectedCanvasElements([]);
+            e.stopPropagation();
+        }
 
         if (e.button === 2) {
             let x: number;
@@ -235,7 +244,7 @@ export const ProjectWorkspace = () => {
                                 {canvasElements.map((canvasElement) => {
                                     if (canvasElement.__kind === 'instrument') {
                                         return (
-                                            <div onClick={() => handleElementClick(canvasElement)}>
+                                            <div onClick={(event) => handleElementClick(canvasElement, event)}>
                                                 <InstrumentFrameElement
                                                     key={canvasElement.title}
                                                     instrumentFrame={canvasElement}

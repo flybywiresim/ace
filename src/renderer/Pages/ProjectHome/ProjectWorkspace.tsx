@@ -90,16 +90,18 @@ export const ProjectWorkspace = () => {
 
     useEffect(() => {
         function downHandler(event: KeyboardEvent) {
-            if (event.key.toUpperCase() === 'SHIFT') {
+            const k = event.key.toUpperCase();
+
+            if (k === 'SHIFT') {
                 setShift(true);
             }
-            if (event.key.toUpperCase() === 'CONTROL') {
+            if (k === 'CONTROL') {
                 setControl(true);
             }
-            if (event.key.toUpperCase() === 'ENTER') {
+            if (k === 'ENTER') {
                 setInInteractionMode((old) => !old);
             }
-            if (event.key.toUpperCase() === 'DELETE') {
+            if (k === 'DELETE' || k === 'BACKSPACE') {
                 for (const element of selectedCanvasElements) {
                     handleDeleteCanvasElement(element);
                 }

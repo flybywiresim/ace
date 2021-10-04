@@ -1,9 +1,7 @@
 import React, { useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent, PropsWithChildren } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
-import { IconArrowsMaximize } from '@tabler/icons';
 import { useThrottle } from 'react-use';
 import useInterval from '../../utils/useInterval';
-import { useWorkspace } from './ProjectHome/WorkspaceContext';
 import { PossibleCanvasElements } from '../../shared/types/project/canvas/CanvasSaveFile';
 import { GRID_LINE_SIZE, GRID_SVG_SIZE } from './Canvas/Grid';
 
@@ -159,8 +157,6 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
         setOffsetX(roundToGrid(editPositionX));
         setOffsetY(roundToGrid(editPositionY));
     }, [editPositionX, editPositionY]);
-
-    const { inEditMode } = useWorkspace();
 
     const canvasElementRef = useRef<HTMLDivElement>(null);
 

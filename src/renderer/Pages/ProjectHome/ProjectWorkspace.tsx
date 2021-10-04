@@ -246,7 +246,7 @@ export const ProjectWorkspace = () => {
                                         return (
                                             <div onClick={(event) => handleElementClick(canvasElement, event)}>
                                                 <InstrumentFrameElement
-                                                    key={canvasElement.title}
+                                                    key={canvasElement.__uuid}
                                                     instrumentFrame={canvasElement}
                                                     zoom={zoom}
                                                     onUpdate={handleUpdateCanvasElement}

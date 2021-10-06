@@ -1,7 +1,6 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import path from 'path';
 import { PanelCanvasElement } from '../PanelCanvas';
-import { LocalShim } from '../../shims/LocalShim';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
 import { useWorkspace } from '../ProjectHome/WorkspaceContext';
@@ -54,13 +53,14 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             iframeRef.current.contentWindow.addEventListener('keydown', handle, true);
 
             const refCopy = iframeRef.current;
-            return () => refCopy.contentWindow.removeEventListener('keydown', handle);
+            return () => refCopy.contentWindow?.removeEventListener('keydown', handle);
         }
 
         return null;
     }, [setInInteractionMode]);
 
     const doLoadInstrument = useCallback(() => {
+        let interval: NodeJS.Timer;
         if (iframeRef.current && loadedInstrument.config.name) {
             const iframeWindow = iframeRef.current.contentWindow;
             const iframeDocument = iframeRef.current.contentDocument;
@@ -108,12 +108,19 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             iframeDocument.head.append(styleTag);
             iframeDocument.head.append(scriptTag);
 
-            setInterval(() => {
+            interval = setInterval(() => {
                 const newUpdate = Date.now();
                 iframeDocument.getElementById('ROOT_ELEMENT').dispatchEvent(new CustomEvent('update', { detail: newUpdate - lastUpdate.current }));
                 lastUpdate.current = newUpdate;
             }, 50);
         }
+
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+                console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Cleared update timer.`);
+            }
+        };
     }, [instrumentFrame.instrumentName, loadedInstrument.config.name, loadedInstrument.files, project.name]);
 
     useEffect(doLoadInstrument, [doLoadInstrument]);

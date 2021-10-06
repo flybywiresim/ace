@@ -91,6 +91,12 @@ export const ProjectWorkspace = () => {
     const [liveReloadConfigHandler, setLiveReloadConfigHandler] = useState<ProjectLiveReloadHandler>(null);
     const [liveReloadDispatcher, setLiveReloadDispatcher] = useState<LiveReloadDispatcher>(null);
 
+    const liveReloadDispatcherRef = useRef<LiveReloadDispatcher>(null);
+
+    useEffect(() => {
+        liveReloadDispatcherRef.current = liveReloadDispatcher;
+    }, [liveReloadDispatcher]);
+
     const [simVarControlsHandler, setSimVarControlsHandler] = useState<SimVarControlsHandler>(null);
 
     useEffect(() => {
@@ -105,6 +111,10 @@ export const ProjectWorkspace = () => {
 
             setSimVarControlsHandler(new SimVarControlsHandler(project));
         }
+
+        return () => {
+            liveReloadDispatcherRef.current?.stopWatching();
+        };
     }, [project]);
 
     const startLiveReload = useCallback(() => {

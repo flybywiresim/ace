@@ -1,8 +1,11 @@
 import { Coherent } from './Coherent';
 import { SimulatorInterface } from './SimulatorInterface';
+import { ViewListener } from './RegisterViewListener';
 
 export class LocalShim implements SimulatorInterface {
     public Coherent = new Coherent();
+
+    public RegisterViewListener = (name: string): ViewListener => new ViewListener(name, this.Coherent);
 
     public SimVar = {
         GetSimVarValue(key: any) {
@@ -28,10 +31,6 @@ export class LocalShim implements SimulatorInterface {
         GetGameVarValue(): string {
             return 'whoopdy woo';
         },
-    }
-
-    public RegisterViewListener = (listener: any) => {
-        console.log(`Coherent RegisterViewListener called: ${listener}`);
     }
 
     public Simplane = {

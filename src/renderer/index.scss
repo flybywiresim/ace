@@ -31,6 +31,10 @@ input:not([type="range"]) {
 
 button {
   @apply text-xl;
+
+  &[disabled] {
+    @apply text-opacity-50 bg-opacity-50 cursor-not-allowed;
+  }
 }
 
 h1 {
@@ -42,7 +46,7 @@ h2 {
 }
 
 h3 {
-  @apply text-xl;
+  @apply text-xl mt-4 mb-2.5;
 }
 
 input[type="range"] {

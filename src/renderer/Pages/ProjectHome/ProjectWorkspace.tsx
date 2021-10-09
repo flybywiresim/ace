@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router';
+import React, { useCallback, useEffect, useState, useRef, FC } from 'react';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
-import { CanvasElementFactory } from '../../Project/canvas/ElementFactory';
+import { ElementFactory } from '../../Project/canvas/ElementFactory';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
 import { InteractionToolbar } from './Components/InteractionToolbar';
 import { PanelCanvas } from '../PanelCanvas';
 import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
-import { useProjects } from '../..';
+import { ProjectData } from '../..';
 import { WorkspaceContext } from './WorkspaceContext';
 import { ProjectLiveReloadHandler } from '../../Project/fs/LiveReload';
 import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
@@ -18,10 +17,14 @@ import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { CanvasContextMenu } from './Components/CanvasContextMenu';
 import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
 import { LocalShim } from '../../shims/LocalShim';
+import { useProjectDispatch } from './Store';
+import { loadControls } from './Store/actions/simVarElements.actions';
 
-export const ProjectWorkspace = () => {
-    const { name } = useParams<{ name: string }>();
-    const project = useProjects().projects.find((project) => project.name === name);
+export interface ProjectWorkspaceProps {
+    project: ProjectData,
+}
+
+export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     const [localShim] = useState(new LocalShim());
     const [inInteractionMode, setInInteractionMode] = useState(false);
 
@@ -60,7 +63,7 @@ export const ProjectWorkspace = () => {
     }, [doLoadProjectCanvasSave, project]);
 
     const handleAddInstrument = (instrument: string) => {
-        const newInstrumentPanel = CanvasElementFactory.newInstrumentPanel({
+        const newInstrumentPanel = ElementFactory.newInstrumentPanel({
             title: instrument,
             instrumentName: instrument,
             position: {
@@ -119,6 +122,20 @@ export const ProjectWorkspace = () => {
             liveReloadDispatcherRef.current?.stopWatching();
         };
     }, [project]);
+
+    const projectDispatch = useProjectDispatch();
+
+    useEffect(() => {
+        if (simVarControlsHandler) {
+            const controls = simVarControlsHandler.loadConfig()?.elements;
+
+            if (controls) {
+                projectDispatch(loadControls(controls));
+            } else {
+                throw new Error('[ProjectWorkspace] Could not load simvar controls from handler.');
+            }
+        }
+    }, [projectDispatch, simVarControlsHandler]);
 
     const startLiveReload = useCallback(() => {
         if (liveReloadDispatcher) {

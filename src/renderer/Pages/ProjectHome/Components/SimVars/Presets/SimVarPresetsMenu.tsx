@@ -20,7 +20,7 @@ export const SimVarPresetsMenu: FC = () => {
             <div className="flex flex-row justify-center items-center gap-x-2 py-3 border-2 border-dashed text-gray-500 border-gray-500 rounded-md">
                 <IconPlus size={30} />
 
-                <h3>Add SimVar Preset</h3>
+                <span className="text-xl">Add SimVar Preset</span>
             </div>
         </div>
     );

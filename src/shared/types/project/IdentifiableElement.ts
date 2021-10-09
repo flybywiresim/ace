@@ -4,3 +4,5 @@ export interface IdentifiableElement {
      */
     __uuid: string,
 }
+
+export type IdentifiableElementData<T extends IdentifiableElement> = Omit<T, '__uuid'>

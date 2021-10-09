@@ -15,10 +15,10 @@ export type SimVarEditorProps = {
 
 interface SimVarEditorProps2 {
     simVarControl: SimVarControl,
-    onEdit: (newControl: SimVarControl) => void,
+    onEdit?: () => void,
 }
 
-export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarControl }) => {
+export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarControl, onEdit }) => {
     const valueRef = useRef<HTMLSpanElement>();
 
     const normalizeTextValue = (state: string) => {
@@ -46,8 +46,6 @@ export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarContr
             valueRef.current.innerText = state;
         }
     }, [simVarControl.varName, state]);
-
-    const [_editorShown, setEditorShown] = useState(false);
 
     return (
         <div className="py-3.5">
@@ -86,18 +84,10 @@ export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarContr
                     <IconPencil
                         size={28}
                         className="text-gray-500 cursor-pointer hover:text-green-500"
-                        onClick={() => setEditorShown((old) => !old)}
+                        onClick={onEdit}
                     />
                 </div>
             </div>
-
-            {/* {editorShown && ( */}
-            {/*    <SimVarControlEditor */}
-            {/*        originalControl={simVarControl} */}
-            {/*        onCancel={() => setEditorShown(false)} */}
-            {/*        onSave={onEdit} */}
-            {/*    /> */}
-            {/* )} */}
         </div>
     );
 };

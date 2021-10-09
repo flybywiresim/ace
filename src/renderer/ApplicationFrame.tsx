@@ -72,6 +72,7 @@ const ApplicationTabs: FC = () => {
                 </Tab>
                 {projects.map((project) => (
                     <Tab
+                        key={project.name}
                         onClick={() => {
                             if (!locked) {
                                 history.push(`/project/${project.name}`);

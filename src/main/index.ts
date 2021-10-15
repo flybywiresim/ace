@@ -95,6 +95,14 @@ ipcMain.on('set-rpc-state', (_, state: string) => {
     });
 });
 
+ipcMain.on('set-rpc-state-with-time', (_, state: string, startTimestamp) => {
+    client.setActivity({
+        largeImageKey: 'ace-icon-large',
+        state,
+        startTimestamp,
+    });
+});
+
 ipcMain.on('update-rpc-permission', (_, allowed: boolean) => {
     if (allowed) {
         client.setActivity({

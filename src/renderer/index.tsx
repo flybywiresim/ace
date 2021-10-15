@@ -71,7 +71,7 @@ export const Main = () => {
         ipcRenderer.send('load-project', project.paths.htmlUiSrc);
 
         if (aceConfig.richPresenceEnabled) {
-            ipcRenderer.send('set-rpc-state', `Working on ${project.name}`);
+            ipcRenderer.send('set-rpc-state-with-time', `Working on ${project.name}`, new Date());
         }
 
         history.push(`/project/${project.name}`);

@@ -30,6 +30,7 @@ export const useProjects = () => useContext(ProjectContext);
 
 export const Main = () => {
     const [projects, setProjects] = useState<ProjectData[]>([]);
+    const [, setStartTime] = useState<Date>(new Date());
     const history = useHistory();
 
     function closeProject(removedValue: ProjectData) {
@@ -43,6 +44,8 @@ export const Main = () => {
     }
 
     const loadProject = (location: string) => {
+        const projectStartTime = new Date();
+        setStartTime(projectStartTime);
         const aceConfig = new AceConfigHandler().loadConfig();
 
         if (!fs.existsSync(`${location}/.ace/project.json`)) {
@@ -71,7 +74,7 @@ export const Main = () => {
         ipcRenderer.send('load-project', project.paths.htmlUiSrc);
 
         if (aceConfig.richPresenceEnabled) {
-            ipcRenderer.send('set-rpc-state-with-time', `Working on ${project.name}`, new Date());
+            ipcRenderer.send('set-rpc-state-with-time', `Working on ${project.name}`, projectStartTime);
         }
 
         history.push(`/project/${project.name}`);

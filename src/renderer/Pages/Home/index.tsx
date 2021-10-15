@@ -76,7 +76,7 @@ const RecentProjects: FC = () => {
 };
 
 const RecentProjectEntry: FC<RecentlyOpenedProject> = ({ name, location }) => {
-    const { loadProject } = useProjects();
+    const { loadProject, closeProject } = useProjects();
 
     const { recentlyOpenedProjects, setRecentlyOpenedProjects } = useContext(RecentProjectsContext);
 
@@ -88,6 +88,7 @@ const RecentProjectEntry: FC<RecentlyOpenedProject> = ({ name, location }) => {
 
     function handleProjectClose() {
         setRecentlyOpenedProjects(recentlyOpenedProjects.filter((p) => p.location !== location));
+        closeProject(location);
         RecentlyOpenedProjects.remove({ name, location });
     }
 

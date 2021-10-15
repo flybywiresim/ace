@@ -20,7 +20,7 @@ export type ProjectData = Project & { location: string };
 
 type ProjectContextType = {
     projects: ProjectData[],
-    closeProject: (removedValue: ProjectData) => void,
+    closeProject: (location: string) => void,
     loadProject: (path: string) => void;
     createProject: (name: string, path: string, instrumentsSrc: string, bundlesSrc: string, htmlUiSrc: string) => void;
 }
@@ -33,10 +33,10 @@ export const Main = () => {
     const [, setStartTime] = useState<Date>(new Date());
     const history = useHistory();
 
-    function closeProject(removedValue: ProjectData) {
+    function closeProject(location: string) {
         const aceConfig = new AceConfigHandler().loadConfig();
 
-        setProjects((projects) => (projects.filter((project) => project.name !== removedValue.name)));
+        setProjects((projects) => (projects.filter((project) => project.location !== location)));
 
         if (aceConfig.richPresenceEnabled) {
             ipcRenderer.send('set-rpc-state', 'Idling');

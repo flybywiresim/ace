@@ -122,6 +122,7 @@
     "react-use": "^17.3.1",
     "react-windows-controls": "^1.1.1",
     "redux": "^4.1.1",
+    "use-events": "^1.4.2",
     "uuid": "^8.3.2"
   }
 }

@@ -21,4 +21,10 @@ export class RecentlyOpenedProjects {
 
         localStorage.setItem(LOCAL_STORAGE_KEY, text);
     }
+
+    public static remove(project: RecentlyOpenedProject): void {
+        const projects = RecentlyOpenedProjects.load();
+
+        this.save(projects.filter((p) => p.location !== project.location));
+    }
 }

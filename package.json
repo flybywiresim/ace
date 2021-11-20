@@ -13,11 +13,8 @@
     "lint": "eslint --ext .ts,.tsx ."
   },
   "keywords": [],
-  "author": {
-    "name": "Alex Cutforth",
-    "email": "alex@densem.net"
-  },
-  "license": "MIT",
+  "author": "FlyByWire Simulations, Synaptic Simulations",
+  "license": "GPLv3",
   "config": {
     "forge": {
       "packagerConfig": {},

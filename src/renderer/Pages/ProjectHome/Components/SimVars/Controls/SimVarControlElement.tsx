@@ -34,8 +34,23 @@ export const SimVarControlElement: React.FC<SimVarEditorProps2> = ({ simVarContr
     const [state, handleSetState] = useState<any>(() => {
         const rawValue = window.localStorage.getItem(simVarControl.varName);
 
-        return normalizeTextValue(rawValue);
+        return normalizeTextValue(JSON.parse(rawValue) ?? defaultValueForControlStyle(simVarControl.style));
     });
+
+    const defaultValueForControlStyle = (style: SimVarControlStyle) => {
+        switch (style.type) {
+        case SimVarControlStyleTypes.CHECKBOX:
+            return false;
+        case SimVarControlStyleTypes.NUMBER:
+            return 0;
+        case SimVarControlStyleTypes.RANGE:
+            return (style.min + style.max) / 2;
+        case SimVarControlStyleTypes.TEXT_INPUT:
+            return '';
+        default:
+            return 0;
+        }
+    };
 
     useEffect(() => {
         const normalizedValue = normalizeTextValue(state);

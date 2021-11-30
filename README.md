@@ -49,6 +49,10 @@ Open the repository in an IDE of your choice, run `npm i` to install dependencie
 After running the program, select `New Project` and choose the locations of all your folders. 
 If your folders are setup for ACE beforehand, you can select `Open Project` and select your root directory.
 
+## Keymap
+
+`Enter` - enter interactive mode (can use touchscreens)
+
 ## Upcoming Features
 
 ### Button panels

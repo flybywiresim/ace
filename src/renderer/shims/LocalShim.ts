@@ -81,12 +81,24 @@ export class LocalShim implements SimulatorInterface {
     public Aircraft = {}
 
     public GetStoredData = (key: string): any => {
-        if (key === 'A32NX_CONFIG_SELF_TEST_TIME') {
-            return 2;
+        // if (key === 'A32NX_CONFIG_SELF_TEST_TIME') {
+        //    return 2;
+        //}
+
+        try {
+            const item = window.localStorage.getItem(key);
+            return item ? JSON.parse(item) : null;
+        } catch (error) {
+            console.log(error);
+            return 0;
         }
-        return 0;
     }
 
-    public SetStoredData = () => {
+    public SetStoredData = (key: string, value: any): void => {
+        try {
+            window.localStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {
+            console.log(error);
+        }
     }
 }

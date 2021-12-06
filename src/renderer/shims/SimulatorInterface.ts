@@ -21,5 +21,5 @@ export interface SimulatorInterface {
     Aircraft: {}
 
     GetStoredData(name: string): any
-    SetStoredData(key: string, value: any): void;
+    SetStoredData(key: string, value: any): any;
 }

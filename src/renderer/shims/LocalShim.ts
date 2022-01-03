@@ -81,12 +81,23 @@ export class LocalShim implements SimulatorInterface {
     public Aircraft = {}
 
     public GetStoredData = (key: string): any => {
-        if (key === 'A32NX_CONFIG_SELF_TEST_TIME') {
-            return 2;
+        try {
+            return window.localStorage.getItem(key);
+        } catch (error) {
+            console.log(error);
         }
-        return 0;
+        return '';
     }
 
-    public SetStoredData = () => {
+    public SetStoredData = (key: string, value: any): any => {
+        if (typeof value !== 'string') {
+            throw Error('SetStoredData: Illegal type of value! value must be of type string');
+        }
+        try {
+            window.localStorage.setItem(key, value);
+        } catch (error) {
+            console.log(error);
+        }
+        return null;
     }
 }

@@ -21,6 +21,7 @@ export interface InstrumentConfig {
     isInteractive: boolean,
     name: string,
     dimensions: InstrumentDimensions,
+    searchParams: string,
 }
 
 export interface InstrumentDimensions {

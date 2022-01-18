@@ -33,6 +33,22 @@ Each instrument's config.json should use this format:
 }
 ```
 
+Optional searchParams (i.e query string) config entry:
+
+```json
+{
+  "index": "./index.tsx",
+  "isInteractive": true,
+  "name": "DU3",
+  "dimensions": {
+    "width": 1480,
+    "height": 1100
+  },
+  "searchParams": "Index=2"
+}
+```
+*Note: By default the query string will be "Index=1*
+
 Your rollup should output to a bundles folder within your project using this structure:
 ```
 - bundles

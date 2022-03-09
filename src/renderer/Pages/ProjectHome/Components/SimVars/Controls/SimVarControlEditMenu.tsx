@@ -2,10 +2,10 @@ import React, { FC, FormEvent, useEffect, useState } from 'react';
 import { SimVarControl, SimVarControlStyleTypes } from '../../../../../../shared/types/project/SimVarControl';
 import { SideMenu } from '../../Framework/Toolbars';
 import { SelectBox, SelectBoxItem, SelectBoxItemBody, SelectBoxItemIcon } from '../../Framework/MenuBoxes';
-import { SimVarPrefix } from '../../../../../../shared/types/SimVar';
 import { useProjectDispatch } from '../../../Store';
 import { addControl, editControl } from '../../../Store/actions/simVarElements.actions';
 import { ElementFactory } from '../../../../../Project/canvas/ElementFactory';
+import { SimVarPrefix } from '../../../../../../../ace-engine/src/SimVar';
 
 export interface SimVarControlEditMenuProps {
 

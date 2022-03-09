@@ -5,9 +5,10 @@ import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispat
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
-import { LocalShim } from '../../shims/LocalShim';
+import { AceEngine } from '../../../../ace-engine/src/AceEngine';
 
 type WorkspaceContextType = {
+    engine: AceEngine,
     addInstrument: (instrument: string) => void;
     removeCanvasElement: (element: PossibleCanvasElements) => void;
     inInteractionMode: boolean;
@@ -17,7 +18,6 @@ type WorkspaceContextType = {
     project: ProjectData,
     liveReloadDispatcher: LiveReloadDispatcher,
     startLiveReload: () => void,
-    localShim: LocalShim;
     handlers: {
         liveReload: ProjectLiveReloadHandler,
         simVarControls: SimVarControlsHandler,

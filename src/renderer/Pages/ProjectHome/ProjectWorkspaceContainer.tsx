@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { useParams } from 'react-router';
 import { Provider } from 'react-redux';
 import { ProjectData, useProjects } from '../../index';
-import { ProjectStoreContext, store } from './Store';
+import { ProjectStoreContext, projectStore } from './Store';
 
 export interface ProjectWorkspaceContainerProps {
     render: (project: ProjectData) => JSX.Element,
@@ -14,7 +14,7 @@ export const ProjectWorkspaceContainer: FC<ProjectWorkspaceContainerProps> = ({ 
 
     if (project) {
         return (
-            <Provider store={store} context={ProjectStoreContext}>
+            <Provider store={projectStore} context={ProjectStoreContext}>
                 {render(project)}
             </Provider>
         );

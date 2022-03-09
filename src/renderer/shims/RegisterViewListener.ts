@@ -11,6 +11,8 @@ export class ViewListener {
     }
 
     public triggerToAllSubscribers(name: string, data: string) {
-        if (this.name === 'JS_LISTENER_SIMVARS') this.coherent.trigger(name, data);
+        if (this.name === 'JS_LISTENER_SIMVARS') {
+            this.coherent.trigger(name, data);
+        }
     }
 }

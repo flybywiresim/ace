@@ -1,8 +1,8 @@
 import { v4 as UUID } from 'uuid';
 import { ListConfig } from './GenericListConfigHandler';
 import { SimVarControl, SimVarControlStyleTypes } from '../../../shared/types/project/SimVarControl';
-import { SimVarPrefix } from '../../../shared/types/SimVar';
 import { GenericProjectListConfigHandler } from './GenericProjectListConfigHandler';
+import { SimVarPrefix } from '../../../../ace-engine/src/SimVar';
 
 export class SimVarControlsHandler extends GenericProjectListConfigHandler<SimVarControl> {
     get fileName(): string {

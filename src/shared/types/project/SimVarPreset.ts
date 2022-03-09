@@ -1,5 +1,5 @@
 import { IdentifiableElement } from './IdentifiableElement';
-import { SimVarDefinition, SimVarValue } from '../SimVar';
+import { SimVarDefinition, SimVarValue } from '../../../../ace-engine/src/SimVar';
 
 export interface SimVarPreset extends IdentifiableElement {
 

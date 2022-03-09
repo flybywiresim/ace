@@ -35,12 +35,11 @@ export interface InstrumentFrameElementProps {
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onUpdate }) => {
-    const { project, liveReloadDispatcher, inInteractionMode, setInInteractionMode, localShim } = useWorkspace();
+    const { engine, project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
 
     const iframeRef = useRef<HTMLIFrameElement>();
-    const lastUpdate = useRef(Date.now());
 
     useEffect(() => {
         if (iframeRef.current) {
@@ -60,68 +59,17 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     }, [setInInteractionMode]);
 
     const doLoadInstrument = useCallback(() => {
-        let interval: NodeJS.Timer;
+        console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Loading instrument into iframe.`);
+
         if (iframeRef.current && loadedInstrument.config.name) {
-            const iframeWindow = iframeRef.current.contentWindow;
-            const iframeDocument = iframeRef.current.contentDocument;
-
-            iframeDocument.body.style.overflow = 'hidden';
-
-            Object.assign(iframeRef.current.contentWindow, localShim);
-
-            const rootTag = iframeDocument.createElement('div');
-            rootTag.id = 'ROOT_ELEMENT';
-
-            const mountTag = iframeDocument.createElement('div');
-            mountTag.id = 'MSFS_REACT_MOUNT';
-
-            rootTag.append(mountTag);
-
-            const pfdTag = iframeDocument.createElement(`${project.name}-${instrumentFrame.instrumentName}`);
-            pfdTag.setAttribute('url', 'a?Index=1');
-
-            const scriptTag = iframeDocument.createElement('script');
-            scriptTag.text = loadedInstrument.files[1].contents;
-
-            const styleTag = iframeDocument.createElement('style');
-            styleTag.textContent = loadedInstrument.files[0].contents;
-
-            // Clear all intervals in the iframe
-            const lastInterval = iframeWindow.setInterval(() => {
-            }, 99999999);
-            for (let i = 0; i < lastInterval; i++) {
-                iframeWindow.clearInterval(i);
-            }
-
-            const lastTimeout = iframeWindow.setTimeout(() => {
-            }, 99999999);
-            for (let i = 0; i < lastTimeout; i++) {
-                iframeWindow.clearTimeout(i);
-            }
-
-            iframeDocument.head.innerHTML = '<base href="http://localhost:39511/" />';
-            iframeDocument.body.innerHTML = '';
-            iframeDocument.body.style.margin = '0';
-
-            iframeDocument.body.append(rootTag);
-            iframeDocument.body.append(pfdTag);
-            iframeDocument.head.append(styleTag);
-            iframeDocument.head.append(scriptTag);
-
-            interval = setInterval(() => {
-                const newUpdate = Date.now();
-                iframeDocument.getElementById('ROOT_ELEMENT').dispatchEvent(new CustomEvent('update', { detail: newUpdate - lastUpdate.current }));
-                lastUpdate.current = newUpdate;
-            }, 50);
+            engine.loadInstrument({
+                displayName: loadedInstrument.config.name,
+                elementName: 'ace-instrument',
+                jsSource: loadedInstrument.files[1].contents,
+                cssSource: loadedInstrument.files[0].contents,
+            }, iframeRef.current);
         }
-
-        return () => {
-            if (interval) {
-                clearInterval(interval);
-                console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Cleared update timer.`);
-            }
-        };
-    }, [instrumentFrame.instrumentName, loadedInstrument.config.name, loadedInstrument.files, project.name]);
+    }, [engine, instrumentFrame.title, loadedInstrument.config.name, loadedInstrument.files]);
 
     useEffect(doLoadInstrument, [doLoadInstrument]);
 

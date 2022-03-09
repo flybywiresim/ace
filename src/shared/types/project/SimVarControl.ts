@@ -1,5 +1,5 @@
-import { SimVarPrefix } from '../SimVar';
 import { IdentifiableElement } from './IdentifiableElement';
+import { SimVarPrefix } from '../../../../ace-engine/src/SimVar';
 
 export enum SimVarControlStyleTypes {
     TEXT_INPUT,

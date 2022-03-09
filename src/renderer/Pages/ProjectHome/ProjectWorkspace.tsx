@@ -20,6 +20,7 @@ import { useProjectDispatch } from './Store';
 import { loadControls } from './Store/actions/simVarElements.actions';
 import { LocalShim } from '../../shims/LocalShim';
 import { setProjectData } from './Store/actions/projectData.actions';
+import { AceEngine } from '../../../../ace-engine/src/AceEngine';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -27,6 +28,10 @@ export interface ProjectWorkspaceProps {
 
 export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     const [localShim] = useState(new LocalShim());
+    const [engine] = useState(new AceEngine(localShim, {
+        updateInterval: 50,
+    }));
+
     const [inInteractionMode, setInInteractionMode] = useState(false);
 
     const dispatch = useAppDispatch();
@@ -192,6 +197,7 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
 
     return (
         <WorkspaceContext.Provider value={{
+            engine,
             addInstrument: handleAddInstrument,
             removeCanvasElement: handleDeleteCanvasElement,
             project,
@@ -201,7 +207,6 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
             setInEditMode,
             liveReloadDispatcher,
             startLiveReload,
-            localShim,
             handlers: {
                 liveReload: liveReloadConfigHandler,
                 simVarControls: simVarControlsHandler,

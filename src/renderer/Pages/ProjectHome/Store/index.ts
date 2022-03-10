@@ -9,8 +9,10 @@ import { simVarValuesReducer } from './reducers/simVarValues.reducer';
 import { persistentStorageReducer } from './reducers/persistentStorage.reducer';
 import { PersistentStorageHandler } from '../../../Project/fs/PersistentStorageHandler';
 import { deletePersistentValue, setPersistentValue } from './actions/persistentStorage.actions';
+import { coherentReducer } from './reducers/coherent.reducer';
 
 const reducer = combineReducers({
+    coherent: coherentReducer,
     projectData: projectDataReducer,
     simVarValues: simVarValuesReducer,
     persistentStorage: persistentStorageReducer,

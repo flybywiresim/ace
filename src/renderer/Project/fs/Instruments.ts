@@ -33,6 +33,10 @@ export class ProjectInstrumentsHandler {
             };
         }
 
+        if (!config.searchParams) {
+            config.searchParams = 'Index=1';
+        }
+
         const instrumentBundlesFolder = path.join(project.paths.bundlesSrc, name);
 
         if (!fs.existsSync(instrumentBundlesFolder)) {

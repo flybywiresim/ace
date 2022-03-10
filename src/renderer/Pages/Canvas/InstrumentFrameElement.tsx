@@ -21,6 +21,7 @@ export interface InstrumentConfig {
     isInteractive: boolean,
     name: string,
     dimensions: InstrumentDimensions,
+    searchParams: string,
 }
 
 export interface InstrumentDimensions {
@@ -78,7 +79,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             rootTag.append(mountTag);
 
             const pfdTag = iframeDocument.createElement(`${project.name}-${instrumentFrame.instrumentName}`);
-            pfdTag.setAttribute('url', 'a?Index=1');
+            pfdTag.setAttribute('url', `a?${loadedInstrument.config.searchParams}`);
 
             const scriptTag = iframeDocument.createElement('script');
             scriptTag.text = loadedInstrument.files[1].contents;

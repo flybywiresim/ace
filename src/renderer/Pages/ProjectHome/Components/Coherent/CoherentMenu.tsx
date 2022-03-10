@@ -1,7 +1,11 @@
+/* eslint-disable react/no-danger */
 import React from 'react';
+import ReactJson from 'react-json-view';
 import { SideMenu } from '../Framework/Toolbars';
 import { useProjectSelector } from '../../Store';
 import { CoherentEventType } from '../../../../shims/Coherent';
+
+const { highlight } = require('highlight.js/lib/common');
 
 export const CoherentMenu = () => {
     const activity = useProjectSelector((store) => store.coherent.activity);
@@ -28,7 +32,9 @@ export const CoherentMenu = () => {
                                 <h4>
                                     Data:
                                     {' '}
-                                    <tspan className="bg-gray-600 italic rounded">{event.data}</tspan>
+                                    <tspan className="bg-gray-600 rounded">
+                                        {event.data}
+                                    </tspan>
                                 </h4>
                             )
                             : event.type === CoherentEventType.NEW_ON || event.type === CoherentEventType.CLEAR_ON
@@ -36,18 +42,14 @@ export const CoherentMenu = () => {
                                     <h4>
                                         Callback:
                                         {' '}
-                                        <tspan className="bg-gray-600 italic rounded">{event.callback.toString()}</tspan>
+                                        <code
+                                            className="bg-black rounded"
+                                            dangerouslySetInnerHTML={{ __html: highlight(event.callback.toString(), { language: 'javascript' }).value }}
+                                        />
                                     </h4>
                                 )
-                                : event.args.map((arg, index) => (
-                                    <h4>
-                                        {'Argument '}
-                                        {index}
-                                        {': '}
-                                        <tspan className="bg-gray-600 italic rounded">
-                                            {JSON.stringify(arg)}
-                                        </tspan>
-                                    </h4>
+                                : event.args.map((arg) => (
+                                    typeof arg === 'object' ? <ReactJson src={arg} theme="bright" displayDataTypes={false} displayObjectSize={false} collapsed /> : <h4>{arg.toString()}</h4>
                                 ))}
                     </div>
                 ))}

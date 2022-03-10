@@ -21,6 +21,8 @@ import { loadControls } from './Store/actions/simVarElements.actions';
 import { LocalShim } from '../../shims/LocalShim';
 import { setProjectData } from './Store/actions/projectData.actions';
 import { AceEngine } from '../../../../ace-engine/src/AceEngine';
+import { CoherentActivity } from '../../shims/Coherent';
+import { logCoherentActivity } from './Store/actions/coherent.actions';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -134,6 +136,16 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     useEffect(() => {
         projectDispatch(setProjectData(project));
     }, [project, projectDispatch]);
+
+    useEffect(() => {
+        const event = (data: CoherentActivity) => projectDispatch(logCoherentActivity(data));
+
+        localShim.Coherent.subscribe(event);
+
+        return () => {
+            localShim.Coherent.unSubscribe(event);
+        };
+    }, [projectDispatch, localShim]);
 
     useEffect(() => {
         if (simVarControlsHandler) {

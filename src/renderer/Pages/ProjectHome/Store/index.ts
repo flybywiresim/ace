@@ -12,12 +12,14 @@ import { deletePersistentValue, setPersistentValue } from './actions/persistentS
 import { setSimVarValue } from './actions/simVarValues.actions';
 import { SimVarValuesHandler } from '../../../Project/fs/SimVarValues';
 import { simVarDefinitionFromName } from '../../../../../ace-engine/src/SimVar';
+import { coherentReducer } from './reducers/coherent.reducer';
 
 const reducer = combineReducers({
     projectData: projectDataReducer,
     simVarValues: simVarValuesReducer,
     persistentStorage: persistentStorageReducer,
     simVarElements: simVarElementsReducer,
+    coherent: coherentReducer,
 });
 
 const SIMVAR_CONTROL_SAVE_ACTIONS = [addControl.type, deleteControl.type, editControl.type];

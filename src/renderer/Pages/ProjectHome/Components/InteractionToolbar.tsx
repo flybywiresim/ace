@@ -5,6 +5,7 @@ import { EditMenu } from './EditMenu';
 import { useWorkspace } from '../WorkspaceContext';
 import { LiveReloadMenu } from './LiveReloadMenu';
 import { SimVarMenu } from './SimVars/SimVarMenu';
+import { CoherentMenu } from './Coherent/CoherentMenu';
 
 export const InteractionToolbar: FC = () => {
     const { inEditMode, setInEditMode } = useWorkspace();
@@ -24,7 +25,12 @@ export const InteractionToolbar: FC = () => {
                 <IconVariable size={56} strokeWidth={1.5} />
             </ToolbarItem>
 
-            <ToolbarItem color={ToolbarItemColors.GREEN}>
+            <ToolbarItem
+                color={ToolbarItemColors.GREEN}
+                renderPopover={() => (
+                    <CoherentMenu />
+                )}
+            >
                 <IconBulb size={56} strokeWidth={1.5} />
             </ToolbarItem>
 

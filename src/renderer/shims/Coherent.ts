@@ -18,10 +18,17 @@ export enum CoherentEventType {
 }
 
 export type CoherentActivity =
-    { type: CoherentEventType.TRIGGER, name: string, data: string } |
-    { type: CoherentEventType.NEW_ON, name: string, callback: (data: string) => void } |
-    { type: CoherentEventType.CLEAR_ON, name: string, callback: (data: string) => void } |
-    { type: CoherentEventType.CALL, name: string, args: any[] };
+    { name: string, time: Date } &
+    ({ type: CoherentEventType.TRIGGER, data: string } |
+    { type: CoherentEventType.NEW_ON, callback: (data: string) => void } |
+    { type: CoherentEventType.CLEAR_ON, callback: (data: string) => void } |
+    { type: CoherentEventType.CALL, args: any[] });
+
+const dateNow = () => {
+    const date = new Date();
+    date.setTime(Date.now());
+    return date;
+};
 
 export class Coherent {
     private events: CoherentEvent[] = [];
@@ -45,27 +52,24 @@ export class Coherent {
     }
 
     public trigger(name: string, data: string) {
-        console.log(`Coherent Event: ${name} triggered`);
         this.events.forEach((e) => (e.name === name ? e.callback(data) : {}));
-        this.notifySubscribers({ type: CoherentEventType.TRIGGER, name, data });
+        this.notifySubscribers({ type: CoherentEventType.TRIGGER, time: dateNow(), name, data });
     }
 
     public on(name: string, callback: (data: string) => void) {
-        console.log(`Coherent Event ${name} set on`);
         const event = new CoherentEvent(name, callback);
         this.events.push(event);
-        this.notifySubscribers({ type: CoherentEventType.NEW_ON, name, callback });
+        this.notifySubscribers({ type: CoherentEventType.NEW_ON, time: dateNow(), name, callback });
         return {
             clear: () => {
                 this.events.splice(this.events.indexOf(event), 1);
-                this.notifySubscribers({ type: CoherentEventType.NEW_ON, name, callback });
+                this.notifySubscribers({ type: CoherentEventType.NEW_ON, time: dateNow(), name, callback });
             },
         };
     }
 
     public call<T>(name: string, ...args: any[]): Promise<T> {
-        console.log(`Coherent Called: ${name}, with args: ${args}`);
-        this.notifySubscribers({ type: CoherentEventType.CALL, name, args });
+        this.notifySubscribers({ type: CoherentEventType.CALL, time: dateNow(), name, args });
         return new Promise(() => null);
     }
 }

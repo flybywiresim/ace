@@ -3,7 +3,7 @@
  */
 import { SimulatorInterface } from './SimulatorInterface';
 import { InstrumentData } from './InstrumentData';
-import { InstrumentLoader } from './InstrumentLoader';
+import { InstrumentLoader, InstrumentLoadOptions } from './InstrumentLoader';
 
 export interface AceEngineOptions {
     /**
@@ -26,7 +26,7 @@ export class AceEngine {
      * @param onto            iframe to load instrument onto
      * @param overrideOptions overridden options for instrument load
      */
-    loadInstrument(instrument: InstrumentData, onto: HTMLIFrameElement, overrideOptions?: AceEngineOptions): void {
-        InstrumentLoader.load(instrument, this.shim, onto, overrideOptions ?? this.options);
+    loadInstrument(instrument: InstrumentData, onto: HTMLIFrameElement, overrideOptions?: InstrumentLoadOptions): void {
+        InstrumentLoader.load(instrument, this.shim, onto, { ...this.options, ...overrideOptions });
     }
 }

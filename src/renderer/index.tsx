@@ -17,6 +17,8 @@ import { RecentlyOpenedProjects } from './Project/recently-opened';
 import { AceConfigHandler } from './Project/fs/AceConfigHandler';
 import { ProjectWorkspaceContainer } from './Pages/ProjectHome/ProjectWorkspaceContainer';
 
+const ACE_PROJECT_GITIGNORE_CONTENT = 'data/*\n';
+
 export type ProjectData = Project & { location: string };
 
 type ProjectContextType = {
@@ -55,6 +57,11 @@ export const Main = () => {
         }
 
         const project = JSON.parse(fs.readFileSync(path.join(location, '.ace/project.json'), { encoding: 'utf8' })) as Project;
+
+        // Create .ace gitignore if it doesn't exist
+        if (!fs.existsSync(path.join(location, '.ace/.gitignore'))) {
+            fs.writeFileSync(path.join(location, '.ace/.gitignore'), ACE_PROJECT_GITIGNORE_CONTENT);
+        }
 
         if (projects.find((p) => p.name === project.name)) {
             history.push(`/project/${project.name}`);
@@ -95,9 +102,17 @@ export const Main = () => {
             },
         };
 
-        console.log(project);
-        if (!fs.existsSync(path.join(location, '.ace'))) fs.mkdirSync(path.join(location, '.ace'));
+        // Create .ace directory
+        if (!fs.existsSync(path.join(location, '.ace'))) {
+            fs.mkdirSync(path.join(location, '.ace'));
+        }
+
+        // Create project.json
         fs.writeFileSync(path.join(location, '.ace/project.json'), JSON.stringify(project, null, '\t'));
+
+        // Create .ace gitignore
+        fs.writeFileSync(path.join(location, '.ace/.gitignore'), ACE_PROJECT_GITIGNORE_CONTENT);
+
         loadProject(location);
     };
 

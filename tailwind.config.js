@@ -19,7 +19,8 @@ module.exports = {
     theme: {
         fontFamily: {
             sans: ['Nunito Sans', ...defaultTheme.fontFamily.sans],
-            mono: ['Nova Mono', ...defaultTheme.fontFamily.mono],
+            mono: ['JetBrains Mono', ...defaultTheme.fontFamily.mono],
+            nova: ['Nova Mono', ...defaultTheme.fontFamily.mono],
         },
         extend: {},
     },

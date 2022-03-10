@@ -80,9 +80,8 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
                 initialPositionX={-PANEL_CANVAS_SIZE / 2}
                 initialPositionY={-PANEL_CANVAS_SIZE / 2}
                 minScale={0.045}
-                velocityAnimation={{
-                    disabled: true,
-                    sensitivity: 0,
+                panning={{
+                    velocityDisabled: true,
                 }}
                 doubleClick={{
                     mode: currentDoubleClickMode,
@@ -117,6 +116,7 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     title?: string;
     canvasZoom: number;
     onUpdate: (el: T) => void;
+    topBarButtons?: JSX.Element;
 }
 
 export const PanelCanvasElement = <T extends PossibleCanvasElements>({
@@ -124,6 +124,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     title,
     canvasZoom,
     onUpdate,
+    topBarButtons,
     children,
 }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
     const [offsetX, setOffsetX] = useState(() => element.position.x);
@@ -132,7 +133,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     const throttledOffsetX = useThrottle(offsetX, 750);
     const throttledOffsetY = useThrottle(offsetY, 750);
 
-    const TITLE_FONTSIZE = 14;
+    const TITLE_FONTSIZE = 18;
 
     const roundToGrid = (input: number): number => {
         const PROJECTED_GRID_CELL_SIZE = (PANEL_CANVAS_SIZE / GRID_SVG_SIZE) * GRID_LINE_SIZE;
@@ -196,12 +197,17 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
                     transform: `translate(${(PANEL_CANVAS_SIZE / 2) + offsetX}px, ${(PANEL_CANVAS_SIZE / 2) + offsetY}px)`,
                 }}
             >
-                <span className="absolute flex flex-row h-12 -top-16 justify-between items-center">
+                <span className="w-full absolute flex flex-row px-3 bg-gray-800 border-2 border-gray-700 rounded-t-md bg-opacity-80 h-10 -top-10 justify-between items-center">
                     <h1 style={{ fontSize: `${TITLE_FONTSIZE * (1 / canvasZoom)}px` }}>{title}</h1>
 
-                    {inEditMode && (
-                        <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
-                    )}
+                    <div className="flex flex-row gap-x-2.5">
+                        {inEditMode && (
+                            <IconArrowsMaximize className="hover:text-purple-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
+                        )}
+
+                        {topBarButtons}
+                    </div>
+
                 </span>
 
                 <span className="block border border-[#00c2cc] hover:border-green-500 overflow-hidden">

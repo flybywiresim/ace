@@ -9,6 +9,9 @@ import { simVarValuesReducer } from './reducers/simVarValues.reducer';
 import { persistentStorageReducer } from './reducers/persistentStorage.reducer';
 import { PersistentStorageHandler } from '../../../Project/fs/PersistentStorageHandler';
 import { deletePersistentValue, setPersistentValue } from './actions/persistentStorage.actions';
+import { setSimVarValue } from './actions/simVarValues.actions';
+import { SimVarValuesHandler } from '../../../Project/fs/SimVarValues';
+import { simVarDefinitionFromName } from '../../../../../ace-engine/src/SimVar';
 
 const reducer = combineReducers({
     projectData: projectDataReducer,
@@ -18,6 +21,8 @@ const reducer = combineReducers({
 });
 
 const SIMVAR_CONTROL_SAVE_ACTIONS = [addControl.type, deleteControl.type, editControl.type];
+
+const SIMVAR_VALUES_SAVE_ACTIONS = [setSimVarValue.type];
 
 const PERSISTENT_STORAGE_SAVE_ACTIONS = [setPersistentValue.type, deletePersistentValue.type];
 
@@ -31,6 +36,10 @@ export const projectStore = configureStore({
 
             if (SIMVAR_CONTROL_SAVE_ACTIONS.includes(action.type)) {
                 handleSaveSimVarControlState(state);
+            }
+
+            if (SIMVAR_VALUES_SAVE_ACTIONS.includes(action.type)) {
+                handleSaveSimVarValuesState(state);
             }
 
             if (PERSISTENT_STORAGE_SAVE_ACTIONS.includes(action.type)) {
@@ -47,6 +56,28 @@ function handleSaveSimVarControlState(state: ProjectState) {
 
     simvarControlsHandler.saveConfig({
         elements: state.simVarElements,
+    });
+}
+
+function handleSaveSimVarValuesState(state: ProjectState) {
+    const simVarValuesHandler = new SimVarValuesHandler(state.projectData.data.location);
+
+    const data = [];
+    for (const [key, value] of Object.entries(state.simVarValues)) {
+        try {
+            const element = {
+                variable: simVarDefinitionFromName(key, 'number'), // TODO actual unit
+                value,
+            };
+
+            data.push(element);
+        } catch (e) {
+            console.warn(`[SimVarValues] Could not parse simvar '${key}'. Ignoring.`);
+        }
+    }
+
+    simVarValuesHandler.saveConfig({
+        data,
     });
 }
 

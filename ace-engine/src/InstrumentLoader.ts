@@ -8,6 +8,10 @@ type AceInstrumentWindow = Window & {
     ACE_LAST_UPDATE: number | undefined
 }
 
+export type InstrumentLoadOptions = AceEngineOptions & {
+    onInstrumentError?: (error: Error) => void,
+}
+
 export class InstrumentLoader {
     /**
      * Loads an instrument onto an iframe
@@ -17,7 +21,7 @@ export class InstrumentLoader {
      * @param onto       iframe to load instrument onto
      * @param options    options for instrument load
      */
-    static load(instrument: InstrumentData, shim: SimulatorInterface, onto: HTMLIFrameElement, options?: AceEngineOptions): void {
+    static load(instrument: InstrumentData, shim: SimulatorInterface, onto: HTMLIFrameElement, options: InstrumentLoadOptions): void {
         const iframeWindow = onto.contentWindow as AceInstrumentWindow;
         const iframeDocument = onto.contentDocument;
 
@@ -60,6 +64,10 @@ export class InstrumentLoader {
 
             iframeWindow.ACE_LAST_UPDATE = newUpdate;
         }, options?.updateInterval ?? 50);
+
+        iframeWindow.addEventListener('error', (e) => {
+            options.onInstrumentError(e.error);
+        });
     }
 
     private static installShim(shim: SimulatorInterface, iframeWindow: Window): void {

@@ -54,7 +54,7 @@ const ApplicationTabs: FC = () => {
 
     return (
         <section className="h-12 flex flex-row items-center bg-navy-lighter shadow-md z-50">
-            <span className="w-40 flex flex-row justify-center text-2xl font-mono">
+            <span className="w-40 flex flex-row justify-center text-2xl font-nova">
                 <span>ACE</span>
                 <span className="text-teal">2</span>
             </span>

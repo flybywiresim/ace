@@ -1,6 +1,8 @@
 import React, { FC, FocusEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { IconPencil, IconTrash } from '@tabler/icons';
 import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../../../../shared/types/project/SimVarControl';
+import { useProjectDispatch, useProjectSelector } from '../../../Store';
+import { setSimVarValue } from '../../../Store/actions/simVarValues.actions';
 
 interface SimVarEditorProps {
     simVarControl: SimVarControl,
@@ -9,17 +11,10 @@ interface SimVarEditorProps {
 }
 
 export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarControl, onEdit, onDelete }) => {
+    const simVarValues = useProjectSelector((state) => state.simVarValues);
+    const projectDispatch = useProjectDispatch();
+
     const valueRef = useRef<HTMLSpanElement>();
-
-    const normalizeTextValue = (state: string) => {
-        const parsedFloat = parseFloat(state);
-
-        if (Number.isNaN(parsedFloat)) {
-            return state;
-        }
-
-        return parsedFloat;
-    };
 
     const defaultValueForControlStyle = (style: SimVarControlStyle) => {
         switch (style.type) {
@@ -37,15 +32,20 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
     };
 
     const [state, handleSetState] = useState<any>(() => {
-        const rawValue = window.localStorage.getItem(simVarControl.varName);
+        const rawValue = simVarValues[simVarControl.varName];
 
-        return normalizeTextValue(JSON.parse(rawValue) ?? defaultValueForControlStyle(simVarControl.style));
+        return rawValue ?? defaultValueForControlStyle(simVarControl.style);
     });
 
     useEffect(() => {
-        const normalizedValue = normalizeTextValue(state);
-
-        window.localStorage.setItem(simVarControl.varName, String(normalizedValue));
+        projectDispatch(setSimVarValue({
+            variable: {
+                prefix: simVarControl.varPrefix,
+                name: simVarControl.varName,
+                unit: simVarControl.varUnit,
+            },
+            value: state,
+        }));
 
         if (valueRef.current && document.activeElement !== valueRef.current) {
             valueRef.current.innerText = state;
@@ -86,17 +86,19 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                         />
                     )}
 
-                    <IconTrash
-                        size={28}
-                        className="text-gray-500 cursor-pointer hover:text-green-500"
-                        onClick={onDelete}
-                    />
+                    <span className="flex gap-x-2">
+                        <IconTrash
+                            size={28}
+                            className="text-gray-500 cursor-pointer hover:text-green-500"
+                            onClick={onDelete}
+                        />
 
-                    <IconPencil
-                        size={28}
-                        className="text-gray-500 cursor-pointer hover:text-green-500"
-                        onClick={onEdit}
-                    />
+                        <IconPencil
+                            size={28}
+                            className="text-gray-500 cursor-pointer hover:text-green-500"
+                            onClick={onEdit}
+                        />
+                    </span>
                 </div>
             </div>
         </div>
@@ -158,7 +160,7 @@ const RangeSimVarControl: FC<RangeSimVarControlProps> = ({ min, max, step, value
         <div className="mb-1 ml-auto">
             <input
                 style={{ background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${valuePercentage}%, #36465E ${valuePercentage}%, #36465E 100%)` }}
-                className="w-44"
+                className="w-52"
                 type="range"
                 value={value}
                 onChange={(e) => onInput(parseInt(e.target.value))}

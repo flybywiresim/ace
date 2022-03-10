@@ -1,5 +1,6 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import path from 'path';
+import { IconRefresh } from '@tabler/icons';
 import { PanelCanvasElement } from '../PanelCanvas';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
@@ -35,6 +36,9 @@ export interface InstrumentFrameElementProps {
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onUpdate }) => {
+    const [error, setError] = useState<Error | null>(null);
+    const [errorIsInInstrument, setErrorIsInInstrument] = useState(false);
+
     const { engine, project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
@@ -61,13 +65,23 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     const doLoadInstrument = useCallback(() => {
         console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Loading instrument into iframe.`);
 
-        if (iframeRef.current && loadedInstrument.config.name) {
-            engine.loadInstrument({
-                displayName: loadedInstrument.config.name,
-                elementName: 'ace-instrument',
-                jsSource: loadedInstrument.files[1].contents,
-                cssSource: loadedInstrument.files[0].contents,
-            }, iframeRef.current);
+        try {
+            if (iframeRef.current && loadedInstrument.config.name) {
+                engine.loadInstrument({
+                    displayName: loadedInstrument.config.name,
+                    elementName: 'ace-instrument',
+                    jsSource: loadedInstrument.files[1].contents,
+                    cssSource: loadedInstrument.files[0].contents,
+                }, iframeRef.current, {
+                    onInstrumentError: (error) => {
+                        setError(error);
+                        setErrorIsInInstrument(true);
+                    },
+                });
+            }
+        } catch (e) {
+            setError(e);
+            setErrorIsInInstrument(false);
         }
     }, [engine, instrumentFrame.title, loadedInstrument.config.name, loadedInstrument.files]);
 
@@ -93,14 +107,40 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             title={loadedInstrument.config.name}
             canvasZoom={zoom}
             onUpdate={onUpdate}
+            topBarButtons={(
+                <>
+                    <IconRefresh className="hover:text-green-500 hover:cursor-pointer" onMouseDown={() => doLoadInstrument()} />
+                </>
+            )}
         >
-            <iframe
-                title="Instrument Frame"
-                ref={iframeRef}
-                width={loadedInstrument.config.dimensions.width}
-                height={loadedInstrument.config.dimensions.height}
-                style={{ pointerEvents: inInteractionMode ? 'auto' : 'none' }}
-            />
+            {error ? (
+                <div
+                    className="flex flex-col justify-center gap-y-2.5 p-5 bg-gray-900"
+                    style={{
+                        width: loadedInstrument.config.dimensions.width ?? 1000,
+                        height: loadedInstrument.config.dimensions.height ?? 800,
+                    }}
+                >
+                    <span className="text-2xl font-bold">{errorIsInInstrument ? 'Error in instrument' : 'Error while loading instrument'}</span>
+                    <p className="text-xl">
+                        {errorIsInInstrument
+                            ? 'This error occurred in instrument code and was not recovered.'
+                            : 'This error occurred while ACE was loading the instrument.'}
+                    </p>
+
+                    <pre className="w-full flex-grow px-6 py-5 bg-gray-800 text-red-500 overflow-auto">
+                        {error.stack}
+                    </pre>
+                </div>
+            ) : (
+                <iframe
+                    title="Instrument Frame"
+                    ref={iframeRef}
+                    width={loadedInstrument.config.dimensions.width}
+                    height={loadedInstrument.config.dimensions.height}
+                    style={{ pointerEvents: inInteractionMode ? 'auto' : 'none' }}
+                />
+            )}
         </PanelCanvasElement>
     );
 };

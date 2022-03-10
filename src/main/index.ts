@@ -25,6 +25,7 @@ const createWindow = (): void => {
         height: 800,
         fullscreenable: true,
         frame: false,
+        icon: 'extraResources/icon.ico',
         webPreferences: {
             nodeIntegration: true,
             enableRemoteModule: true,

@@ -11,7 +11,7 @@ export const CoherentMenu = () => {
     const activity = useProjectSelector((store) => store.coherent.activity);
 
     return (
-        <SideMenu className="w-[420px] bg-navy z-50">
+        <SideMenu className="w-[420px] bg-navy z-50 overflow-auto">
             <h2 className="mb-3 font-medium">Coherent</h2>
             <div className="flex flex-col divide-y divide-gray-700">
                 {activity.map((event) => (

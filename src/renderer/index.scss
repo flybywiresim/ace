@@ -17,6 +17,21 @@ body {
   @apply w-full h-full bg-navy text-white;
 }
 
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #22344c;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #234160;
+}
+
 button,
 select,
 input:not([type="range"]) {

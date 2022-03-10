@@ -27,30 +27,54 @@ export const CoherentMenu = () => {
                             {CoherentEventType[event.type]}
                         </h4>
                         {/* eslint-disable-next-line no-nested-ternary */}
-                        {event.type === CoherentEventType.TRIGGER
-                            ? (
-                                <h4>
-                                    Data:
-                                    {' '}
-                                    <tspan className="bg-gray-600 rounded">
+                        {event.type === CoherentEventType.TRIGGER ? (
+                            <h4>
+                                Data:
+                                {' '}
+                                {event.data && (
+                                    <tspan
+                                        style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}
+                                        className="bg-gray-600 rounded"
+                                    >
                                         {event.data}
                                     </tspan>
-                                </h4>
-                            )
-                            : event.type === CoherentEventType.NEW_ON || event.type === CoherentEventType.CLEAR_ON
+                                )}
+                            </h4>
+                        )
+                            : (event.type === CoherentEventType.NEW_ON || event.type === CoherentEventType.CLEAR_ON)
                                 ? (
                                     <h4>
                                         Callback:
                                         {' '}
-                                        <code
-                                            className="bg-black rounded"
-                                            dangerouslySetInnerHTML={{ __html: highlight(event.callback.toString(), { language: 'javascript' }).value }}
-                                        />
+                                        {event.callback && (
+                                            <code
+                                                style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}
+                                                className="bg-black rounded"
+                                                dangerouslySetInnerHTML={{ __html: highlight(event.callback.toString(), { language: 'javascript' }).value }}
+                                            />
+                                        )}
                                     </h4>
                                 )
-                                : event.args.map((arg) => (
-                                    typeof arg === 'object' ? <ReactJson src={arg} theme="bright" displayDataTypes={false} displayObjectSize={false} collapsed /> : <h4>{arg.toString()}</h4>
-                                ))}
+                                : (
+                                    <div className="flex flex-col divide-y divide-gray-700">
+                                        {event.args.map((arg) => (
+                                            typeof arg === 'object' ? (
+                                                <ReactJson
+                                                    src={arg}
+                                                    style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}
+                                                    theme="bright"
+                                                    displayDataTypes={false}
+                                                    displayObjectSize={false}
+                                                    collapsed
+                                                />
+                                            ) : (
+                                                <h4 style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}>
+                                                    {arg.toString()}
+                                                </h4>
+                                            )
+                                        ))}
+                                    </div>
+                                )}
                     </div>
                 ))}
             </div>

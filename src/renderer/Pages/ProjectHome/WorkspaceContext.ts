@@ -13,8 +13,6 @@ type WorkspaceContextType = {
     removeCanvasElement: (element: PossibleCanvasElements) => void;
     inInteractionMode: boolean;
     setInInteractionMode: React.Dispatch<React.SetStateAction<boolean>>;
-    inEditMode: boolean;
-    setInEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     project: ProjectData,
     liveReloadDispatcher: LiveReloadDispatcher,
     startLiveReload: () => void,

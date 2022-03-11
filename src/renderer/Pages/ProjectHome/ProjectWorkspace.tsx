@@ -28,6 +28,7 @@ import { WorkspacePanelSelection } from './Store/reducers/interactionToolbar.red
 import { SimVarMenu } from './Components/SimVars/SimVarMenu';
 import { Timeline } from './Components/Timeline';
 import { LiveReloadMenu } from './Components/LiveReloadMenu';
+import { EditMenu } from './Components/EditMenu';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -120,8 +121,6 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
 
         return () => window.removeEventListener('keydown', handler);
     }, []);
-
-    const [inEditMode, setInEditMode] = useState(false);
 
     const doLoadProjectCanvasSave = useCallback(() => {
         const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
@@ -272,6 +271,8 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
             return <SimVarMenu />;
         case WorkspacePanelSelection.Timeline:
             return <Timeline />;
+        case WorkspacePanelSelection.Edit:
+            return <EditMenu />;
         case WorkspacePanelSelection.LiveReload:
             return <LiveReloadMenu />;
         }
@@ -283,10 +284,8 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
             addInstrument: handleAddInstrument,
             removeCanvasElement: handleDeleteCanvasElement,
             project,
-            inEditMode,
             inInteractionMode,
             setInInteractionMode,
-            setInEditMode,
             liveReloadDispatcher,
             startLiveReload,
             handlers: {

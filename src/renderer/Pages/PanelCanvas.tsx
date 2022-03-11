@@ -1,11 +1,12 @@
-import React, { useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent, PropsWithChildren } from 'react';
+import React, { MouseEvent, PropsWithChildren, useCallback, useEffect, useRef, useState, WheelEvent } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { IconArrowsMaximize } from '@tabler/icons';
 import { useThrottle } from 'react-use';
 import useInterval from '../../utils/useInterval';
-import { useWorkspace } from './ProjectHome/WorkspaceContext';
 import { PossibleCanvasElements } from '../../shared/types/project/canvas/CanvasSaveFile';
 import { GRID_LINE_SIZE, GRID_SVG_SIZE } from './Canvas/Grid';
+import { useProjectSelector } from './ProjectHome/Store';
+import { WorkspacePanelSelection } from './ProjectHome/Store/reducers/interactionToolbar.reducer';
 
 export const PANEL_CANVAS_SIZE = 30_000;
 
@@ -155,7 +156,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
         setOffsetY(roundToGrid(editPositionY));
     }, [editPositionX, editPositionY]);
 
-    const { inEditMode } = useWorkspace();
+    const inEditMode = useProjectSelector((state) => state.interactionToolbar.panel === WorkspacePanelSelection.Edit);
 
     const canvasElementRef = useRef<HTMLDivElement>(null);
 

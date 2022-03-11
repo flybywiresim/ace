@@ -1,6 +1,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { LiveReloadConfig } from '../../../../shared/types/project/LiveReloadConfig';
 import { useWorkspace } from '../WorkspaceContext';
+import { SideMenu } from './Framework/Toolbars';
 
 export const LiveReloadMenu: FC = () => {
     const { project, handlers, startLiveReload } = useWorkspace();
@@ -15,7 +16,7 @@ export const LiveReloadMenu: FC = () => {
     };
 
     return (
-        <section className="w-72">
+        <SideMenu className="w-[500px] bg-navy z-50 overflow-auto">
             <h1>Live Reload</h1>
 
             {liveReloadConfig && (
@@ -29,7 +30,7 @@ export const LiveReloadMenu: FC = () => {
             )}
 
             <button type="button" onClick={handleStartLiveReload}>Start live reload</button>
-        </section>
+        </SideMenu>
     );
 };
 

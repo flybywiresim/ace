@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useWorkspace } from '../WorkspaceContext';
 import { ProjectInstrumentsHandler } from '../../../Project/fs/Instruments';
+import { SideMenu } from './Framework/Toolbars';
 
 export const EditMenu = () => {
     const { addInstrument, project } = useWorkspace();
@@ -16,7 +17,7 @@ export const EditMenu = () => {
     }, [project]);
 
     return (
-        <div className="relative">
+        <SideMenu className="w-[500px] bg-navy z-50 overflow-auto">
             {availableInstruments.map((instrument) => (
                 <button
                     type="button"
@@ -27,6 +28,6 @@ export const EditMenu = () => {
                     {instrument}
                 </button>
             ))}
-        </div>
+        </SideMenu>
     );
 };

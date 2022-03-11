@@ -2,18 +2,11 @@ import React, { FC } from 'react';
 import { IconArrowsMaximize, IconBulb, IconChevronLeft, IconPencil, IconRefresh, IconVariable } from '@tabler/icons';
 import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Framework/Toolbars';
 import { EditMenu } from './EditMenu';
-import { useWorkspace } from '../WorkspaceContext';
 import { useProjectDispatch, useProjectSelector } from '../Store';
 import { WorkspacePanelSelection } from '../Store/reducers/interactionToolbar.reducer';
 import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.actions';
 
 export const InteractionToolbar: FC = () => {
-    const { inEditMode, setInEditMode } = useWorkspace();
-
-    const handleSetEditMode = () => {
-        setInEditMode((old) => !old);
-    };
-
     const panelSelection = useProjectSelector((state) => state.interactionToolbar.panel);
     const dispatch = useProjectDispatch();
 
@@ -46,8 +39,8 @@ export const InteractionToolbar: FC = () => {
             <ToolbarSeparator />
 
             <ToolbarItem
-                visible={inEditMode}
-                onClick={handleSetEditMode}
+                visible={panelSelection === WorkspacePanelSelection.Edit}
+                onClick={() => selectPanel(WorkspacePanelSelection.Edit)}
                 color={ToolbarItemColors.PURPLE}
                 renderPopover={() => (
                     <EditMenu />

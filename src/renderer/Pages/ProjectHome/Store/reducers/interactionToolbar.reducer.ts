@@ -5,6 +5,7 @@ export enum WorkspacePanelSelection {
     None,
     SimVars,
     Timeline,
+    Edit,
     LiveReload,
 }
 

@@ -12,7 +12,7 @@ import { deletePersistentValue, setPersistentValue } from './actions/persistentS
 import { setSimVarValue } from './actions/simVarValues.actions';
 import { SimVarValuesHandler } from '../../../Project/fs/SimVarValues';
 import { simVarDefinitionFromName } from '../../../../../ace-engine/src/SimVar';
-import { coherentReducer } from './reducers/coherent.reducer';
+import { timelineReducer } from './reducers/timeline.reducer';
 import { interactionToolbarReducer } from './reducers/interactionToolbar.reducer';
 
 const reducer = combineReducers({
@@ -20,7 +20,7 @@ const reducer = combineReducers({
     simVarValues: simVarValuesReducer,
     persistentStorage: persistentStorageReducer,
     simVarElements: simVarElementsReducer,
-    coherent: coherentReducer,
+    timeline: timelineReducer,
     interactionToolbar: interactionToolbarReducer,
 });
 

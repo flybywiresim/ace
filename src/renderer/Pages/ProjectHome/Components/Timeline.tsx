@@ -10,7 +10,7 @@ import {
     ActivityType, CoherentEventActivity,
     CoherentTriggerCallActivity, DataStorageSetActivity,
     SimVarSetActivity,
-} from '../Store/reducers/coherent.reducer';
+} from '../Store/reducers/timeline.reducer';
 
 const UNIMPORTANT_COHERENT_TRIGGERS = ['FOCUS_INPUT_FIELD', 'UNFOCUS_INPUT_FIELD'];
 
@@ -96,7 +96,7 @@ const ActivityHeaderTitle: FC<ActivityHeaderTitleProps> = ({ kind }) => {
 };
 
 export const Timeline = () => {
-    const activity = useProjectSelector((store) => store.coherent.activity);
+    const activity = useProjectSelector((store) => store.timeline.activity);
 
     return (
         <SideMenu className="w-[500px] bg-navy z-50 overflow-auto">

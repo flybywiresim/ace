@@ -6,6 +6,7 @@ export enum ActivityType {
     SimVarSet,
     CoherentTrigger,
     CoherentNewOn,
+    DataStorageSet,
 }
 
 export interface BaseActivity {
@@ -32,7 +33,13 @@ export interface CoherentNewOnActivity extends BaseActivity {
     callback: Function,
 }
 
-export type Activity = SimVarSetActivity | CoherentTriggerActivity | CoherentNewOnActivity
+export interface DataStorageSetActivity extends BaseActivity {
+    kind: ActivityType.DataStorageSet,
+    key: string,
+    value: string,
+}
+
+export type Activity = SimVarSetActivity | CoherentTriggerActivity | CoherentNewOnActivity | DataStorageSetActivity
 
 export const coherentReducer = createReducer<{ activity: Activity[] }>({ activity: [] }, (builder) => {
     builder.addCase(logActivity, (state, action) => {

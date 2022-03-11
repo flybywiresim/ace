@@ -7,7 +7,7 @@ import { useProjectSelector } from '../../Store';
 import {
     Activity,
     ActivityType,
-    CoherentTriggerActivity,
+    CoherentTriggerActivity, DataStorageSetActivity,
     SimVarSetActivity,
 } from '../../Store/reducers/coherent.reducer';
 
@@ -65,6 +65,14 @@ const ActivityHeaderTitle: FC<ActivityHeaderTitleProps> = ({ kind }) => {
                 <span>NewOn</span>
             </span>
         );
+    case ActivityType.DataStorageSet:
+        return (
+            <span className="text-md font-mono flex gap-x-1 text-gray-400">
+                <span className="text-green-500">DataStorage</span>
+                <span>/</span>
+                <span>Set</span>
+            </span>
+        );
     default:
         return <span>Unknown</span>;
     }
@@ -87,6 +95,10 @@ export const CoherentMenu = () => {
 
                             {event.kind === ActivityType.CoherentTrigger && (
                                 <CoherentTriggerActivityData activity={event} />
+                            )}
+
+                            {event.kind === ActivityType.DataStorageSet && (
+                                <DataStorageSetActivityData activity={event} />
                             )}
                         </div>
                     </Collapsible>
@@ -135,5 +147,21 @@ const CoherentTriggerActivityData: FC<CoherentTriggerActivityDataProps> = ({ act
                 <span className="font-mono bg-gray-700 px-1.5 rounded-sm">{JSON.stringify(arg)}</span>
             </span>
         ))}
+    </div>
+);
+
+interface DataStorageSetActivityDataProps {
+    activity: DataStorageSetActivity,
+}
+
+const DataStorageSetActivityData: FC<DataStorageSetActivityDataProps> = ({ activity }) => (
+    <div className="flex flex-row items-center gap-x-2">
+        <span className="font-mono bg-gray-700 px-1.5 rounded-sm">
+            {activity.key}
+        </span>
+
+        <IconArrowRight className="ml-auto" size={16} />
+
+        <span className="font-mono bg-gray-700 px-1.5 rounded-sm">{activity.value}</span>
     </div>
 );

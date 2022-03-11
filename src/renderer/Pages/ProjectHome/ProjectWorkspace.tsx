@@ -56,6 +56,16 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                     args,
                 }));
             },
+
+            onSetStoredData(key: string, setValue: string) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.DataStorageSet,
+                    fromInstrument: 'Unknown',
+                    timestamp: new Date(),
+                    key,
+                    value: setValue,
+                }));
+            },
         },
     }));
 

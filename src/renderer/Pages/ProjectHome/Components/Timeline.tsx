@@ -3,14 +3,14 @@ import React, { FC } from 'react';
 import Collapsible from 'react-collapsible';
 import { IconArrowRight } from '@tabler/icons';
 import ReactJson from 'react-json-view';
-import { SideMenu } from '../Framework/Toolbars';
-import { useProjectSelector } from '../../Store';
+import { SideMenu } from './Framework/Toolbars';
+import { useProjectSelector } from '../Store';
 import {
     Activity,
     ActivityType, CoherentEventActivity,
     CoherentTriggerCallActivity, DataStorageSetActivity,
     SimVarSetActivity,
-} from '../../Store/reducers/coherent.reducer';
+} from '../Store/reducers/coherent.reducer';
 
 const UNIMPORTANT_COHERENT_TRIGGERS = ['FOCUS_INPUT_FIELD', 'UNFOCUS_INPUT_FIELD'];
 
@@ -95,7 +95,7 @@ const ActivityHeaderTitle: FC<ActivityHeaderTitleProps> = ({ kind }) => {
     }
 };
 
-export const CoherentMenu = () => {
+export const Timeline = () => {
     const activity = useProjectSelector((store) => store.coherent.activity);
 
     return (

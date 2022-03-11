@@ -26,7 +26,7 @@ import { logActivity } from './Store/actions/coherent.actions';
 import { ActivityType } from './Store/reducers/coherent.reducer';
 import { WorkspacePanelSelection } from './Store/reducers/interactionToolbar.reducer';
 import { SimVarMenu } from './Components/SimVars/SimVarMenu';
-import { CoherentMenu } from './Components/Coherent/CoherentMenu';
+import { Timeline } from './Components/Timeline';
 import { LiveReloadMenu } from './Components/LiveReloadMenu';
 
 export interface ProjectWorkspaceProps {
@@ -271,7 +271,7 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         case WorkspacePanelSelection.SimVars:
             return <SimVarMenu />;
         case WorkspacePanelSelection.Timeline:
-            return <CoherentMenu />;
+            return <Timeline />;
         case WorkspacePanelSelection.LiveReload:
             return <LiveReloadMenu />;
         }

@@ -100,7 +100,6 @@ const ActivityHeaderTitle: FC<ActivityHeaderTitleProps> = ({ kind }) => {
 
 export const Timeline = () => {
     const activity = useProjectSelector((store) => store.timeline.activity);
-
     return (
         <SideMenu className="w-[480px] bg-navy z-50 overflow-auto">
             <h2 className="mb-3 font-medium">Timeline</h2>
@@ -117,12 +116,8 @@ export const Timeline = () => {
                                 <CoherentTriggerCallActivityData activity={event} />
                             )}
 
-                            {event.kind === ActivityType.CoherentNewOn && (
-                                <CoherentEventActivityData name={event.data.name} uuid={event.data._uuid} />
-                            )}
-
-                            {event.kind === ActivityType.CoherentClearOn && (
-                                <CoherentEventActivityData name={event.event} uuid={event.uuid} />
+                            {(event.kind === ActivityType.CoherentNewOn || event.kind === ActivityType.CoherentClearOn) && (
+                                <CoherentEventActivityData name={event.data.name} uuid={event.data.uuid} />
                             )}
 
                             {event.kind === ActivityType.DataStorageSet && (
@@ -166,7 +161,7 @@ interface EventNameProps {
 const EventName: FC<EventNameProps> = ({ name, uuid }) => {
     const events = useProjectSelector((state) => state.coherent.events);
     const dispatch = useProjectDispatch();
-    const hasLink = useMemo(() => events.some((event) => (uuid ? event._uuid === uuid : event.name === name)), [events, name, uuid]);
+    const hasLink = useMemo(() => events.some((event) => (uuid ? event.data.uuid === uuid : event.data.name === name)), [events, name, uuid]);
     return (
         <span
             className={`font-mono bg-gray-700 px-1.5 rounded-sm ${hasLink ? 'cursor-pointer underline' : 'opacity-60'}`}

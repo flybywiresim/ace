@@ -12,30 +12,30 @@ export const CoherentMenu = () => {
         <SideMenu className="w-[480px] bg-navy z-50 overflow-auto">
             <h2 className="mb-3 font-medium">Coherent</h2>
             <div className="flex flex-col divide-y divide-gray-700">
-                {[...events].sort((a, b) => b.creationTimestamp.getTime() - a.creationTimestamp.getTime()).map((event) => (
+                {[...events].sort((a, b) => b.data.timestamp.getTime() - a.data.timestamp.getTime()).map(({ data, clear }) => (
                     <div className="flex flex-col justify-start gap-y-4 py-3.5">
                         <div className="flex flex-row justify-between items-center gap-x-3.5">
-                            <h1 className="text-lg">{event.name}</h1>
+                            <h1 className="text-lg">{data.name}</h1>
                             <span className="ml-auto font-mono text-gray-300">
-                                {event.creationTimestamp.getHours().toString().padStart(2, '0')}
+                                {data.timestamp.getHours().toString().padStart(2, '0')}
                                 :
-                                {event.creationTimestamp.getMinutes().toString().padStart(2, '0')}
+                                {data.timestamp.getMinutes().toString().padStart(2, '0')}
                                 :
-                                {event.creationTimestamp.getSeconds().toString().padStart(2, '0')}
+                                {data.timestamp.getSeconds().toString().padStart(2, '0')}
                             </span>
                         </div>
                         <div className="flex flex-row justify-between items-center gap-x-3.5">
-                            {event.callback && (
+                            {data.callback && (
                                 <code
                                     style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}
                                     className="bg-black rounded"
-                                    dangerouslySetInnerHTML={{ __html: highlight(event.callback.toString(), { language: 'javascript' }).value }}
+                                    dangerouslySetInnerHTML={{ __html: highlight(data.callback.toString(), { language: 'javascript' }).value }}
                                 />
                             )}
                             <IconTrash
                                 size={28}
                                 className="text-gray-500 cursor-pointer hover:text-green-500"
-                                onClick={() => event.clear()}
+                                onClick={() => clear()}
                             />
                         </div>
                     </div>

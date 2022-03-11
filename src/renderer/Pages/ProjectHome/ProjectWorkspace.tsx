@@ -68,25 +68,24 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                 }));
             },
 
-            onCoherentNewListener(data) {
+            onCoherentNewListener(data, clear) {
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentNewOn,
                     fromInstrument: 'Unknown',
                     timestamp: new Date(),
                     data,
                 }));
-                projectDispatch(addCoherentEvent(data));
+                projectDispatch(addCoherentEvent({ data, clear }));
             },
 
-            onCoherentClearListener(event, _, uuid) {
+            onCoherentClearListener(data) {
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentClearOn,
                     fromInstrument: 'Unknown',
                     timestamp: new Date(),
-                    event,
-                    uuid,
+                    data,
                 }));
-                projectDispatch(clearCoherentEvent(uuid));
+                projectDispatch(clearCoherentEvent(data.uuid));
             },
 
             onSetStoredData(key: string, setValue: string) {

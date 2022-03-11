@@ -1,4 +1,5 @@
 import { SimVarDefinition, SimVarValue } from './SimVar';
+import { CoherentEventData } from '../../src/renderer/Pages/ProjectHome/Store/reducers/coherent.reducer';
 
 /**
  * Interface for receiving notifications about simulator interface calls
@@ -12,9 +13,9 @@ export interface SimCallListener {
 
     onCoherentCall?(event: string, ...args: any[]): void
 
-    onCoherentNewListener?(event: string, func: Function): void
+    onCoherentNewListener?(data: CoherentEventData): void,
 
-    onCoherentClearListener?(event: string, func: Function): void
+    onCoherentClearListener?(name: string, callback: (data: string) => void, _uuid: string): void
 
     onCoherentTrigger?(event: string, ...args: string[]): void
 

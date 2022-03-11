@@ -1,5 +1,13 @@
 import React, { FC } from 'react';
-import { IconArrowsMaximize, IconBulb, IconChevronLeft, IconPencil, IconRefresh, IconVariable } from '@tabler/icons';
+import {
+    IconArrowsMaximize,
+    IconBell,
+    IconBulb,
+    IconChevronLeft,
+    IconPencil,
+    IconRefresh,
+    IconVariable,
+} from '@tabler/icons';
 import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Framework/Toolbars';
 import { EditMenu } from './EditMenu';
 import { useProjectDispatch, useProjectSelector } from '../Store';
@@ -8,6 +16,7 @@ import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.action
 import { SimVarMenu } from './SimVars/SimVarMenu';
 import { Timeline } from './Timeline';
 import { LiveReloadMenu } from './LiveReloadMenu';
+import { CoherentMenu } from './CoherentMenu';
 
 export const InteractionToolbar: FC = () => {
     const panelSelection = useProjectSelector((state) => state.interactionToolbar.panel);
@@ -31,6 +40,8 @@ export const InteractionToolbar: FC = () => {
             return <SimVarMenu />;
         case WorkspacePanelSelection.Timeline:
             return <Timeline />;
+        case WorkspacePanelSelection.Coherent:
+            return <CoherentMenu />;
         case WorkspacePanelSelection.Edit:
             return <EditMenu />;
         case WorkspacePanelSelection.LiveReload:
@@ -55,6 +66,14 @@ export const InteractionToolbar: FC = () => {
                     onClick={() => selectPanel(WorkspacePanelSelection.Timeline)}
                 >
                     <IconBulb size={56} strokeWidth={1.5} />
+                </ToolbarItem>
+
+                <ToolbarItem
+                    color={ToolbarItemColors.GREEN}
+                    visible={panelSelection === WorkspacePanelSelection.Coherent}
+                    onClick={() => selectPanel(WorkspacePanelSelection.Coherent)}
+                >
+                    <IconBell size={56} strokeWidth={1.5} />
                 </ToolbarItem>
 
                 <ToolbarSeparator />

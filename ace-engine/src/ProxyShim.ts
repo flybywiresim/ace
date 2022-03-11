@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { v4 } from 'uuid';
 import { SimulatorInterface, ViewListener } from './SimulatorInterface';
 import { SimCallListener } from './SimCallListener';
 import { simVarDefinitionFromName, SimVarValue } from './SimVar';
@@ -20,14 +22,17 @@ export class ProxyShim implements SimulatorInterface {
         },
 
         on: (name: string, callback: (data: string) => void): { clear: () => void } => {
-            this.simCallListener.onCoherentNewListener?.(name, callback);
+            const _uuid = v4();
+            const clear = () => {
+                this.simCallListener.onCoherentClearListener?.(name, callback, _uuid);
+                value.clear();
+            };
+
+            this.simCallListener.onCoherentNewListener?.({ name, callback, creationTimestamp: new Date(), _uuid, clear });
             const value = this.shim.Coherent.on(name, callback);
             return {
                 ...value,
-                clear: () => {
-                    this.simCallListener.onCoherentClearListener?.(name, callback);
-                    value.clear();
-                },
+                clear,
             };
         },
 

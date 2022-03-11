@@ -14,6 +14,7 @@ import { SimVarValuesHandler } from '../../../Project/fs/SimVarValues';
 import { simVarDefinitionFromName } from '../../../../../ace-engine/src/SimVar';
 import { timelineReducer } from './reducers/timeline.reducer';
 import { interactionToolbarReducer } from './reducers/interactionToolbar.reducer';
+import { coherentReducer } from './reducers/coherent.reducer';
 
 const reducer = combineReducers({
     projectData: projectDataReducer,
@@ -22,6 +23,7 @@ const reducer = combineReducers({
     simVarElements: simVarElementsReducer,
     timeline: timelineReducer,
     interactionToolbar: interactionToolbarReducer,
+    coherent: coherentReducer,
 });
 
 const SIMVAR_CONTROL_SAVE_ACTIONS = [addControl.type, deleteControl.type, editControl.type];

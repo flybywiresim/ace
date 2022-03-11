@@ -24,6 +24,7 @@ import { AceEngine } from '../../../../ace-engine/src/AceEngine';
 import { SimVarDefinition, SimVarValue } from '../../../../ace-engine/src/SimVar';
 import { logActivity } from './Store/actions/timeline.actions';
 import { ActivityType } from './Store/reducers/timeline.reducer';
+import { addCoherentEvent, clearCoherentEvent } from './Store/actions/coherent.actions';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -67,24 +68,25 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                 }));
             },
 
-            onCoherentNewListener(event: string, callback: Function) {
+            onCoherentNewListener(data) {
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentNewOn,
                     fromInstrument: 'Unknown',
                     timestamp: new Date(),
-                    event,
-                    callback,
+                    data,
                 }));
+                projectDispatch(addCoherentEvent(data));
             },
 
-            onCoherentClearListener(event: string, callback: Function) {
+            onCoherentClearListener(event, _, uuid) {
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentClearOn,
                     fromInstrument: 'Unknown',
                     timestamp: new Date(),
                     event,
-                    callback,
+                    uuid,
                 }));
+                projectDispatch(clearCoherentEvent(uuid));
             },
 
             onSetStoredData(key: string, setValue: string) {

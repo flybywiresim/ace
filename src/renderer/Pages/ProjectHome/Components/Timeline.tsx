@@ -1,16 +1,19 @@
-/* eslint-disable react/no-danger */
-import React, { FC } from 'react';
+/* eslint-disable react/no-danger,react/jsx-handler-names */
+import React, { FC, useMemo } from 'react';
 import Collapsible from 'react-collapsible';
 import { IconArrowRight } from '@tabler/icons';
 import ReactJson from 'react-json-view';
 import { SideMenu } from './Framework/Toolbars';
-import { useProjectSelector } from '../Store';
+import { useProjectDispatch, useProjectSelector } from '../Store';
 import {
     Activity,
-    ActivityType, CoherentEventActivity,
-    CoherentTriggerCallActivity, DataStorageSetActivity,
+    ActivityType,
+    CoherentTriggerCallActivity,
+    DataStorageSetActivity,
     SimVarSetActivity,
 } from '../Store/reducers/timeline.reducer';
+import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.actions';
+import { WorkspacePanelSelection } from '../Store/reducers/interactionToolbar.reducer';
 
 const UNIMPORTANT_COHERENT_TRIGGERS = ['FOCUS_INPUT_FIELD', 'UNFOCUS_INPUT_FIELD'];
 
@@ -114,8 +117,12 @@ export const Timeline = () => {
                                 <CoherentTriggerCallActivityData activity={event} />
                             )}
 
-                            {(event.kind === ActivityType.CoherentNewOn || event.kind === ActivityType.CoherentClearOn) && (
-                                <CoherentEventActivityData activity={event} />
+                            {event.kind === ActivityType.CoherentNewOn && (
+                                <CoherentEventActivityData name={event.data.name} uuid={event.data._uuid} />
+                            )}
+
+                            {event.kind === ActivityType.CoherentClearOn && (
+                                <CoherentEventActivityData name={event.event} uuid={event.uuid} />
                             )}
 
                             {event.kind === ActivityType.DataStorageSet && (
@@ -151,15 +158,32 @@ const SimVarSetActivityData: FC<SimVarSetActivityDataProps> = ({ activity }) => 
     </div>
 );
 
+interface EventNameProps {
+    name: string,
+    uuid?: string,
+}
+
+const EventName: FC<EventNameProps> = ({ name, uuid }) => {
+    const events = useProjectSelector((state) => state.coherent.events);
+    const dispatch = useProjectDispatch();
+    const hasLink = useMemo(() => events.some((event) => (uuid ? event._uuid === uuid : event.name === name)), [events, name, uuid]);
+    return (
+        <span
+            className={`font-mono bg-gray-700 px-1.5 rounded-sm ${hasLink ? 'cursor-pointer underline' : 'opacity-60'}`}
+            onClick={hasLink ? () => dispatch(selectWorkspacePanel(WorkspacePanelSelection.Coherent)) : undefined}
+        >
+            {name}
+        </span>
+    );
+};
+
 interface CoherentTriggerActivityDataProps {
     activity: CoherentTriggerCallActivity,
 }
 
 const CoherentTriggerCallActivityData: FC<CoherentTriggerActivityDataProps> = ({ activity }) => (
     <div className="flex flex-col gap-y-2.5 items-start">
-        <span className="font-mono bg-gray-700 px-1.5 rounded-sm">
-            {activity.event}
-        </span>
+        <EventName name={activity.event} />
 
         {activity.args.map((arg, index) => (
             <span className="flex gap-x-2">
@@ -183,14 +207,13 @@ const CoherentTriggerCallActivityData: FC<CoherentTriggerActivityDataProps> = ({
 );
 
 interface CoherentEventActivityDataProps {
-    activity: CoherentEventActivity,
+    name: string,
+    uuid?: string,
 }
 
-const CoherentEventActivityData: FC<CoherentEventActivityDataProps> = ({ activity }) => (
+const CoherentEventActivityData: FC<CoherentEventActivityDataProps> = ({ name, uuid }) => (
     <div className="flex flex-col gap-y-2.5 items-start">
-        <span className="font-mono bg-gray-700 px-1.5 rounded-sm">
-            {activity.event}
-        </span>
+        <EventName name={name} uuid={uuid} />
     </div>
 );
 

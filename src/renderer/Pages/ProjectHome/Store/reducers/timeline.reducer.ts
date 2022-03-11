@@ -1,6 +1,7 @@
 import { createReducer } from '@reduxjs/toolkit';
 import { logActivity } from '../actions/timeline.actions';
 import { SimVarDefinition, SimVarValue } from '../../../../../../ace-engine/src/SimVar';
+import { CoherentEventData } from './coherent.reducer';
 
 export enum ActivityType {
     SimVarSet,
@@ -29,10 +30,15 @@ export interface CoherentTriggerCallActivity extends BaseActivity {
     args: any[],
 }
 
-export interface CoherentEventActivity extends BaseActivity {
-    kind: ActivityType.CoherentNewOn | ActivityType.CoherentClearOn,
+export interface CoherentAddEventActivity extends BaseActivity {
+    kind: ActivityType.CoherentNewOn,
+    data: CoherentEventData
+}
+
+export interface CoherentClearEventActivity extends BaseActivity {
+    kind: ActivityType.CoherentClearOn,
     event: string,
-    callback: Function,
+    uuid: string,
 }
 
 export interface DataStorageSetActivity extends BaseActivity {
@@ -41,7 +47,7 @@ export interface DataStorageSetActivity extends BaseActivity {
     value: string,
 }
 
-export type Activity = SimVarSetActivity | CoherentTriggerCallActivity | CoherentEventActivity | DataStorageSetActivity
+export type Activity = SimVarSetActivity | CoherentTriggerCallActivity | CoherentAddEventActivity | CoherentClearEventActivity | DataStorageSetActivity
 
 export const timelineReducer = createReducer<{ activity: Activity[] }>({ activity: [] }, (builder) => {
     builder.addCase(logActivity, (state, action) => {

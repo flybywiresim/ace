@@ -99,7 +99,7 @@ export const Timeline = () => {
     const activity = useProjectSelector((store) => store.timeline.activity);
 
     return (
-        <SideMenu className="w-[500px] bg-navy z-50 overflow-auto">
+        <SideMenu className="w-[480px] bg-navy z-50 overflow-auto">
             <h2 className="mb-3 font-medium">Timeline</h2>
 
             <div className="flex flex-col divide-y divide-gray-700">

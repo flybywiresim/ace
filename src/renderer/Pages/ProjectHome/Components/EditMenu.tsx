@@ -17,7 +17,10 @@ export const EditMenu = () => {
     }, [project]);
 
     return (
-        <SideMenu className="w-[500px] bg-navy z-50 overflow-auto">
+        <SideMenu className="w-[480px] bg-navy z-50 overflow-auto">
+            <h2 className="mb-3 font-medium">Edit</h2>
+
+            <h3 className="mb-3 font-small">Add Instrument</h3>
             {availableInstruments.map((instrument) => (
                 <button
                     type="button"

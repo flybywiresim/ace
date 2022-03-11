@@ -16,8 +16,8 @@ export const LiveReloadMenu: FC = () => {
     };
 
     return (
-        <SideMenu className="w-[500px] bg-navy z-50 overflow-auto">
-            <h1>Live Reload</h1>
+        <SideMenu className="w-[480px] bg-navy z-50 overflow-auto">
+            <h2 className="mb-3 font-medium">Live Reload</h2>
 
             {liveReloadConfig && (
                 <pre>

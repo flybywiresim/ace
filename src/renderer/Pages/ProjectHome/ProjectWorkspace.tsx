@@ -57,6 +57,36 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                 }));
             },
 
+            onCoherentCall(event: string, ...args) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentCall,
+                    fromInstrument: 'Unknown',
+                    timestamp: new Date(),
+                    event,
+                    args,
+                }));
+            },
+
+            onCoherentNewListener(event: string, callback: Function) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentNewOn,
+                    fromInstrument: 'Unknown',
+                    timestamp: new Date(),
+                    event,
+                    callback,
+                }));
+            },
+
+            onCoherentClearListener(event: string, callback: Function) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentClearOn,
+                    fromInstrument: 'Unknown',
+                    timestamp: new Date(),
+                    event,
+                    callback,
+                }));
+            },
+
             onSetStoredData(key: string, setValue: string) {
                 projectDispatch(logActivity({
                     kind: ActivityType.DataStorageSet,

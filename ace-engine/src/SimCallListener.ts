@@ -14,6 +14,8 @@ export interface SimCallListener {
 
     onCoherentNewListener?(event: string, func: Function): void
 
+    onCoherentClearListener?(event: string, func: Function): void
+
     onCoherentTrigger?(event: string, ...args: string[]): void
 
     onRegisterViewListener?(type: string, p1: any, singleton: boolean): void

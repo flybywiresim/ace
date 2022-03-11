@@ -2,12 +2,13 @@
 import React, { FC } from 'react';
 import Collapsible from 'react-collapsible';
 import { IconArrowRight } from '@tabler/icons';
+import ReactJson from 'react-json-view';
 import { SideMenu } from '../Framework/Toolbars';
 import { useProjectSelector } from '../../Store';
 import {
     Activity,
-    ActivityType,
-    CoherentTriggerActivity, DataStorageSetActivity,
+    ActivityType, CoherentEventActivity,
+    CoherentTriggerCallActivity, DataStorageSetActivity,
     SimVarSetActivity,
 } from '../../Store/reducers/coherent.reducer';
 
@@ -57,12 +58,28 @@ const ActivityHeaderTitle: FC<ActivityHeaderTitleProps> = ({ kind }) => {
                 <span>Trigger</span>
             </span>
         );
+    case ActivityType.CoherentCall:
+        return (
+            <span className="text-md font-mono flex gap-x-1 text-gray-400">
+                <span className="text-red-500">Coherent</span>
+                <span>/</span>
+                <span>Call</span>
+            </span>
+        );
     case ActivityType.CoherentNewOn:
         return (
             <span className="text-md font-mono flex gap-x-1 text-gray-400">
                 <span className="text-red-500">Coherent</span>
                 <span>/</span>
-                <span>NewOn</span>
+                <span>New Event</span>
+            </span>
+        );
+    case ActivityType.CoherentClearOn:
+        return (
+            <span className="text-md font-mono flex gap-x-1 text-gray-400">
+                <span className="text-red-500">Coherent</span>
+                <span>/</span>
+                <span>Clear Event</span>
             </span>
         );
     case ActivityType.DataStorageSet:
@@ -93,8 +110,12 @@ export const CoherentMenu = () => {
                                 <SimVarSetActivityData activity={event} />
                             )}
 
-                            {event.kind === ActivityType.CoherentTrigger && (
-                                <CoherentTriggerActivityData activity={event} />
+                            {(event.kind === ActivityType.CoherentTrigger || event.kind === ActivityType.CoherentCall) && (
+                                <CoherentTriggerCallActivityData activity={event} />
+                            )}
+
+                            {(event.kind === ActivityType.CoherentNewOn || event.kind === ActivityType.CoherentClearOn) && (
+                                <CoherentEventActivityData activity={event} />
                             )}
 
                             {event.kind === ActivityType.DataStorageSet && (
@@ -131,10 +152,10 @@ const SimVarSetActivityData: FC<SimVarSetActivityDataProps> = ({ activity }) => 
 );
 
 interface CoherentTriggerActivityDataProps {
-    activity: CoherentTriggerActivity,
+    activity: CoherentTriggerCallActivity,
 }
 
-const CoherentTriggerActivityData: FC<CoherentTriggerActivityDataProps> = ({ activity }) => (
+const CoherentTriggerCallActivityData: FC<CoherentTriggerActivityDataProps> = ({ activity }) => (
     <div className="flex flex-col gap-y-2.5 items-start">
         <span className="font-mono bg-gray-700 px-1.5 rounded-sm">
             {activity.event}
@@ -144,9 +165,32 @@ const CoherentTriggerActivityData: FC<CoherentTriggerActivityDataProps> = ({ act
             <span className="flex gap-x-2">
                 <span>{index}</span>
 
-                <span className="font-mono bg-gray-700 px-1.5 rounded-sm">{JSON.stringify(arg)}</span>
+                {typeof arg === 'object'
+                    ? (
+                        <ReactJson
+                            src={arg}
+                            style={{ backgroundColor: 'rgb(55 65 81)', borderRadius: '0.125rem', padding: '0.25rem' }}
+                            theme="bright"
+                            displayDataTypes={false}
+                            displayObjectSize={false}
+                            collapsed
+                        />
+                    )
+                    : <span className="font-mono bg-gray-700 px-1.5 rounded-sm">{JSON.stringify(arg)}</span>}
             </span>
         ))}
+    </div>
+);
+
+interface CoherentEventActivityDataProps {
+    activity: CoherentEventActivity,
+}
+
+const CoherentEventActivityData: FC<CoherentEventActivityDataProps> = ({ activity }) => (
+    <div className="flex flex-col gap-y-2.5 items-start">
+        <span className="font-mono bg-gray-700 px-1.5 rounded-sm">
+            {activity.event}
+        </span>
     </div>
 );
 

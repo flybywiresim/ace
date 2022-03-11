@@ -15,7 +15,7 @@ export interface SimulatorInterface {
 interface Coherent {
     trigger(name: string, data: string): any,
 
-    on(name: string, callback: (data: string) => void): any,
+    on(name: string, callback: (data: string) => void): { clear: () => void },
 
     call<T>(name: string, ...args: any[]): Promise<T>
 }

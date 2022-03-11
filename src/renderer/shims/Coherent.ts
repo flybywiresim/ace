@@ -17,7 +17,7 @@ export class Coherent {
         this.events.forEach((e) => (e.name === name ? e.callback(data) : {}));
     }
 
-    public on(name: string, callback: (data: string) => void) {
+    public on(name: string, callback: (data: string) => void): { clear: () => void } {
         const event = new CoherentEvent(name, callback);
         this.events.push(event);
         return {

@@ -5,7 +5,9 @@ import { SimVarDefinition, SimVarValue } from '../../../../../../ace-engine/src/
 export enum ActivityType {
     SimVarSet,
     CoherentTrigger,
+    CoherentCall,
     CoherentNewOn,
+    CoherentClearOn,
     DataStorageSet,
 }
 
@@ -21,14 +23,14 @@ export interface SimVarSetActivity extends BaseActivity {
     value: SimVarValue,
 }
 
-export interface CoherentTriggerActivity extends BaseActivity {
-    kind: ActivityType.CoherentTrigger,
+export interface CoherentTriggerCallActivity extends BaseActivity {
+    kind: ActivityType.CoherentTrigger | ActivityType.CoherentCall,
     event: string,
     args: any[],
 }
 
-export interface CoherentNewOnActivity extends BaseActivity {
-    kind: ActivityType.CoherentNewOn,
+export interface CoherentEventActivity extends BaseActivity {
+    kind: ActivityType.CoherentNewOn | ActivityType.CoherentClearOn,
     event: string,
     callback: Function,
 }
@@ -39,7 +41,7 @@ export interface DataStorageSetActivity extends BaseActivity {
     value: string,
 }
 
-export type Activity = SimVarSetActivity | CoherentTriggerActivity | CoherentNewOnActivity | DataStorageSetActivity
+export type Activity = SimVarSetActivity | CoherentTriggerCallActivity | CoherentEventActivity | DataStorageSetActivity
 
 export const coherentReducer = createReducer<{ activity: Activity[] }>({ activity: [] }, (builder) => {
     builder.addCase(logActivity, (state, action) => {

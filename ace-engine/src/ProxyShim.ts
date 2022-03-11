@@ -19,10 +19,16 @@ export class ProxyShim implements SimulatorInterface {
             return this.shim.Coherent.trigger(name, data);
         },
 
-        on: (name: string, callback: (data: string) => void): any => {
+        on: (name: string, callback: (data: string) => void): { clear: () => void } => {
             this.simCallListener.onCoherentNewListener?.(name, callback);
-
-            return this.shim.Coherent.on(name, callback);
+            const value = this.shim.Coherent.on(name, callback);
+            return {
+                ...value,
+                clear: () => {
+                    this.simCallListener.onCoherentClearListener?.(name, callback);
+                    value.clear();
+                },
+            };
         },
 
         call: <T>(name: string, ...args: any[]): Promise<T> => {

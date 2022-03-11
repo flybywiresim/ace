@@ -34,7 +34,7 @@ export const SimVarControlsMenu: FC<SimVarControlsMenuProps> = ({ onOpenNewContr
             </div>
 
             <div
-                className="flex flex-row justify-center items-center gap-x-2 py-3 mt-2 border-2 border-dashed text-gray-500 border-gray-500 rounded-md"
+                className="flex flex-row justify-center items-center gap-x-2 py-3 mt-2 border-2 border-dashed text-gray-500 border-gray-500 rounded-md cursor-pointer"
                 onClick={onOpenNewControlMenu}
             >
                 <IconPlus size={30} />

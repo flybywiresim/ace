@@ -11,23 +11,29 @@ import {
     SimVarSetActivity,
 } from '../../Store/reducers/coherent.reducer';
 
+const UNIMPORTANT_COHERENT_TRIGGERS = ['FOCUS_INPUT_FIELD', 'UNFOCUS_INPUT_FIELD'];
+
 interface ActivityHeaderProps {
     activity: Activity,
 }
 
-const ActivityHeader: FC<ActivityHeaderProps> = ({ activity }) => (
-    <div className="flex items-center py-1.5">
-        <ActivityHeaderTitle kind={activity.kind} />
+const ActivityHeader: FC<ActivityHeaderProps> = ({ activity }) => {
+    const opacityClass = activity.kind === ActivityType.CoherentTrigger && UNIMPORTANT_COHERENT_TRIGGERS.includes(activity.event) ? 'opacity-60' : '';
 
-        <span className="ml-auto font-mono text-gray-300">
-            {activity.timestamp.getHours().toString().padStart(2, '0')}
-            :
-            {activity.timestamp.getMinutes().toString().padStart(2, '0')}
-            :
-            {activity.timestamp.getSeconds().toString().padStart(2, '0')}
-        </span>
-    </div>
-);
+    return (
+        <div className={`flex items-center py-1.5 ${opacityClass}`}>
+            <ActivityHeaderTitle kind={activity.kind} />
+
+            <span className="ml-auto font-mono text-gray-300">
+                {activity.timestamp.getHours().toString().padStart(2, '0')}
+                :
+                {activity.timestamp.getMinutes().toString().padStart(2, '0')}
+                :
+                {activity.timestamp.getSeconds().toString().padStart(2, '0')}
+            </span>
+        </div>
+    );
+};
 
 interface ActivityHeaderTitleProps {
     kind: ActivityType,
@@ -72,7 +78,7 @@ export const CoherentMenu = () => {
             <h2 className="mb-3 font-medium">Timeline</h2>
 
             <div className="flex flex-col divide-y divide-gray-700">
-                {activity.map((event) => (
+                {[...activity].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((event) => (
                     <Collapsible trigger={<ActivityHeader activity={event} />} transitionTime={100}>
                         <div className="text-md pb-2.5">
                             {event.kind === ActivityType.SimVarSet && (

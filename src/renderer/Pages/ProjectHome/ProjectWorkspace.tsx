@@ -16,7 +16,7 @@ import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { CanvasContextMenu } from './Components/CanvasContextMenu';
 import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
-import { useProjectDispatch } from './Store';
+import { useProjectDispatch, useProjectSelector } from './Store';
 import { loadControls } from './Store/actions/simVarElements.actions';
 import { LocalShim } from '../../shims/LocalShim';
 import { setProjectData } from './Store/actions/projectData.actions';
@@ -24,6 +24,10 @@ import { AceEngine } from '../../../../ace-engine/src/AceEngine';
 import { SimVarDefinition, SimVarValue } from '../../../../ace-engine/src/SimVar';
 import { logActivity } from './Store/actions/coherent.actions';
 import { ActivityType } from './Store/reducers/coherent.reducer';
+import { WorkspacePanelSelection } from './Store/reducers/interactionToolbar.reducer';
+import { SimVarMenu } from './Components/SimVars/SimVarMenu';
+import { CoherentMenu } from './Components/Coherent/CoherentMenu';
+import { LiveReloadMenu } from './Components/LiveReloadMenu';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -258,6 +262,21 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         return false;
     };
 
+    const currentPanel = useProjectSelector((state) => state.interactionToolbar.panel);
+
+    const getCurrentPanel = () => {
+        switch (currentPanel) {
+        default:
+            return <></>;
+        case WorkspacePanelSelection.SimVars:
+            return <SimVarMenu />;
+        case WorkspacePanelSelection.Timeline:
+            return <CoherentMenu />;
+        case WorkspacePanelSelection.LiveReload:
+            return <LiveReloadMenu />;
+        }
+    };
+
     return (
         <WorkspaceContext.Provider value={{
             engine,
@@ -281,6 +300,10 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                 <div className="w-full h-full flex overflow-hidden">
                     <div className="absolute z-40 p-7" style={{ height: 'calc(100% - 3rem)' }}>
                         <InteractionToolbar />
+                    </div>
+
+                    <div className="absolute min-w-max h-full left-28 flex" style={{ top: 0 }}>
+                        {getCurrentPanel()}
                     </div>
 
                     <div className="relative w-full h-full z-30" onMouseDown={handleCanvasClick}>

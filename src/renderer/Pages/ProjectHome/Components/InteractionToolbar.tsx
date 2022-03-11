@@ -3,9 +3,9 @@ import { IconArrowsMaximize, IconBulb, IconChevronLeft, IconPencil, IconRefresh,
 import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Framework/Toolbars';
 import { EditMenu } from './EditMenu';
 import { useWorkspace } from '../WorkspaceContext';
-import { LiveReloadMenu } from './LiveReloadMenu';
-import { SimVarMenu } from './SimVars/SimVarMenu';
-import { CoherentMenu } from './Coherent/CoherentMenu';
+import { useProjectDispatch, useProjectSelector } from '../Store';
+import { WorkspacePanelSelection } from '../Store/reducers/interactionToolbar.reducer';
+import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.actions';
 
 export const InteractionToolbar: FC = () => {
     const { inEditMode, setInEditMode } = useWorkspace();
@@ -14,22 +14,31 @@ export const InteractionToolbar: FC = () => {
         setInEditMode((old) => !old);
     };
 
+    const panelSelection = useProjectSelector((state) => state.interactionToolbar.panel);
+    const dispatch = useProjectDispatch();
+
+    const selectPanel = (panel: WorkspacePanelSelection) => {
+        if (panel === panelSelection) {
+            dispatch(selectWorkspacePanel(WorkspacePanelSelection.None));
+        } else {
+            dispatch(selectWorkspacePanel(panel));
+        }
+    };
+
     return (
         <Toolbar>
             <ToolbarItem
                 color={ToolbarItemColors.GREEN}
-                renderPopover={() => (
-                    <SimVarMenu />
-                )}
+                visible={panelSelection === WorkspacePanelSelection.SimVars}
+                onClick={() => selectPanel(WorkspacePanelSelection.SimVars)}
             >
                 <IconVariable size={56} strokeWidth={1.5} />
             </ToolbarItem>
 
             <ToolbarItem
                 color={ToolbarItemColors.GREEN}
-                renderPopover={() => (
-                    <CoherentMenu />
-                )}
+                visible={panelSelection === WorkspacePanelSelection.Timeline}
+                onClick={() => selectPanel(WorkspacePanelSelection.Timeline)}
             >
                 <IconBulb size={56} strokeWidth={1.5} />
             </ToolbarItem>
@@ -47,7 +56,11 @@ export const InteractionToolbar: FC = () => {
                 <IconPencil size={56} strokeWidth={1.5} />
             </ToolbarItem>
 
-            <ToolbarItem color={ToolbarItemColors.PURPLE} renderPopover={LiveReloadMenu}>
+            <ToolbarItem
+                color={ToolbarItemColors.PURPLE}
+                visible={panelSelection === WorkspacePanelSelection.LiveReload}
+                onClick={() => selectPanel(WorkspacePanelSelection.LiveReload)}
+            >
                 <IconRefresh size={56} strokeWidth={1.5} />
             </ToolbarItem>
 

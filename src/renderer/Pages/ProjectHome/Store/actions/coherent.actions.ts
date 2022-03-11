@@ -1,4 +1,4 @@
 import { createAction } from '@reduxjs/toolkit';
-import { CoherentActivity } from '../../../../shims/Coherent';
+import { Activity } from '../reducers/coherent.reducer';
 
-export const logCoherentActivity = createAction<CoherentActivity>('LOG_COHERENT_ACTIVITY');
+export const logActivity = createAction<Activity>('LOG_ACTIVITY');

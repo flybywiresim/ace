@@ -7,7 +7,7 @@ export interface SimulatorInterface {
 
     GetStoredData(name: string): string
 
-    SetStoredData(key: string, value: string): string
+    SetStoredData(key: string, value: string): void
 
     RegisterViewListener(type: string, p1: unknown, singleton: boolean): ViewListener
 }
@@ -20,7 +20,7 @@ interface Coherent {
     call<T>(name: string, ...args: any[]): Promise<T>
 }
 
-interface ViewListener {
+export interface ViewListener {
     triggerToAllSubscribers(name: string, data: string): void
 }
 

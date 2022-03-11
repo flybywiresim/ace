@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef, FC } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
 import { ElementFactory } from '../../Project/canvas/ElementFactory';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
@@ -21,22 +21,45 @@ import { loadControls } from './Store/actions/simVarElements.actions';
 import { LocalShim } from '../../shims/LocalShim';
 import { setProjectData } from './Store/actions/projectData.actions';
 import { AceEngine } from '../../../../ace-engine/src/AceEngine';
-import { CoherentActivity } from '../../shims/Coherent';
-import { logCoherentActivity } from './Store/actions/coherent.actions';
+import { SimVarDefinition, SimVarValue } from '../../../../ace-engine/src/SimVar';
+import { logActivity } from './Store/actions/coherent.actions';
+import { ActivityType } from './Store/reducers/coherent.reducer';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
 }
 
 export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
+    const dispatch = useAppDispatch();
+    const projectDispatch = useProjectDispatch();
+
     const [localShim] = useState(new LocalShim());
     const [engine] = useState(new AceEngine(localShim, {
         updateInterval: 50,
+        simCallListener: {
+            onSetSimVar(variable: SimVarDefinition, obtainedValue: SimVarValue) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.SimVarSet,
+                    fromInstrument: 'Unknown',
+                    timestamp: new Date(),
+                    variable,
+                    value: obtainedValue,
+                }));
+            },
+
+            onCoherentTrigger(event: string, ...args) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentTrigger,
+                    fromInstrument: 'Unknown',
+                    timestamp: new Date(),
+                    event,
+                    args,
+                }));
+            },
+        },
     }));
 
     const [inInteractionMode, setInInteractionMode] = useState(false);
-
-    const dispatch = useAppDispatch();
 
     useChangeDebounce(() => {
         dispatch(pushNotification(`Interaction Mode: ${inInteractionMode ? 'ON' : 'OFF'}`));
@@ -131,21 +154,9 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         };
     }, [project]);
 
-    const projectDispatch = useProjectDispatch();
-
     useEffect(() => {
         projectDispatch(setProjectData(project));
     }, [project, projectDispatch]);
-
-    useEffect(() => {
-        const event = (data: CoherentActivity) => projectDispatch(logCoherentActivity(data));
-
-        localShim.Coherent.subscribe(event);
-
-        return () => {
-            localShim.Coherent.unSubscribe(event);
-        };
-    }, [projectDispatch, localShim]);
 
     useEffect(() => {
         if (simVarControlsHandler) {

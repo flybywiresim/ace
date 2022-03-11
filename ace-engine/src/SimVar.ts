@@ -4,6 +4,8 @@
 export enum SimVarPrefix {
     A = 'A',
     B = 'B',
+    C = 'C',
+    E = 'E',
     K = 'K',
     L = 'L',
     M = 'M',
@@ -28,7 +30,7 @@ export interface SimVarDefinition {
 export type SimVarValue = number | boolean | string
 
 export function simVarDefinitionFromName(fullName: string, unit: string): SimVarDefinition {
-    const REGEX = /^(?:([ABCHIKLMORWZ]):)?([\w ]+)$/;
+    const REGEX = /^(?:([ABCEHIKLMORWZ]):)?([\w ]+)$/;
 
     // eslint-disable-next-line prefer-const
     let [, prefix, name] = REGEX[Symbol.match](fullName);

@@ -1,78 +1,133 @@
 /* eslint-disable react/no-danger */
-import React from 'react';
-import ReactJson from 'react-json-view';
+import React, { FC } from 'react';
 import Collapsible from 'react-collapsible';
+import { IconArrowRight } from '@tabler/icons';
 import { SideMenu } from '../Framework/Toolbars';
 import { useProjectSelector } from '../../Store';
-import { CoherentEventType } from '../../../../shims/Coherent';
+import {
+    Activity,
+    ActivityType,
+    CoherentTriggerActivity,
+    SimVarSetActivity,
+} from '../../Store/reducers/coherent.reducer';
 
-const { highlight } = require('highlight.js/lib/common');
+interface ActivityHeaderProps {
+    activity: Activity,
+}
+
+const ActivityHeader: FC<ActivityHeaderProps> = ({ activity }) => (
+    <div className="flex items-center py-1.5">
+        <ActivityHeaderTitle kind={activity.kind} />
+
+        <span className="ml-auto font-mono text-gray-300">
+            {activity.timestamp.getHours().toString().padStart(2, '0')}
+            :
+            {activity.timestamp.getMinutes().toString().padStart(2, '0')}
+            :
+            {activity.timestamp.getSeconds().toString().padStart(2, '0')}
+        </span>
+    </div>
+);
+
+interface ActivityHeaderTitleProps {
+    kind: ActivityType,
+}
+
+const ActivityHeaderTitle: FC<ActivityHeaderTitleProps> = ({ kind }) => {
+    switch (kind) {
+    case ActivityType.SimVarSet:
+        return (
+            <span className="text-md font-mono flex gap-x-1 text-gray-400">
+                <span className="text-yellow-300">SimVar</span>
+                <span>/</span>
+                <span>Set</span>
+            </span>
+        );
+    case ActivityType.CoherentTrigger:
+        return (
+            <span className="text-md font-mono flex gap-x-1 text-gray-400">
+                <span className="text-red-500">Coherent</span>
+                <span>/</span>
+                <span>Trigger</span>
+            </span>
+        );
+    case ActivityType.CoherentNewOn:
+        return (
+            <span className="text-md font-mono flex gap-x-1 text-gray-400">
+                <span className="text-red-500">Coherent</span>
+                <span>/</span>
+                <span>NewOn</span>
+            </span>
+        );
+    default:
+        return <span>Unknown</span>;
+    }
+};
 
 export const CoherentMenu = () => {
     const activity = useProjectSelector((store) => store.coherent.activity);
 
     return (
-        <SideMenu className="w-[420px] bg-navy z-50 overflow-auto">
-            <h2 className="mb-3 font-medium">Coherent</h2>
+        <SideMenu className="w-[500px] bg-navy z-50 overflow-auto">
+            <h2 className="mb-3 font-medium">Timeline</h2>
+
             <div className="flex flex-col divide-y divide-gray-700">
                 {activity.map((event) => (
-                    <Collapsible trigger={event.name} transitionTime={100}>
-                        <h4 className="italic">
-                            {CoherentEventType[event.type]}
-                        </h4>
-                        {/* eslint-disable-next-line no-nested-ternary */}
-                        {event.type === CoherentEventType.TRIGGER ? (
-                            event.data && (
-                                <h4
-                                    style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}
-                                    className="bg-gray-600 rounded"
-                                >
-                                    {event.data}
-                                </h4>
-                            )
-                        )
-                            : (event.type === CoherentEventType.NEW_ON || event.type === CoherentEventType.CLEAR_ON)
-                                ? (
-                                    event.callback && (
-                                        <h4>
-                                            <code
-                                                style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}
-                                                className="bg-black rounded"
-                                                dangerouslySetInnerHTML={{ __html: highlight(event.callback.toString(), { language: 'javascript' }).value }}
-                                            />
-                                        </h4>
-                                    )
-                                )
-                                : (
-                                    <div className="flex flex-col divide-y divide-gray-700">
-                                        {event.args.map((arg) => (
-                                            typeof arg === 'object' ? (
-                                                <ReactJson
-                                                    src={arg}
-                                                    style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}
-                                                    theme="bright"
-                                                    displayDataTypes={false}
-                                                    displayObjectSize={false}
-                                                    collapsed
-                                                />
-                                            ) : (
-                                                <h4 style={{ backgroundColor: 'rgba(34,52,76,0.5)', padding: '0.25rem' }}>
-                                                    {arg.toString()}
-                                                </h4>
-                                            )
-                                        ))}
-                                    </div>
-                                )}
-                        <h4 className="text-xs text-slate-400 italic">
-                            {event.time.getHours().toString().padStart(2, '0')}
-                            :
-                            {event.time.getMinutes().toString().padStart(2, '0')}
-                            :
-                            {event.time.getSeconds().toString().padStart(2, '0')}
-                        </h4>
+                    <Collapsible trigger={<ActivityHeader activity={event} />} transitionTime={100}>
+                        <div className="text-md pb-2.5">
+                            {event.kind === ActivityType.SimVarSet && (
+                                <SimVarSetActivityData activity={event} />
+                            )}
+
+                            {event.kind === ActivityType.CoherentTrigger && (
+                                <CoherentTriggerActivityData activity={event} />
+                            )}
+                        </div>
                     </Collapsible>
                 ))}
             </div>
         </SideMenu>
     );
 };
+
+interface SimVarSetActivityDataProps {
+    activity: SimVarSetActivity,
+}
+
+const SimVarSetActivityData: FC<SimVarSetActivityDataProps> = ({ activity }) => (
+    <div className="flex flex-row items-center gap-x-2">
+        <span className="font-mono bg-gray-700 px-1.5 rounded-sm">
+            (
+            {activity.variable.prefix}
+            :
+            {activity.variable.name}
+            {', '}
+            {activity.variable.unit}
+            )
+        </span>
+
+        <IconArrowRight className="ml-auto" size={16} />
+
+        <span className="font-mono bg-gray-700 px-1.5 rounded-sm">{activity.value}</span>
+    </div>
+);
+
+interface CoherentTriggerActivityDataProps {
+    activity: CoherentTriggerActivity,
+}
+
+const CoherentTriggerActivityData: FC<CoherentTriggerActivityDataProps> = ({ activity }) => (
+    <div className="flex flex-col gap-y-2.5 items-start">
+        <span className="font-mono bg-gray-700 px-1.5 rounded-sm">
+            {activity.event}
+        </span>
+
+        {activity.args.map((arg, index) => (
+            <span className="flex gap-x-2">
+                <span>{index}</span>
+
+                <span className="font-mono bg-gray-700 px-1.5 rounded-sm">{JSON.stringify(arg)}</span>
+            </span>
+        ))}
+    </div>
+);

@@ -5,6 +5,8 @@ import { PanelCanvasElement } from '../PanelCanvas';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
 import { useWorkspace } from '../ProjectHome/WorkspaceContext';
+import { useProjectSelector } from '../ProjectHome/Store';
+import { WorkspacePanelSelection } from '../ProjectHome/Store/reducers/interactionToolbar.reducer';
 
 export interface InstrumentFile {
     name: string,
@@ -36,12 +38,17 @@ export interface InstrumentFrameElementProps {
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onUpdate }) => {
+    const inEditMode = useProjectSelector((state) => state.interactionToolbar.panel === WorkspacePanelSelection.Edit);
+
     const [error, setError] = useState<Error | null>(null);
     const [errorIsInInstrument, setErrorIsInInstrument] = useState(false);
 
     const { engine, project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
 
     const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
+
+    const [overrideWidth, setOverrideWidth] = useState(loadedInstrument.config.dimensions.width);
+    const [overrideHeight, setOverrideHeight] = useState(loadedInstrument.config.dimensions.height);
 
     const iframeRef = useRef<HTMLIFrameElement>();
 
@@ -105,8 +112,15 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
         <PanelCanvasElement<InstrumentFrame>
             element={instrumentFrame}
             title={loadedInstrument.config.name}
+            initialWidth={overrideWidth ?? loadedInstrument.config.dimensions.width ?? 1000}
+            initialHeight={overrideHeight ?? loadedInstrument.config.dimensions.height ?? 800}
             canvasZoom={zoom}
             onUpdate={onUpdate}
+            resizingEnabled={inEditMode}
+            onResizeCompleted={(width, height) => {
+                setOverrideWidth(width);
+                setOverrideHeight(height);
+            }}
             topBarButtons={(
                 <>
                     <IconRefresh className="hover:text-green-500 hover:cursor-pointer" onMouseDown={() => doLoadInstrument()} />
@@ -114,13 +128,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             )}
         >
             {error ? (
-                <div
-                    className="flex flex-col justify-center gap-y-2.5 p-5 bg-gray-900"
-                    style={{
-                        width: loadedInstrument.config.dimensions.width ?? 1000,
-                        height: loadedInstrument.config.dimensions.height ?? 800,
-                    }}
-                >
+                <div className="h-full flex flex-col justify-center gap-y-2.5 p-5 bg-gray-900">
                     <span className="text-2xl font-bold">{errorIsInInstrument ? 'Error in instrument' : 'Error while loading instrument'}</span>
                     <p className="text-xl">
                         {errorIsInInstrument
@@ -136,8 +144,8 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                 <iframe
                     title="Instrument Frame"
                     ref={iframeRef}
-                    width={loadedInstrument.config.dimensions.width}
-                    height={loadedInstrument.config.dimensions.height}
+                    width={overrideWidth ?? loadedInstrument.config.dimensions.width ?? 1000}
+                    height={overrideHeight ?? loadedInstrument.config.dimensions.height ?? 1000}
                     style={{ pointerEvents: inInteractionMode ? 'auto' : 'none' }}
                 />
             )}

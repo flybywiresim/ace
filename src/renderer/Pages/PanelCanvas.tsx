@@ -115,19 +115,34 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
 export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     element: T,
     title?: string;
+    initialWidth: number,
+    initialHeight: number,
     canvasZoom: number;
     onUpdate: (el: T) => void;
+    resizingEnabled?: boolean,
+    onResizeCompleted?: (width: number, height: number) => void,
     topBarButtons?: JSX.Element;
 }
 
 export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     element,
     title,
+    initialWidth,
+    initialHeight,
     canvasZoom,
     onUpdate,
+    resizingEnabled,
+    onResizeCompleted,
     topBarButtons,
     children,
 }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
+    const xResizeOriginalPos = useRef(0);
+    const yResizeOriginalPos = useRef(0);
+    const resizeMode = useRef<'x' | 'y' | 'xy' | null>(null);
+
+    const [width, setWidth] = useState(initialWidth);
+    const [height, setHeight] = useState(initialHeight);
+
     const [offsetX, setOffsetX] = useState(() => element.position.x);
     const [offsetY, setOffsetY] = useState(() => element.position.y);
 
@@ -162,17 +177,17 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
 
     const handlePanStart = (event: MouseEvent) => {
         document.body.addEventListener('mouseup', handlePanStop);
-        document.body.addEventListener('mousemove', handleMouseMove);
+        document.body.addEventListener('mousemove', handlePanMouseMove);
         event.stopPropagation();
     };
 
     const handlePanStop = (event: globalThis.MouseEvent) => {
         document.body.removeEventListener('mouseup', handlePanStop);
-        document.body.removeEventListener('mousemove', handleMouseMove);
+        document.body.removeEventListener('mousemove', handlePanMouseMove);
         event.stopPropagation();
     };
 
-    const handleMouseMove = (event: globalThis.MouseEvent) => {
+    const handlePanMouseMove = (event: globalThis.MouseEvent) => {
         if (!canvasElementRef.current) {
             return;
         }
@@ -187,14 +202,55 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
         (e as any).canvasTarget = element;
     };
 
+    const handleResizeMouseMove = useCallback((e: globalThis.PointerEvent) => {
+        if (resizeMode.current.includes('x')) {
+            const delta = (e.clientX / canvasZoom) - xResizeOriginalPos.current;
+
+            setWidth(initialWidth + delta);
+        }
+
+        if (resizeMode.current.includes('y')) {
+            const delta = (e.clientY / canvasZoom) - yResizeOriginalPos.current;
+
+            setHeight(initialHeight + delta);
+        }
+    }, [canvasZoom, initialWidth, initialHeight]);
+
+    const handleResizeStop = useCallback((event: globalThis.MouseEvent) => {
+        document.body.removeEventListener('mouseup', handleResizeStop);
+        document.body.removeEventListener('pointermove', handleResizeMouseMove);
+        event.stopPropagation();
+
+        // For some reason, width and height do not update fast enough
+        onResizeCompleted(canvasElementRef.current.clientWidth, canvasElementRef.current.clientHeight);
+    }, [handleResizeMouseMove, onResizeCompleted]);
+
+    const handleResizeStart = useCallback((event: React.MouseEvent, newResizeMode: 'x' | 'y' | 'xy') => {
+        document.body.addEventListener('mouseup', handleResizeStop);
+        document.body.addEventListener('pointermove', handleResizeMouseMove);
+        event.stopPropagation();
+
+        if (newResizeMode.includes('x')) {
+            xResizeOriginalPos.current = event.clientX / canvasZoom;
+        }
+
+        if (newResizeMode.includes('y')) {
+            yResizeOriginalPos.current = event.clientY / canvasZoom;
+        }
+
+        resizeMode.current = newResizeMode;
+    }, [canvasZoom, handleResizeMouseMove, handleResizeStop]);
+
     return (
         <span className="absolute" onMouseDown={handleMouseDown}>
             <span
                 ref={canvasElementRef}
                 className="shadow-md"
                 style={{
+                    width: `${width}px`,
+                    height: `${height}px`,
                     position: 'absolute',
-                    transitionDuration: '0.1s',
+                    // transitionDuration: '0.1s',
                     transform: `translate(${(PANEL_CANVAS_SIZE / 2) + offsetX}px, ${(PANEL_CANVAS_SIZE / 2) + offsetY}px)`,
                 }}
             >
@@ -211,9 +267,31 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
 
                 </span>
 
-                <span className="block border border-[#00c2cc] hover:border-green-500 overflow-hidden">
+                <span
+                    className="block border border-[#00c2cc] hover:border-green-500 overflow-hidden"
+                    style={{
+                        width: `${width}px`,
+                        height: `${height}px`,
+                    }}
+                >
                     {children}
                 </span>
+
+                {resizingEnabled && (
+                    <>
+                        <span className="absolute top-0 right-[-4px] flex flex-col justify-center" style={{ height: 'calc(100% + 4px)' }}>
+                            <span className="absolute w-[4px] h-[40px] bg-green-500" style={{ cursor: 'ew-resize' }} onMouseDown={(e) => handleResizeStart(e, 'x')} />
+
+                            <span className="mt-auto w-[4px] h-[40px] bg-green-500" style={{ cursor: 'nwse-resize' }} onMouseDown={(e) => handleResizeStart(e, 'xy')} />
+                        </span>
+
+                        <span className="absolute flex justify-center" style={{ width: 'calc(100% + 4px)' }}>
+                            <span className="absolute w-[40px] h-[4px] bg-green-500" style={{ cursor: 'ns-resize' }} onMouseDown={(e) => handleResizeStart(e, 'y')} />
+
+                            <span className="ml-auto w-[40px] h-[4px] bg-green-500" style={{ cursor: 'nwse-resize' }} onMouseDown={(e) => handleResizeStart(e, 'xy')} />
+                        </span>
+                    </>
+                )}
             </span>
         </span>
     );

@@ -33,7 +33,7 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
     useEffect(() => {
         if (control) {
             setTitle(control.title);
-            setVarName(control.varName);
+            setVarName(`${control.varPrefix}:${control.varName}`);
             setVarUnit(control.varUnit);
             setControlStyleType(control.style.type);
             if (control.style.type === SimVarControlStyleTypes.RANGE) {

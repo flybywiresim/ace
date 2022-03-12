@@ -1,6 +1,10 @@
 import React, { FC, FocusEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { IconPencil, IconTrash } from '@tabler/icons';
-import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../../../../shared/types/project/SimVarControl';
+import {
+    SimVarControl,
+    SimVarControlStyle,
+    SimVarControlStyleTypes,
+} from '../../../../../../shared/types/project/SimVarControl';
 import { useProjectDispatch, useProjectSelector } from '../../../Store';
 import { setSimVarValue } from '../../../Store/actions/simVarValues.actions';
 
@@ -11,7 +15,7 @@ interface SimVarEditorProps {
 }
 
 export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarControl, onEdit, onDelete }) => {
-    const simVarValues = useProjectSelector((state) => state.simVarValues);
+    const simVarValue = useProjectSelector((state) => state.simVarValues[`${simVarControl.varPrefix}:${simVarControl.varName}`]);
     const projectDispatch = useProjectDispatch();
 
     const valueRef = useRef<HTMLSpanElement>();
@@ -31,11 +35,38 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
         }
     };
 
-    const [state, handleSetState] = useState<any>(() => {
-        const rawValue = simVarValues[simVarControl.varName];
+    const [state, setState] = useState<any>(() => simVarValue ?? defaultValueForControlStyle(simVarControl.style));
 
-        return rawValue ?? defaultValueForControlStyle(simVarControl.style);
-    });
+    useEffect(() => {
+        setState(simVarValue ?? defaultValueForControlStyle(simVarControl.style));
+    }, [simVarControl.style, simVarValue]);
+
+    const handleSetValue = useCallback((value) => {
+        let actualValue = value;
+
+        switch (simVarControl.style.type) {
+        case SimVarControlStyleTypes.NUMBER:
+        case SimVarControlStyleTypes.RANGE:
+            const numberValue = parseFloat(value);
+
+            actualValue = numberValue;
+            break;
+        case SimVarControlStyleTypes.CHECKBOX:
+            actualValue = !!value;
+            break;
+        default:
+            break;
+        }
+
+        projectDispatch(setSimVarValue({
+            variable: {
+                prefix: simVarControl.varPrefix,
+                name: simVarControl.varName,
+                unit: simVarControl.varUnit,
+            },
+            value: actualValue,
+        }));
+    }, [projectDispatch, simVarControl.style.type, simVarControl.varName, simVarControl.varPrefix, simVarControl.varUnit]);
 
     useEffect(() => {
         projectDispatch(setSimVarValue({
@@ -50,7 +81,7 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
         if (valueRef.current && document.activeElement !== valueRef.current) {
             valueRef.current.innerText = state;
         }
-    }, [simVarControl.varName, state]);
+    }, [projectDispatch, simVarControl.varName, simVarControl.varPrefix, simVarControl.varUnit, state]);
 
     return (
         <div className="py-3.5">
@@ -65,7 +96,7 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                         <EditableSimVarControlValue
                             value={state}
                             unit={simVarControl.varUnit}
-                            onInput={handleSetState}
+                            onInput={handleSetValue}
                         />
                     )}
 
@@ -75,14 +106,14 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                             max={simVarControl.style.max}
                             step={simVarControl.style.step}
                             value={state}
-                            onInput={handleSetState}
+                            onInput={handleSetValue}
                         />
                     )}
 
                     {simVarControl.style.type === SimVarControlStyleTypes.CHECKBOX && (
                         <CheckboxSimVarControl
                             state={state}
-                            onInput={handleSetState}
+                            onInput={handleSetValue}
                         />
                     )}
 

@@ -5,7 +5,7 @@ import { SelectBox, SelectBoxItem, SelectBoxItemBody, SelectBoxItemIcon } from '
 import { useProjectDispatch } from '../../../Store';
 import { addControl, editControl } from '../../../Store/actions/simVarElements.actions';
 import { ElementFactory } from '../../../../../Project/canvas/ElementFactory';
-import { SimVarPrefix } from '../../../../../../../ace-engine/src/SimVar';
+import { simVarDefinitionFromName } from '../../../../../../../ace-engine/src/SimVar';
 
 export interface SimVarControlEditMenuProps {
 
@@ -66,12 +66,14 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
     const projectDispatch = useProjectDispatch();
 
     const handleSubmit = () => {
+        const def = simVarDefinitionFromName(varName, varUnit);
+
         const data = {
             __uuid: control?.__uuid,
             title,
-            varPrefix: varName.startsWith('L:') ? SimVarPrefix.L : SimVarPrefix.A,
-            varName,
-            varUnit,
+            varPrefix: def.prefix,
+            varName: def.name,
+            varUnit: def.unit,
             style: {
                 type: controlStyleType,
                 min: Number(rangeMin),

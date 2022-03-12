@@ -1,4 +1,4 @@
-import { SimVarPrefix, SimVarValue } from '../../../ace-engine/src/SimVar';
+import { simVarDefinitionFromName, SimVarPrefix, SimVarValue } from '../../../ace-engine/src/SimVar';
 import { Coherent } from './Coherent';
 import { ViewListener } from './RegisterViewListener';
 import { SimulatorInterface } from '../../../ace-engine/src/SimulatorInterface';
@@ -14,8 +14,8 @@ export class LocalShim implements SimulatorInterface {
     public SimVar = {
         GetSimVarValue(key: string): SimVarValue {
             const state = projectStore.getState().simVarValues;
-
-            return state[key] ?? 0;
+            const { prefix, name } = simVarDefinitionFromName(key, '');
+            return state[`${prefix}:${name}`] ?? 0;
         },
         SetSimVarValue(key: string, unit: string, value: SimVarValue): Promise<SimVarValue> {
             try {

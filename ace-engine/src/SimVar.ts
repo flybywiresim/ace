@@ -30,7 +30,7 @@ export interface SimVarDefinition {
 export type SimVarValue = number | boolean | string
 
 export function simVarDefinitionFromName(fullName: string, unit: string): SimVarDefinition {
-    const REGEX = /^(?:([ABCEHIKLMORWZ]):)?([\w ]+)$/;
+    const REGEX = /^(?:([ABCEHIKLMORWZ]):)?([\w: ]+)$/;
 
     // eslint-disable-next-line prefer-const
     let [, prefix, name] = REGEX[Symbol.match](fullName);

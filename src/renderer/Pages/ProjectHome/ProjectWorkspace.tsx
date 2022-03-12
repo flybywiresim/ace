@@ -26,7 +26,7 @@ import { logActivity } from './Store/actions/timeline.actions';
 import { ActivityType } from './Store/reducers/timeline.reducer';
 import { addCoherentEvent, clearCoherentEvent } from './Store/actions/coherent.actions';
 import { setSimVarValue } from './Store/actions/simVarValues.actions';
-import { defaultValueForControlStyle } from './Components/SimVars/Controls/SimVarControlElement';
+import { SimVarValuesHandler } from '../../Project/fs/SimVarValues';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -174,6 +174,7 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     }, [liveReloadDispatcher]);
 
     const [simVarControlsHandler, setSimVarControlsHandler] = useState<SimVarControlsHandler>(null);
+    const [simVarValuesHandler, setSimVarValuesHandler] = useState<SimVarValuesHandler>(null);
     const [simVarPresetsHandler, setSimVarPresetsHandler] = useState<SimVarPresetsHandler>(null);
 
     useEffect(() => {
@@ -187,6 +188,7 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
             });
 
             setSimVarControlsHandler(new SimVarControlsHandler(project));
+            setSimVarValuesHandler(new SimVarValuesHandler(project));
             setSimVarPresetsHandler(new SimVarPresetsHandler(project));
         }
 
@@ -205,19 +207,28 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
 
             if (controls) {
                 projectDispatch(loadControls(controls));
-                for (const control of controls) {
-                    projectDispatch(setSimVarValue(
-                        {
-                            variable: { prefix: control.varPrefix, name: control.varName, unit: control.varUnit },
-                            value: defaultValueForControlStyle(control.style),
-                        },
-                    ));
-                }
             } else {
                 throw new Error('[ProjectWorkspace] Could not load simvar controls from handler.');
             }
         }
     }, [projectDispatch, simVarControlsHandler]);
+
+    useEffect(() => {
+        if (simVarValuesHandler) {
+            const entries = simVarValuesHandler.loadConfig()?.elements;
+
+            if (entries) {
+                for (const { value, variable } of entries) {
+                    projectDispatch(setSimVarValue(
+                        {
+                            variable,
+                            value,
+                        },
+                    ));
+                }
+            }
+        }
+    }, [projectDispatch, simVarValuesHandler]);
 
     const startLiveReload = useCallback(() => {
         if (liveReloadDispatcher) {

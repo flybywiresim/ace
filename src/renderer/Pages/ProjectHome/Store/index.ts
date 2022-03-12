@@ -66,9 +66,9 @@ function handleSaveSimVarControlState(state: ProjectState) {
 }
 
 function handleSaveSimVarValuesState(state: ProjectState) {
-    const simVarValuesHandler = new SimVarValuesHandler(state.projectData.data.location);
+    const simVarValuesHandler = new SimVarValuesHandler(state.projectData.data);
 
-    const data = [];
+    const elements = [];
     for (const [key, value] of Object.entries(state.simVarValues)) {
         try {
             const element = {
@@ -76,14 +76,14 @@ function handleSaveSimVarValuesState(state: ProjectState) {
                 value,
             };
 
-            data.push(element);
+            elements.push(element);
         } catch (e) {
             console.warn(`[SimVarValues] Could not parse simvar '${key}'. Ignoring.`);
         }
     }
 
     simVarValuesHandler.saveConfig({
-        data,
+        elements,
     });
 }
 

@@ -1,5 +1,5 @@
 import { SimVarDefinition, SimVarValue } from '../../../../ace-engine/src/SimVar';
-import { GenericConfigHandler } from './GenericConfigHandler';
+import { GenericProjectConfigHandler } from './GenericProjectConfigHandler';
 
 interface SimVarValueEntry {
     variable: SimVarDefinition,
@@ -7,10 +7,10 @@ interface SimVarValueEntry {
 }
 
 interface SimVarValuesData {
-    data: SimVarValueEntry[],
+    elements: SimVarValueEntry[],
 }
 
-export class SimVarValuesHandler extends GenericConfigHandler<SimVarValuesData> {
+export class SimVarValuesHandler extends GenericProjectConfigHandler<SimVarValuesData> {
     get fileName(): string {
         return 'data/simvar-values.json';
     }

@@ -14,26 +14,26 @@ interface SimVarEditorProps {
     onDelete?: () => void,
 }
 
+export const defaultValueForControlStyle = (style: SimVarControlStyle) => {
+    switch (style.type) {
+    case SimVarControlStyleTypes.CHECKBOX:
+        return false;
+    case SimVarControlStyleTypes.NUMBER:
+        return 0;
+    case SimVarControlStyleTypes.RANGE:
+        return (style.min + style.max) / 2;
+    case SimVarControlStyleTypes.TEXT_INPUT:
+        return '';
+    default:
+        return 0;
+    }
+};
+
 export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarControl, onEdit, onDelete }) => {
     const simVarValue = useProjectSelector((state) => state.simVarValues[`${simVarControl.varPrefix}:${simVarControl.varName}`]);
     const projectDispatch = useProjectDispatch();
 
     const valueRef = useRef<HTMLSpanElement>();
-
-    const defaultValueForControlStyle = (style: SimVarControlStyle) => {
-        switch (style.type) {
-        case SimVarControlStyleTypes.CHECKBOX:
-            return false;
-        case SimVarControlStyleTypes.NUMBER:
-            return 0;
-        case SimVarControlStyleTypes.RANGE:
-            return (style.min + style.max) / 2;
-        case SimVarControlStyleTypes.TEXT_INPUT:
-            return '';
-        default:
-            return 0;
-        }
-    };
 
     const [state, setState] = useState<any>(() => simVarValue ?? defaultValueForControlStyle(simVarControl.style));
 

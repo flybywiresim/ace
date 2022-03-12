@@ -25,6 +25,8 @@ import { SimVarDefinition, SimVarValue } from '../../../../ace-engine/src/SimVar
 import { logActivity } from './Store/actions/timeline.actions';
 import { ActivityType } from './Store/reducers/timeline.reducer';
 import { addCoherentEvent, clearCoherentEvent } from './Store/actions/coherent.actions';
+import { setSimVarValue } from './Store/actions/simVarValues.actions';
+import { defaultValueForControlStyle } from './Components/SimVars/Controls/SimVarControlElement';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -203,6 +205,14 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
 
             if (controls) {
                 projectDispatch(loadControls(controls));
+                for (const control of controls) {
+                    projectDispatch(setSimVarValue(
+                        {
+                            variable: { prefix: control.varPrefix, name: control.varName, unit: control.varUnit },
+                            value: defaultValueForControlStyle(control.style),
+                        },
+                    ));
+                }
             } else {
                 throw new Error('[ProjectWorkspace] Could not load simvar controls from handler.');
             }

@@ -15,7 +15,7 @@ export enum ActivityType {
 export interface BaseActivity {
     kind: ActivityType,
     timestamp: Date,
-    fromInstrument: string,
+    instrumentUniqueID: string,
 }
 
 export interface SimVarSetActivity extends BaseActivity {

@@ -15,9 +15,11 @@ import { simVarDefinitionFromName } from '../../../../../ace-engine/src/SimVar';
 import { timelineReducer } from './reducers/timeline.reducer';
 import { interactionToolbarReducer } from './reducers/interactionToolbar.reducer';
 import { coherentReducer } from './reducers/coherent.reducer';
+import { canvasReducer } from './reducers/canvas.reducer';
 
 const reducer = combineReducers({
     projectData: projectDataReducer,
+    canvas: canvasReducer,
     simVarValues: simVarValuesReducer,
     persistentStorage: persistentStorageReducer,
     simVarElements: simVarElementsReducer,

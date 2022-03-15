@@ -9,7 +9,6 @@ import {
     IconVariable,
 } from '@tabler/icons';
 import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Framework/Toolbars';
-import { EditMenu } from './EditMenu';
 import { useProjectDispatch, useProjectSelector } from '../Store';
 import { WorkspacePanelSelection } from '../Store/reducers/interactionToolbar.reducer';
 import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.actions';
@@ -42,8 +41,6 @@ export const InteractionToolbar: FC = () => {
             return <Timeline />;
         case WorkspacePanelSelection.Coherent:
             return <CoherentMenu />;
-        case WorkspacePanelSelection.Edit:
-            return <EditMenu />;
         case WorkspacePanelSelection.LiveReload:
             return <LiveReloadMenu />;
         }
@@ -82,9 +79,6 @@ export const InteractionToolbar: FC = () => {
                     visible={panelSelection === WorkspacePanelSelection.Edit}
                     onClick={() => selectPanel(WorkspacePanelSelection.Edit)}
                     color={ToolbarItemColors.PURPLE}
-                    renderPopover={() => (
-                        <EditMenu />
-                    )}
                 >
                     <IconPencil size={56} strokeWidth={1.5} />
                 </ToolbarItem>

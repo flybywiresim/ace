@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { v4 } from 'uuid';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
-import { ElementFactory } from '../../Project/canvas/ElementFactory';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
 import { InteractionToolbar } from './Components/InteractionToolbar';
 import { PanelCanvas } from '../PanelCanvas';
@@ -16,17 +16,24 @@ import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { CanvasContextMenu } from './Components/CanvasContextMenu';
 import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
-import { useProjectDispatch } from './Store';
+import { useProjectDispatch, useProjectSelector } from './Store';
 import { loadControls } from './Store/actions/simVarElements.actions';
 import { LocalShim } from '../../shims/LocalShim';
 import { setProjectData } from './Store/actions/projectData.actions';
 import { AceEngine } from '../../../../ace-engine/src/AceEngine';
-import { SimVarDefinition, SimVarValue } from '../../../../ace-engine/src/SimVar';
 import { logActivity } from './Store/actions/timeline.actions';
 import { ActivityType } from './Store/reducers/timeline.reducer';
 import { addCoherentEvent, clearCoherentEvent } from './Store/actions/coherent.actions';
 import { setSimVarValue } from './Store/actions/simVarValues.actions';
 import { SimVarValuesHandler } from '../../Project/fs/SimVarValues';
+import {
+    addCanvasElement,
+    loadCanvasElements,
+    removeCanvasElement,
+    updateCanvasElement,
+} from './Store/actions/canvas.actions';
+import { CockpitPanelElement } from '../Canvas/CockpitPanel/CockpitPanelElement';
+import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -40,60 +47,60 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     const [engine] = useState(new AceEngine(localShim, {
         updateInterval: 50,
         simCallListener: {
-            onSetSimVar(variable: SimVarDefinition, obtainedValue: SimVarValue) {
+            onSetSimVar(variable, obtainedValue, instrumentUniqueID) {
                 projectDispatch(logActivity({
                     kind: ActivityType.SimVarSet,
-                    fromInstrument: 'Unknown',
+                    instrumentUniqueID,
                     timestamp: new Date(),
                     variable,
                     value: obtainedValue,
                 }));
             },
 
-            onCoherentTrigger(event: string, ...args) {
-                projectDispatch(logActivity({
-                    kind: ActivityType.CoherentTrigger,
-                    fromInstrument: 'Unknown',
-                    timestamp: new Date(),
-                    event,
-                    args,
-                }));
-            },
-
-            onCoherentCall(event: string, ...args) {
+            onCoherentCall(event, args, instrumentUniqueID) {
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentCall,
-                    fromInstrument: 'Unknown',
+                    instrumentUniqueID,
                     timestamp: new Date(),
                     event,
                     args,
                 }));
             },
 
-            onCoherentNewListener(data, clear) {
+            onCoherentNewListener(data, clear, instrumentUniqueID) {
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentNewOn,
-                    fromInstrument: 'Unknown',
+                    instrumentUniqueID,
                     timestamp: new Date(),
                     data,
                 }));
                 projectDispatch(addCoherentEvent({ data, clear }));
             },
 
-            onCoherentClearListener(data) {
+            onCoherentClearListener(data, instrumentUniqueID) {
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentClearOn,
-                    fromInstrument: 'Unknown',
+                    instrumentUniqueID,
                     timestamp: new Date(),
                     data,
                 }));
                 projectDispatch(clearCoherentEvent(data.uuid));
             },
 
-            onSetStoredData(key: string, setValue: string) {
+            onCoherentTrigger(event, args, instrumentUniqueID) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentTrigger,
+                    instrumentUniqueID,
+                    timestamp: new Date(),
+                    event,
+                    args,
+                }));
+            },
+
+            onSetStoredData(key, setValue, instrumentUniqueID) {
                 projectDispatch(logActivity({
                     kind: ActivityType.DataStorageSet,
-                    fromInstrument: 'Unknown',
+                    instrumentUniqueID,
                     timestamp: new Date(),
                     key,
                     value: setValue,
@@ -123,10 +130,10 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     const doLoadProjectCanvasSave = useCallback(() => {
         const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
 
-        setCanvasElements(canvasSave.elements);
+        projectDispatch(loadCanvasElements(canvasSave.elements));
     }, [project]);
 
-    const [canvasElements, setCanvasElements] = useState<PossibleCanvasElements[]>([]);
+    const canvasElements = useProjectSelector((state) => state.canvas.elements);
 
     useEffect(() => {
         if (project) {
@@ -135,34 +142,31 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     }, [doLoadProjectCanvasSave, project]);
 
     const handleAddInstrument = (instrument: string) => {
-        const newInstrumentPanel = ElementFactory.newInstrumentPanel({
+        const newInstrumentPanel: InstrumentFrame = {
+            __uuid: v4(),
+            __kind: 'instrument',
+            dataKind: 'bundled',
             title: instrument,
             instrumentName: instrument,
             position: {
                 x: 0,
                 y: 0,
             },
-        });
+        };
 
-        setCanvasElements((old) => [...old, newInstrumentPanel]);
+        projectDispatch(addCanvasElement(newInstrumentPanel));
         ProjectCanvasSaveHandler.addElement(project, newInstrumentPanel);
     };
 
     const handleDeleteCanvasElement = (element: PossibleCanvasElements) => {
-        setCanvasElements((old) => old.filter((el) => el.__uuid !== element.__uuid));
-
+        projectDispatch(removeCanvasElement(element.__uuid));
         ProjectCanvasSaveHandler.removeElement(project, element);
     };
 
-    const handleUpdateCanvasElement = (element: PossibleCanvasElements) => {
-        const savedElement = canvasElements.find((it) => it.__uuid === element.__uuid);
-
-        for (const [k, v] of Object.entries(element)) {
-            (savedElement as Record<string, any>)[k] = v;
-        }
-
+    const handleUpdateCanvasElement = useCallback((element: PossibleCanvasElements) => {
+        projectDispatch(updateCanvasElement(element));
         ProjectCanvasSaveHandler.updateElement(project, element);
-    };
+    }, [project, projectDispatch]);
 
     const [liveReloadConfigHandler, setLiveReloadConfigHandler] = useState<ProjectLiveReloadHandler>(null);
     const [liveReloadDispatcher, setLiveReloadDispatcher] = useState<LiveReloadDispatcher>(null);
@@ -322,6 +326,14 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                                                 key={canvasElement.title}
                                                 instrumentFrame={canvasElement}
                                                 zoom={zoom}
+                                                onUpdate={handleUpdateCanvasElement}
+                                            />
+                                        );
+                                    } if (canvasElement.__kind === 'cockpit-panel') {
+                                        return (
+                                            <CockpitPanelElement
+                                                panel={canvasElement}
+                                                canvasZoom={zoom}
                                                 onUpdate={handleUpdateCanvasElement}
                                             />
                                         );

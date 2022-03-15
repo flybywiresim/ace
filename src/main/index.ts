@@ -3,6 +3,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import express from 'express';
 import cors from 'cors';
 import RPC from 'discord-rpc';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const PORT = 39511;
 const statics: string[] = [];
@@ -18,6 +19,9 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
     app.quit();
 }
 
+app.commandLine.appendSwitch('disable-web-security');
+app.commandLine.appendSwitch('disable-site-isolation-trials');
+
 const createWindow = (): void => {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
@@ -27,6 +31,7 @@ const createWindow = (): void => {
         frame: false,
         icon: 'extraResources/icon.ico',
         webPreferences: {
+            webSecurity: false,
             nodeIntegration: true,
             enableRemoteModule: true,
             contextIsolation: false,
@@ -57,6 +62,15 @@ ipcMain.on('load-project', (event, arg) => {
     server = express();
     server.use(cors());
     statics.forEach((s) => server.use(express.static(s)));
+    server.use(createProxyMiddleware({
+        target: 'http://localhost:80/',
+        router: (req) => {
+            const targetHeader = req.header('Origin');
+
+            return targetHeader ?? undefined;
+        },
+        changeOrigin: true,
+    }));
     server = server.listen(PORT);
 });
 

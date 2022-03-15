@@ -1,8 +1,9 @@
-/* eslint-disable react/no-danger,react/jsx-handler-names */
+/* eslint-disable react/jsx-handler-names */
 import React, { FC, useMemo } from 'react';
 import Collapsible from 'react-collapsible';
 import { IconArrowRight } from '@tabler/icons';
 import ReactJson from 'react-json-view';
+import 'react-searchable-filter/dist/index.css';
 import { SideMenu } from './Framework/Toolbars';
 import { useProjectDispatch, useProjectSelector } from '../Store';
 import {
@@ -14,6 +15,7 @@ import {
 } from '../Store/reducers/timeline.reducer';
 import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.actions';
 import { WorkspacePanelSelection } from '../Store/reducers/interactionToolbar.reducer';
+import { FilterDefinition, SearchFilterBar } from './Framework/SearchFilterBar';
 
 const UNIMPORTANT_COHERENT_TRIGGERS = ['FOCUS_INPUT_FIELD', 'UNFOCUS_INPUT_FIELD'];
 
@@ -25,10 +27,12 @@ const ActivityHeader: FC<ActivityHeaderProps> = ({ activity }) => {
     const opacityClass = activity.kind === ActivityType.CoherentTrigger && UNIMPORTANT_COHERENT_TRIGGERS.includes(activity.event) ? 'opacity-60' : '';
 
     return (
-        <div className={`flex items-center py-1.5 ${opacityClass}`}>
+        <div className={`flex items-center gap-x-2 py-1.5 ${opacityClass}`}>
             <ActivityHeaderTitle kind={activity.kind} />
 
-            <span className="ml-auto font-mono text-gray-300">
+            <span className="ml-auto font-mono">{activity.instrumentUniqueID}</span>
+
+            <span className="font-mono text-gray-300">
                 {activity.timestamp.getHours().toString().padStart(2, '0')}
                 :
                 {activity.timestamp.getMinutes().toString().padStart(2, '0')}
@@ -100,9 +104,20 @@ const ActivityHeaderTitle: FC<ActivityHeaderTitleProps> = ({ kind }) => {
 
 export const Timeline = () => {
     const activity = useProjectSelector((store) => store.timeline.activity);
+    const instruments = useProjectSelector((state) => new Set(state.canvas.elements.filter((it) => it.__kind === 'instrument').map((it) => it.title)));
+
+    const filters: FilterDefinition[] = [
+        {
+            key: 'instrument',
+            possibleValues: Array.from(instruments),
+        },
+    ];
+
     return (
-        <SideMenu className="w-[480px] bg-navy z-50 overflow-auto">
+        <SideMenu className="w-[500px] bg-navy z-50 overflow-auto">
             <h2 className="mb-3 font-medium">Timeline</h2>
+
+            <SearchFilterBar filters={filters} />
 
             <div className="flex flex-col divide-y divide-gray-700">
                 {[...activity].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((event) => (

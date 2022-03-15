@@ -1,10 +1,10 @@
 import React, { FC, FormEvent, useEffect, useState } from 'react';
+import { v4 } from 'uuid';
 import { SimVarControl, SimVarControlStyleTypes } from '../../../../../../shared/types/project/SimVarControl';
 import { SideMenu } from '../../Framework/Toolbars';
 import { SelectBox, SelectBoxItem, SelectBoxItemBody, SelectBoxItemIcon } from '../../Framework/MenuBoxes';
 import { useProjectDispatch } from '../../../Store';
 import { addControl, editControl } from '../../../Store/actions/simVarElements.actions';
-import { ElementFactory } from '../../../../../Project/canvas/ElementFactory';
 import { simVarDefinitionFromName } from '../../../../../../../ace-engine/src/SimVar';
 
 export interface SimVarControlEditMenuProps {
@@ -85,7 +85,10 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
         if (control) {
             projectDispatch(editControl(data));
         } else {
-            projectDispatch(addControl(ElementFactory.newSimVarControl(data)));
+            projectDispatch(addControl({
+                __uuid: v4(),
+                ...data,
+            }));
         }
 
         onClose();

@@ -121,7 +121,7 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     onUpdate: (el: T) => void;
     resizingEnabled?: boolean,
     onResizeCompleted?: (width: number, height: number) => void,
-    topBarButtons?: JSX.Element;
+    topBarContent?: JSX.Element;
 }
 
 export const PanelCanvasElement = <T extends PossibleCanvasElements>({
@@ -133,7 +133,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     onUpdate,
     resizingEnabled,
     onResizeCompleted,
-    topBarButtons,
+    topBarContent,
     children,
 }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
     const xResizeOriginalPos = useRef(0);
@@ -160,7 +160,8 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     // Handle updating the saved element when the throttled position is updated
     useEffect(() => {
         onUpdate({ ...element, position: { x: throttledOffsetX, y: throttledOffsetY } });
-    }, [element, onUpdate, throttledOffsetX, throttledOffsetY]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [element.__uuid, onUpdate, throttledOffsetX, throttledOffsetY]);
 
     const [editPositionX, setEditPositionX] = useState(() => element.position.x);
     const [editPositionY, setEditPositionY] = useState(() => element.position.y);
@@ -257,12 +258,16 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
                 <span className="w-full absolute flex flex-row px-3 bg-gray-800 border-2 border-gray-700 rounded-t-md bg-opacity-80 h-10 -top-10 justify-between items-center">
                     <h1 style={{ fontSize: `${TITLE_FONTSIZE * (1 / canvasZoom)}px` }}>{title}</h1>
 
-                    <div className="flex flex-row gap-x-2.5">
-                        {inEditMode && (
-                            <IconArrowsMaximize className="hover:text-purple-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
-                        )}
+                    <div className="flex flex-row flex-grow ml-2">
+                        <div className="w-full flex items-center gap-x-2 ml-2.5">
+                            {topBarContent}
+                        </div>
 
-                        {topBarButtons}
+                        {inEditMode && (
+                            <div className="flex flex-row ml-2">
+                                <IconArrowsMaximize size={22} className="hover:text-purple-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
+                            </div>
+                        )}
                     </div>
 
                 </span>

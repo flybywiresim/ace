@@ -3,25 +3,43 @@ import {
     IconChevronRight,
     IconClick,
     IconCode,
-    IconDashboard,
+    IconDashboard, IconGlobe,
     IconMaximize, IconPlus,
     IconRectangle,
     IconResize,
     IconTrash,
 } from '@tabler/icons';
+import { v4 } from 'uuid';
 import { ContextMenuProps, ContextMenu, ContextMenuItem, ContextMenuItemIcon, ContextMenuItemBody } from './Framework/ContextMenus';
 import { PossibleCanvasElements } from '../../../../shared/types/project/canvas/CanvasSaveFile';
 import { useWorkspace } from '../WorkspaceContext';
 import { ProjectInstrumentsHandler } from '../../../Project/fs/Instruments';
+import { useProjectDispatch } from '../Store';
+import { addCanvasElement } from '../Store/actions/canvas.actions';
 
 export interface CanvasContextMenuProps extends ContextMenuProps {
     rightClickedElement?: PossibleCanvasElements,
 }
 
 export const CanvasContextMenu: FC<CanvasContextMenuProps> = ({ rightClickedElement, open, x, y }) => {
+    const projectDispatch = useProjectDispatch();
+
     const [instrumentsListOpen, setInstrumentsListOpen] = useState(false);
 
     const handleOpenInstrumentsList = () => setInstrumentsListOpen((open) => !open);
+
+    const handleAddCockpitPanel = () => {
+        projectDispatch(addCanvasElement({
+            __uuid: v4(),
+            __kind: 'cockpit-panel',
+            title: 'Cockpit Panel',
+            position: {
+                x: 0,
+                y: 0,
+            },
+            text: 'bruh',
+        }));
+    };
 
     useEffect(() => {
         if (!open) {
@@ -49,7 +67,7 @@ export const CanvasContextMenu: FC<CanvasContextMenuProps> = ({ rightClickedElem
                         </ContextMenuItemBody>
                     </ContextMenuItem>
 
-                    <ContextMenuItem inop>
+                    <ContextMenuItem onClick={handleAddCockpitPanel}>
                         <ContextMenuItemIcon className="text-purple-400 bg-purple-400 bg-opacity-5">
                             <IconClick size={28} strokeWidth={1.25} />
                         </ContextMenuItemIcon>
@@ -57,7 +75,7 @@ export const CanvasContextMenu: FC<CanvasContextMenuProps> = ({ rightClickedElem
                         <ContextMenuItemBody>
                             Add Cockpit Panel
 
-                            <IconChevronRight opacity={0.8} />
+                            <IconPlus opacity={0.8} />
                         </ContextMenuItemBody>
                     </ContextMenuItem>
 
@@ -78,7 +96,7 @@ export const CanvasContextMenu: FC<CanvasContextMenuProps> = ({ rightClickedElem
             <CanvasContextMenuAddInstrumentSubmenu
                 open={instrumentsListOpen}
                 x={x + 294}
-                y={y - 50}
+                y={y}
             />
         </>
     );
@@ -127,6 +145,8 @@ const CanvasElementContextMenuSection: FC<CanvasElementContextMenuSectionProps> 
 };
 
 const CanvasContextMenuAddInstrumentSubmenu: FC<ContextMenuProps> = ({ open, x, y }) => {
+    const projectDispatch = useProjectDispatch();
+
     const { addInstrument, project } = useWorkspace();
 
     const [availableInstruments, setAvailableInstruments] = useState<string[]>([]);
@@ -139,25 +159,53 @@ const CanvasContextMenuAddInstrumentSubmenu: FC<ContextMenuProps> = ({ open, x, 
         }
     }, [project]);
 
+    const handleAddWebInstrument = () => {
+        projectDispatch(addCanvasElement({
+            __uuid: v4(),
+            __kind: 'instrument',
+            dataKind: 'web',
+            title: `Web-${Math.round(Math.random() * 1_000)}`,
+            url: undefined,
+            position: {
+                x: 0,
+                y: 0,
+            },
+        }));
+    };
+
     const handleAddInstrument = (instrument: string) => {
         addInstrument(instrument);
     };
 
     return (
         <ContextMenu open={open} x={x} y={y}>
-            {availableInstruments.map((instrument) => (
-                <ContextMenuItem key={instrument} onClick={() => handleAddInstrument(instrument)}>
-                    <ContextMenuItemIcon className="text-purple-400 bg-purple-400 bg-opacity-5">
-                        <IconRectangle size={28} strokeWidth={1.25} />
-                    </ContextMenuItemIcon>
+            <ContextMenuItem key="web-instrument" onClick={handleAddWebInstrument}>
+                <ContextMenuItemIcon className="text-purple-400 bg-purple-400 bg-opacity-5">
+                    <IconGlobe size={28} strokeWidth={1.25} />
+                </ContextMenuItemIcon>
 
-                    <ContextMenuItemBody>
-                        {instrument}
+                <ContextMenuItemBody>
+                    Web Instrument
 
-                        <IconPlus opacity={0.8} />
-                    </ContextMenuItemBody>
-                </ContextMenuItem>
-            ))}
+                    <IconChevronRight opacity={0.8} />
+                </ContextMenuItemBody>
+            </ContextMenuItem>
+
+            <div className="flex flex-col divide-y-[1px] divide-navy-lightest">
+                {availableInstruments.map((instrument) => (
+                    <ContextMenuItem key={instrument} onClick={() => handleAddInstrument(instrument)}>
+                        <ContextMenuItemIcon className="text-purple-400 bg-purple-400 bg-opacity-5">
+                            <IconRectangle size={28} strokeWidth={1.25} />
+                        </ContextMenuItemIcon>
+
+                        <ContextMenuItemBody>
+                            {instrument}
+
+                            <IconPlus opacity={0.8} />
+                        </ContextMenuItemBody>
+                    </ContextMenuItem>
+                ))}
+            </div>
         </ContextMenu>
     );
 };

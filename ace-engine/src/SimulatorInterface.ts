@@ -13,7 +13,7 @@ export interface SimulatorInterface {
 }
 
 interface Coherent {
-    trigger(name: string, data: string): any,
+    trigger(name: string, ...data: string[]): any,
 
     on(name: string, callback: (data: string) => void): { clear: () => void },
 

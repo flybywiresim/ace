@@ -1,5 +1,4 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
-import path from 'path';
 import { IconRefresh } from '@tabler/icons';
 import { PanelCanvasElement } from '../PanelCanvas';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
@@ -7,6 +6,11 @@ import { InstrumentFrame } from '../../../shared/types/project/canvas/Instrument
 import { useWorkspace } from '../ProjectHome/WorkspaceContext';
 import { useProjectSelector } from '../ProjectHome/Store';
 import { WorkspacePanelSelection } from '../ProjectHome/Store/reducers/interactionToolbar.reducer';
+import {
+    BundledInstrumentData, InstrumentData,
+    WebInstrumentData,
+} from '../../../../ace-engine/src/InstrumentData';
+import { InputField } from '../ProjectHome/Components/Framework/InputField';
 
 export interface InstrumentFile {
     name: string,
@@ -37,6 +41,43 @@ export interface InstrumentFrameElementProps {
     onUpdate: (el: InstrumentFrame) => void,
 }
 
+function bundleInstrumentData(instrument: Instrument): BundledInstrumentData {
+    if (!instrument.files[0]) {
+        throw new Error('Expected CSS bundle file in instrument');
+    }
+
+    if (!instrument.files[1]) {
+        throw new Error('Expected JavaScript bundle file in instrument');
+    }
+
+    return {
+        __kind: 'bundled',
+        uniqueID: instrument.config.name,
+        displayName: instrument.config.name,
+        elementName: 'ace-instrument',
+        dimensions: instrument.config.dimensions,
+        jsSource: {
+            fileName: instrument.files[1].name,
+            contents: instrument.files[1].contents,
+        },
+        cssSource: {
+            fileName: instrument.files[0].name,
+            contents: instrument.files[0].contents,
+        },
+    };
+}
+
+function webInstrumentData(url: string, config: InstrumentConfig): WebInstrumentData {
+    return {
+        __kind: 'web',
+        uniqueID: config.name,
+        displayName: config.name,
+        elementName: 'ace-instrument',
+        dimensions: config.dimensions,
+        url,
+    };
+}
+
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onUpdate }) => {
     const inEditMode = useProjectSelector((state) => state.interactionToolbar.panel === WorkspacePanelSelection.Edit);
 
@@ -45,10 +86,41 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
 
     const { engine, project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
 
-    const [loadedInstrument] = useState(() => ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
+    const [loadedInstrument] = useState<InstrumentData>(() => {
+        try {
+            if (instrumentFrame.dataKind === 'web') {
+                return webInstrumentData(instrumentFrame.url, {
+                    index: '<none>',
+                    isInteractive: true,
+                    name: `Web-${Math.round(Math.random() * 10_000)}`,
+                    dimensions: {
+                        width: 768,
+                        height: 768,
+                    },
+                });
+            }
 
-    const [overrideWidth, setOverrideWidth] = useState(loadedInstrument.config.dimensions.width);
-    const [overrideHeight, setOverrideHeight] = useState(loadedInstrument.config.dimensions.height);
+            return bundleInstrumentData(ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
+        } catch (e) {
+            setError(e);
+            setErrorIsInInstrument(false);
+
+            return {
+                __kind: 'web',
+                url: '',
+                uniqueID: `Unknown-${Math.round(Math.random() * 10_000)}`,
+                displayName: 'Unknown',
+                elementName: 'ace-instrument',
+                dimensions: {
+                    width: 768,
+                    height: 768,
+                },
+            };
+        }
+    });
+
+    const [overrideWidth, setOverrideWidth] = useState(loadedInstrument.dimensions.width ?? 1000);
+    const [overrideHeight, setOverrideHeight] = useState(loadedInstrument.dimensions.height ?? 1000);
 
     const iframeRef = useRef<HTMLIFrameElement>();
 
@@ -70,16 +142,24 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     }, [setInInteractionMode]);
 
     const doLoadInstrument = useCallback(() => {
+        setError(null);
+        setErrorIsInInstrument(false);
+
         console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Loading instrument into iframe.`);
 
         try {
-            if (iframeRef.current && loadedInstrument.config.name) {
-                engine.loadInstrument({
-                    displayName: loadedInstrument.config.name,
-                    elementName: 'ace-instrument',
-                    jsSource: loadedInstrument.files[1].contents,
-                    cssSource: loadedInstrument.files[0].contents,
-                }, iframeRef.current, {
+            if (iframeRef.current && (instrumentFrame.dataKind === 'web' && loadedInstrument.__kind === 'bundled') && loadedInstrument.displayName) {
+                engine.loadBundledInstrument(
+                    loadedInstrument,
+                    iframeRef.current, {
+                        onInstrumentError: (error) => {
+                            setError(error);
+                            setErrorIsInInstrument(true);
+                        },
+                    },
+                );
+            } else if (instrumentFrame.dataKind === 'web' && loadedInstrument.__kind === 'web') {
+                engine.loadWebInstrument({ ...loadedInstrument, url: instrumentFrame.url }, iframeRef.current, {
                     onInstrumentError: (error) => {
                         setError(error);
                         setErrorIsInInstrument(true);
@@ -90,30 +170,59 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             setError(e);
             setErrorIsInInstrument(false);
         }
-    }, [engine, instrumentFrame.title, loadedInstrument.config.name, loadedInstrument.files]);
-
-    useEffect(doLoadInstrument, [doLoadInstrument]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [...Object.values(loadedInstrument), instrumentFrame.title, instrumentFrame.dataKind === 'web' && instrumentFrame.url]);
 
     useEffect(() => {
-        console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Hooking into a new LiveReloadDispatcher.`);
-
-        const sub = liveReloadDispatcher.subscribe(instrumentFrame.instrumentName, (fileName, contents) => {
-            console.log(`[InstrumentFrameElement(${instrumentFrame.title})] File updated: ${fileName}.`);
-
-            loadedInstrument.files.find((file) => file.name === path.basename(fileName)).contents = contents;
-
+        if (instrumentFrame.dataKind === 'web' && instrumentFrame.url) {
             doLoadInstrument();
-        });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [doLoadInstrument, instrumentFrame.dataKind, instrumentFrame.dataKind === 'web' && instrumentFrame.url]);
 
-        return () => liveReloadDispatcher.unsubscribe(sub);
-    }, [doLoadInstrument, instrumentFrame.instrumentName, instrumentFrame.title, liveReloadDispatcher, loadedInstrument.files]);
+    const jsSourceDep = loadedInstrument.__kind === 'bundled' && loadedInstrument.jsSource;
+    const cssSourceDep = loadedInstrument.__kind === 'bundled' && loadedInstrument.cssSource;
+
+    useEffect(() => {
+        if (instrumentFrame.dataKind === 'bundled' && loadedInstrument.__kind === 'bundled') {
+            console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Hooking into a new LiveReloadDispatcher.`);
+
+            const sub = liveReloadDispatcher.subscribe(instrumentFrame.instrumentName, (fileName, contents) => {
+                console.log(`[InstrumentFrameElement(${instrumentFrame.title})] File updated: ${fileName}.`);
+
+                if (loadedInstrument.jsSource.fileName === fileName) {
+                    loadedInstrument.jsSource.contents = contents;
+                }
+
+                if (loadedInstrument.cssSource.fileName === fileName) {
+                    loadedInstrument.cssSource.contents = contents;
+                }
+
+                doLoadInstrument();
+            });
+
+            return () => liveReloadDispatcher.unsubscribe(sub);
+        }
+
+        return () => {};
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [doLoadInstrument, ...Object.values(instrumentFrame), liveReloadDispatcher, jsSourceDep, cssSourceDep]);
+
+    const handleApplyWebInstrumentUrl = (url: string) => {
+        if (instrumentFrame.dataKind === 'web') {
+            onUpdate({
+                ...instrumentFrame,
+                url,
+            });
+        }
+    };
 
     return (
         <PanelCanvasElement<InstrumentFrame>
             element={instrumentFrame}
-            title={loadedInstrument.config.name}
-            initialWidth={overrideWidth ?? loadedInstrument.config.dimensions.width ?? 1000}
-            initialHeight={overrideHeight ?? loadedInstrument.config.dimensions.height ?? 800}
+            title={loadedInstrument.displayName}
+            initialWidth={overrideWidth ?? loadedInstrument.dimensions.width ?? 1000}
+            initialHeight={overrideHeight ?? loadedInstrument.dimensions.height ?? 800}
             canvasZoom={zoom}
             onUpdate={onUpdate}
             resizingEnabled={inEditMode}
@@ -121,15 +230,31 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                 setOverrideWidth(width);
                 setOverrideHeight(height);
             }}
-            topBarButtons={(
+            topBarContent={(
                 <>
-                    <IconRefresh className="hover:text-green-500 hover:cursor-pointer" onMouseDown={() => doLoadInstrument()} />
+                    {instrumentFrame.dataKind === 'web' && (
+                        <pre className="bg-gray-700 px-1.5">{instrumentFrame.url ?? '(No URL)'}</pre>
+                    )}
+
+                    <IconRefresh
+                        size={22}
+                        className="hover:text-green-500 hover:cursor-pointer"
+                        onMouseDown={() => doLoadInstrument()}
+                    />
                 </>
             )}
         >
-            {error ? (
+            {instrumentFrame.dataKind === 'web' && !instrumentFrame.url && (
+                <WebInstrumentNoUrlPanel onApply={handleApplyWebInstrumentUrl} />
+            )}
+
+            {error && (
                 <div className="h-full flex flex-col justify-center gap-y-2.5 p-5 bg-gray-900">
-                    <span className="text-2xl font-bold">{errorIsInInstrument ? 'Error in instrument' : 'Error while loading instrument'}</span>
+                    <span
+                        className="text-2xl font-bold"
+                    >
+                        {errorIsInInstrument ? 'Error in instrument' : 'Error while loading instrument'}
+                    </span>
                     <p className="text-xl">
                         {errorIsInInstrument
                             ? 'This error occurred in instrument code and was not recovered.'
@@ -140,15 +265,47 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                         {error.stack}
                     </pre>
                 </div>
-            ) : (
-                <iframe
-                    title="Instrument Frame"
-                    ref={iframeRef}
-                    width={overrideWidth ?? loadedInstrument.config.dimensions.width ?? 1000}
-                    height={overrideHeight ?? loadedInstrument.config.dimensions.height ?? 1000}
-                    style={{ pointerEvents: inInteractionMode ? 'auto' : 'none' }}
-                />
             )}
+
+            <iframe
+                title="Instrument Frame"
+                ref={iframeRef}
+                width={overrideWidth ?? loadedInstrument.dimensions.width}
+                height={overrideHeight ?? loadedInstrument.dimensions.height}
+                style={{ pointerEvents: inInteractionMode ? 'auto' : 'none', visibility: error ? 'hidden' : 'visible' }}
+            />
         </PanelCanvasElement>
+    );
+};
+
+interface WebInstrumentNoUrlPanelProps {
+    onApply: (url: string) => void,
+}
+
+const WebInstrumentNoUrlPanel: FC<WebInstrumentNoUrlPanelProps> = ({ onApply }) => {
+    const [urlInput, setUrlInput] = useState('');
+
+    const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+        setUrlInput(e.currentTarget.value);
+    };
+
+    return (
+        <div className="h-full flex flex-col justify-center gap-y-3 p-5 bg-gray-900 items-center">
+            <span className="text-2xl font-bold">No URL configured</span>
+            <p className="text-xl">
+                Configure the URL to display in this instrument below.
+            </p>
+
+            <div className="flex gap-x-2 5">
+                <InputField
+                    className="w-[300px]"
+                    type="text"
+                    placeholder="http://..."
+                    onInput={handleInput}
+                />
+
+                <button className="w-36" type="button" disabled={!urlInput} onClick={() => onApply(urlInput)}>Apply</button>
+            </div>
+        </div>
     );
 };

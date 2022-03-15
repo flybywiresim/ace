@@ -2,10 +2,9 @@
  * Instance of an ACE runtime
  */
 import { SimulatorInterface } from './SimulatorInterface';
-import { InstrumentData } from './InstrumentData';
+import { BundledInstrumentData, WebInstrumentData } from './InstrumentData';
 import { InstrumentLoader, InstrumentLoadOptions } from './InstrumentLoader';
 import { SimCallListener } from './SimCallListener';
-import { ProxyShim } from './ProxyShim';
 
 export interface AceEngineOptions {
     /**
@@ -20,13 +19,10 @@ export interface AceEngineOptions {
 }
 
 export class AceEngine {
-    private readonly shim: SimulatorInterface
-
     constructor(
-        shim: SimulatorInterface,
-        readonly options?: AceEngineOptions,
+        private readonly shim: SimulatorInterface,
+        private readonly options?: AceEngineOptions,
     ) {
-        this.shim = options.simCallListener ? new ProxyShim(shim, options.simCallListener) : shim;
     }
 
     /**
@@ -36,7 +32,27 @@ export class AceEngine {
      * @param onto            iframe to load instrument onto
      * @param overrideOptions overridden options for instrument load
      */
-    loadInstrument(instrument: InstrumentData, onto: HTMLIFrameElement, overrideOptions?: InstrumentLoadOptions): void {
-        InstrumentLoader.load(instrument, this.shim, onto, { ...this.options, ...overrideOptions });
+    loadBundledInstrument(instrument: BundledInstrumentData, onto: HTMLIFrameElement, overrideOptions?: InstrumentLoadOptions): void {
+        InstrumentLoader.loadFromBundles(instrument, this.shim, onto, this, { ...this.options, ...overrideOptions });
+    }
+
+    /**
+     * Loads an instrument onto an iframe
+     *
+     * @param instrument      instrument data to load
+     * @param onto            iframe to load instrument onto
+     * @param overrideOptions overridden options for instrument load
+     */
+    loadWebInstrument(instrument: WebInstrumentData, onto: HTMLIFrameElement, overrideOptions?: InstrumentLoadOptions): void {
+        InstrumentLoader.loadFromUrl(instrument, this.shim, onto, this, { ...this.options, ...overrideOptions });
+    }
+
+    /**
+     * Installs the engine's shim object onto a given object
+     *
+     * @param object the object (usually window) to install the shim onto
+     */
+    installShim(object: any) {
+        InstrumentLoader.installShim(this.shim, object);
     }
 }

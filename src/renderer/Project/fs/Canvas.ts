@@ -41,7 +41,7 @@ export class ProjectCanvasSaveHandler {
             ProjectCanvasSaveHandler.createCanvas(project);
         }
 
-        const projectCanvasContents = JSON.stringify(object);
+        const projectCanvasContents = JSON.stringify(object, null, 4);
 
         fs.writeFileSync(projectCanvasFile, projectCanvasContents);
     }

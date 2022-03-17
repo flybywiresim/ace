@@ -5,8 +5,9 @@ import { useThrottle } from 'react-use';
 import useInterval from '../../utils/useInterval';
 import { PossibleCanvasElements } from '../../shared/types/project/canvas/CanvasSaveFile';
 import { GRID_LINE_SIZE, GRID_SVG_SIZE } from './Canvas/Grid';
-import { useProjectSelector } from './ProjectHome/Store';
+import { useProjectDispatch, useProjectSelector } from './ProjectHome/Store';
 import { WorkspacePanelSelection } from './ProjectHome/Store/reducers/interactionToolbar.reducer';
+import { updateCanvasElement } from './ProjectHome/Store/actions/canvas.actions';
 
 export const PANEL_CANVAS_SIZE = 30_000;
 
@@ -118,7 +119,6 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     initialWidth: number,
     initialHeight: number,
     canvasZoom: number;
-    onUpdate: (el: T) => void;
     resizingEnabled?: boolean,
     onResizeCompleted?: (width: number, height: number) => void,
     topBarContent?: JSX.Element;
@@ -130,12 +130,13 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     initialWidth,
     initialHeight,
     canvasZoom,
-    onUpdate,
     resizingEnabled,
     onResizeCompleted,
     topBarContent,
     children,
 }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
+    const projectDispatch = useProjectDispatch();
+
     const xResizeOriginalPos = useRef(0);
     const yResizeOriginalPos = useRef(0);
     const resizeMode = useRef<'x' | 'y' | 'xy' | null>(null);
@@ -159,9 +160,9 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
 
     // Handle updating the saved element when the throttled position is updated
     useEffect(() => {
-        onUpdate({ ...element, position: { x: throttledOffsetX, y: throttledOffsetY } });
+        projectDispatch(updateCanvasElement({ ...element, position: { x: throttledOffsetX, y: throttledOffsetY } }));
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [element.__uuid, onUpdate, throttledOffsetX, throttledOffsetY]);
+    }, [element.__kind, projectDispatch, throttledOffsetX, throttledOffsetY]);
 
     const [editPositionX, setEditPositionX] = useState(() => element.position.x);
     const [editPositionY, setEditPositionY] = useState(() => element.position.y);

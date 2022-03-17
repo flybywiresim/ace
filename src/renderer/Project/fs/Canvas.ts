@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as UUID } from 'uuid';
 import { ProjectData } from '../../index';
-import { CanvasSaveFile, PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
+import { CanvasSaveFile } from '../../../shared/types/project/canvas/CanvasSaveFile';
 
 export class ProjectCanvasSaveHandler {
     private static canvasFilePath(project: ProjectData): string {
@@ -58,36 +58,5 @@ export class ProjectCanvasSaveHandler {
         } else {
             throw new Error(`[ProjectCanvasLoad] '${projectCanvasFile}' already exists.`);
         }
-    }
-
-    public static addElement(project: ProjectData, element: PossibleCanvasElements): void {
-        console.log(`[ProjectCanvasSaveHandler] Saved new element '${element.title}'.`);
-
-        const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
-
-        currentPanel.elements.push(element);
-
-        ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
-    }
-
-    public static removeElement(project: ProjectData, elementToDelete: PossibleCanvasElements): void {
-        console.log(`[ProjectCanvasSaveHandler] Deleted element '${elementToDelete.title}'.`);
-
-        const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
-
-        currentPanel.elements = currentPanel.elements.filter((element) => element.__uuid !== elementToDelete.__uuid);
-
-        ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
-    }
-
-    public static updateElement(project: ProjectData, elementToUpdate: PossibleCanvasElements): void {
-        console.log(`[ProjectCanvasSaveHandler] Updated element '${elementToUpdate.title}'.`);
-
-        const currentPanel = ProjectCanvasSaveHandler.loadCanvas(project);
-
-        currentPanel.elements = currentPanel.elements.filter((element) => element.__uuid !== elementToUpdate.__uuid);
-        currentPanel.elements.push(elementToUpdate);
-
-        ProjectCanvasSaveHandler.saveCanvas(project, currentPanel);
     }
 }

@@ -17,6 +17,8 @@ import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.action
 import { WorkspacePanelSelection } from '../Store/reducers/interactionToolbar.reducer';
 import { FilterDefinition, SearchFilterBar } from './Framework/SearchFilterBar';
 
+const TIMELINE_NUM_DISPLAYED_ELEMENTS = 25;
+
 const UNIMPORTANT_COHERENT_TRIGGERS = ['FOCUS_INPUT_FIELD', 'UNFOCUS_INPUT_FIELD'];
 
 interface ActivityHeaderProps {
@@ -103,7 +105,7 @@ const ActivityHeaderTitle: FC<ActivityHeaderTitleProps> = ({ kind }) => {
 };
 
 export const Timeline = () => {
-    const activity = useProjectSelector((store) => store.timeline.activity);
+    const activity = useProjectSelector((store) => store.timeline.activity.slice(store.timeline.activity.length - TIMELINE_NUM_DISPLAYED_ELEMENTS, store.timeline.activity.length - 1));
     const instruments = useProjectSelector((state) => new Set(state.canvas.elements.filter((it) => it.__kind === 'instrument').map((it) => it.title)));
 
     const filters: FilterDefinition[] = [
@@ -121,7 +123,7 @@ export const Timeline = () => {
 
             <div className="flex flex-col divide-y divide-gray-700">
                 {[...activity].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((event) => (
-                    <Collapsible trigger={<ActivityHeader activity={event} />} transitionTime={100}>
+                    <Collapsible key={event.timestamp.getTime()} trigger={<ActivityHeader activity={event} />} transitionTime={100}>
                         <div className="text-md pb-2.5">
                             {event.kind === ActivityType.SimVarSet && (
                                 <SimVarSetActivityData activity={event} />

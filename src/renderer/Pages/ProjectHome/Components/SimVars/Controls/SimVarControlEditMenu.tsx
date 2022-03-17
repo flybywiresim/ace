@@ -86,8 +86,8 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
             projectDispatch(editControl(data));
         } else {
             projectDispatch(addControl({
-                __uuid: v4(),
                 ...data,
+                __uuid: v4(),
             }));
         }
 

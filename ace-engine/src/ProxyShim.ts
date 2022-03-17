@@ -1,6 +1,8 @@
+/* eslint-disable max-classes-per-file */
+
 import { v4 } from 'uuid';
 import { SimulatorInterface, ViewListener } from './SimulatorInterface';
-import { SimCallListener } from './SimCallListener';
+import { CoherentEventData, SimCallListener } from './SimCallListener';
 import { simVarDefinitionFromName, SimVarValue } from './SimVar';
 
 /**
@@ -14,6 +16,17 @@ export class ProxyShim implements SimulatorInterface {
     ) {
     }
 
+    Facilities = {
+        getMagVar(lat: number, long: number): number {
+            return 0;
+        },
+    }
+
+    LatLongAlt = class {
+        constructor(public lat: number, public long: number) {
+        }
+    }
+
     Coherent = {
         trigger: (name: string, ...data: string[]): any => {
             this.simCallListener.onCoherentTrigger?.(name, data, this.instrumentUniqueID);
@@ -22,7 +35,7 @@ export class ProxyShim implements SimulatorInterface {
         },
 
         on: (name: string, callback: (data: string) => void): { clear: () => void } => {
-            const data = { name, callback, uuid: v4(), timestamp: new Date() };
+            const data: CoherentEventData = { name, callback, uuid: v4(), timestamp: new Date(), instrumentUniqueId: this.instrumentUniqueID };
 
             const clear = () => {
                 this.simCallListener.onCoherentClearListener?.(data, this.instrumentUniqueID);

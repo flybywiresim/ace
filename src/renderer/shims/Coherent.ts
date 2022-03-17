@@ -2,9 +2,9 @@
 class CoherentEvent {
     name: string;
 
-    callback: (data: string) => void;
+    callback: (...data: any[]) => void;
 
-    constructor(name: string, callback: (data: string) => void) {
+    constructor(name: string, callback: (...data: any[]) => void) {
         this.name = name;
         this.callback = callback;
     }
@@ -13,11 +13,11 @@ class CoherentEvent {
 export class Coherent {
     private events: CoherentEvent[] = [];
 
-    public trigger(name: string, data: string) {
-        this.events.forEach((e) => (e.name === name ? e.callback(data) : {}));
+    public trigger(name: string, ...data: any[]) {
+        this.events.forEach((e) => (e.name === name ? e.callback(...data) : {}));
     }
 
-    public on(name: string, callback: (data: string) => void): { clear: () => void } {
+    public on(name: string, callback: (...data: any[]) => void): { clear: () => void } {
         const event = new CoherentEvent(name, callback);
         this.events.push(event);
         return {

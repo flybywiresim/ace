@@ -15,7 +15,21 @@ export class LocalShim implements SimulatorInterface {
         GetSimVarValue(key: string): SimVarValue {
             const state = projectStore.getState().simVarValues;
             const { prefix, name } = simVarDefinitionFromName(key, '');
-            return state[`${prefix}:${name}`] ?? 0;
+
+            const value = state[`${prefix}:${name}`];
+
+            if (value === undefined) {
+                projectStore.dispatch(setSimVarValue({
+                    variable: {
+                        name,
+                        prefix,
+                        unit: 'number',
+                    },
+                    value: 0,
+                }));
+            }
+
+            return value ?? 0;
         },
         SetSimVarValue(key: string, unit: string, value: SimVarValue): Promise<SimVarValue> {
             try {

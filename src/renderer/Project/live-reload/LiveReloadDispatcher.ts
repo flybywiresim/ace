@@ -60,9 +60,10 @@ export class LiveReloadDispatcher {
 
     public unsubscribe(handler: LiveReloadSubscriptionHandler) {
         // FIXME memory leak, cancel actual FsWatcher
-        this.subscriptions[
-            Object.entries(this.subscriptions)
-                .find((ent) => ent[1] === handler)[0]
-        ] = undefined;
+        const entry = Object.entries(this.subscriptions).find((ent) => ent[1] === handler);
+
+        if (entry) {
+            this.subscriptions[entry[0]] = undefined;
+        }
     }
 }

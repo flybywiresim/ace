@@ -4,13 +4,15 @@ import { PanelCanvasElement } from '../PanelCanvas';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
 import { useWorkspace } from '../ProjectHome/WorkspaceContext';
-import { useProjectSelector } from '../ProjectHome/Store';
+import { useProjectDispatch, useProjectSelector } from '../ProjectHome/Store';
 import { WorkspacePanelSelection } from '../ProjectHome/Store/reducers/interactionToolbar.reducer';
 import {
     BundledInstrumentData, InstrumentData,
     WebInstrumentData,
 } from '../../../../ace-engine/src/InstrumentData';
 import { InputField } from '../ProjectHome/Components/Framework/InputField';
+import { clearCoherentEventsForUniqueID } from '../ProjectHome/Store/actions/coherent.actions';
+import { updateCanvasElement } from '../ProjectHome/Store/actions/canvas.actions';
 
 export interface InstrumentFile {
     name: string,
@@ -38,7 +40,6 @@ export interface InstrumentDimensions {
 export interface InstrumentFrameElementProps {
     instrumentFrame: InstrumentFrame,
     zoom: number,
-    onUpdate: (el: InstrumentFrame) => void,
 }
 
 function bundleInstrumentData(instrument: Instrument): BundledInstrumentData {
@@ -78,7 +79,9 @@ function webInstrumentData(url: string, config: InstrumentConfig): WebInstrument
     };
 }
 
-export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom, onUpdate }) => {
+export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom }) => {
+    const projectDispatch = useProjectDispatch();
+
     const inEditMode = useProjectSelector((state) => state.interactionToolbar.panel === WorkspacePanelSelection.Edit);
 
     const [error, setError] = useState<Error | null>(null);
@@ -92,7 +95,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                 return webInstrumentData(instrumentFrame.url, {
                     index: '<none>',
                     isInteractive: true,
-                    name: `Web-${Math.round(Math.random() * 10_000)}`,
+                    name: instrumentFrame.title,
                     dimensions: {
                         width: 768,
                         height: 768,
@@ -142,13 +145,15 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     }, [setInInteractionMode]);
 
     const doLoadInstrument = useCallback(() => {
+        projectDispatch(clearCoherentEventsForUniqueID(loadedInstrument.uniqueID));
+
         setError(null);
         setErrorIsInInstrument(false);
 
         console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Loading instrument into iframe.`);
 
         try {
-            if (iframeRef.current && (instrumentFrame.dataKind === 'web' && loadedInstrument.__kind === 'bundled') && loadedInstrument.displayName) {
+            if (iframeRef.current && (instrumentFrame.dataKind === 'bundled' && loadedInstrument.__kind === 'bundled') && loadedInstrument.displayName) {
                 engine.loadBundledInstrument(
                     loadedInstrument,
                     iframeRef.current, {
@@ -159,7 +164,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                     },
                 );
             } else if (instrumentFrame.dataKind === 'web' && loadedInstrument.__kind === 'web') {
-                engine.loadWebInstrument({ ...loadedInstrument, url: instrumentFrame.url }, iframeRef.current, {
+                engine.loadWebInstrument({ ...loadedInstrument, url: 'http://localhost:39511/' }, iframeRef.current, {
                     onInstrumentError: (error) => {
                         setError(error);
                         setErrorIsInInstrument(true);
@@ -174,9 +179,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     }, [...Object.values(loadedInstrument), instrumentFrame.title, instrumentFrame.dataKind === 'web' && instrumentFrame.url]);
 
     useEffect(() => {
-        if (instrumentFrame.dataKind === 'web' && instrumentFrame.url) {
-            doLoadInstrument();
-        }
+        doLoadInstrument();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [doLoadInstrument, instrumentFrame.dataKind, instrumentFrame.dataKind === 'web' && instrumentFrame.url]);
 
@@ -184,6 +187,10 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     const cssSourceDep = loadedInstrument.__kind === 'bundled' && loadedInstrument.cssSource;
 
     useEffect(() => {
+        if (!liveReloadDispatcher) {
+            return () => {};
+        }
+
         if (instrumentFrame.dataKind === 'bundled' && loadedInstrument.__kind === 'bundled') {
             console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Hooking into a new LiveReloadDispatcher.`);
 
@@ -210,10 +217,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
 
     const handleApplyWebInstrumentUrl = (url: string) => {
         if (instrumentFrame.dataKind === 'web') {
-            onUpdate({
-                ...instrumentFrame,
-                url,
-            });
+            projectDispatch(updateCanvasElement({ ...instrumentFrame, url }));
         }
     };
 
@@ -224,7 +228,6 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             initialWidth={overrideWidth ?? loadedInstrument.dimensions.width ?? 1000}
             initialHeight={overrideHeight ?? loadedInstrument.dimensions.height ?? 800}
             canvasZoom={zoom}
-            onUpdate={onUpdate}
             resizingEnabled={inEditMode}
             onResizeCompleted={(width, height) => {
                 setOverrideWidth(width);
@@ -269,10 +272,11 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
 
             <iframe
                 title="Instrument Frame"
+                name={instrumentFrame.dataKind === 'web' ? instrumentFrame.url : undefined}
                 ref={iframeRef}
                 width={overrideWidth ?? loadedInstrument.dimensions.width}
                 height={overrideHeight ?? loadedInstrument.dimensions.height}
-                style={{ pointerEvents: inInteractionMode ? 'auto' : 'none', visibility: error ? 'hidden' : 'visible' }}
+                style={{ pointerEvents: inInteractionMode ? 'auto' : 'none', visibility: error ? 'hidden' : 'visible', backgroundColor: '#000' }}
             />
         </PanelCanvasElement>
     );

@@ -7,6 +7,8 @@ export interface CoherentEventData {
 
     readonly uuid: string,
 
+    readonly instrumentUniqueId: string,
+
     readonly timestamp: Date,
 }
 

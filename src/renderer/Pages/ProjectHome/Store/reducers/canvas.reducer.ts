@@ -6,12 +6,17 @@ import {
     removeCanvasElement,
     updateCanvasElement,
 } from '../actions/canvas.actions';
+import { reset } from '../actions/global.actions';
 
 export interface CanvasState {
     elements: PossibleCanvasElements[],
 }
 
 export const canvasReducer = createReducer<CanvasState>({ elements: [] }, (builder) => {
+    builder.addCase(reset, (state) => {
+        state.elements.length = 0;
+    });
+
     builder.addCase(loadCanvasElements, (state, action) => {
         state.elements = [...action.payload];
 

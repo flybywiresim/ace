@@ -1,4 +1,4 @@
-import React, { FC, FocusEvent, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FC, FocusEvent, useCallback, useEffect, useRef } from 'react';
 import { IconPencil, IconTrash } from '@tabler/icons';
 import {
     SimVarControl,
@@ -7,6 +7,7 @@ import {
 } from '../../../../../../shared/types/project/SimVarControl';
 import { useProjectDispatch, useProjectSelector } from '../../../Store';
 import { setSimVarValue } from '../../../Store/actions/simVarValues.actions';
+import { SimVarValue } from '../../../../../../../ace-engine/src/SimVar';
 
 interface SimVarEditorProps {
     simVarControl: SimVarControl,
@@ -30,16 +31,9 @@ export const defaultValueForControlStyle = (style: SimVarControlStyle) => {
 };
 
 export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarControl, onEdit, onDelete }) => {
-    const simVarValue = useProjectSelector((state) => state.simVarValues[`${simVarControl.varPrefix}:${simVarControl.varName}`]);
     const projectDispatch = useProjectDispatch();
 
-    const valueRef = useRef<HTMLSpanElement>();
-
-    const [state, setState] = useState<any>(() => simVarValue ?? defaultValueForControlStyle(simVarControl.style));
-
-    useEffect(() => {
-        setState(simVarValue ?? defaultValueForControlStyle(simVarControl.style));
-    }, [simVarControl.style, simVarValue]);
+    const simVarValue = useProjectSelector((state) => state.simVarValues[`${simVarControl.varPrefix}:${simVarControl.varName}`]) ?? defaultValueForControlStyle(simVarControl.style);
 
     const handleSetValue = useCallback((value) => {
         let actualValue = value;
@@ -68,21 +62,6 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
         }));
     }, [projectDispatch, simVarControl.style.type, simVarControl.varName, simVarControl.varPrefix, simVarControl.varUnit]);
 
-    useEffect(() => {
-        projectDispatch(setSimVarValue({
-            variable: {
-                prefix: simVarControl.varPrefix,
-                name: simVarControl.varName,
-                unit: simVarControl.varUnit,
-            },
-            value: state,
-        }));
-
-        if (valueRef.current && document.activeElement !== valueRef.current) {
-            valueRef.current.innerText = state;
-        }
-    }, [projectDispatch, simVarControl.varName, simVarControl.varPrefix, simVarControl.varUnit, state]);
-
     return (
         <div className="py-3.5">
             <div className="flex flex-col justify-start gap-y-4">
@@ -94,7 +73,7 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                         || simVarControl.style.type === SimVarControlStyleTypes.RANGE
                     ) && (
                         <EditableSimVarControlValue
-                            value={state}
+                            value={simVarValue}
                             unit={simVarControl.varUnit}
                             onInput={handleSetValue}
                         />
@@ -105,14 +84,14 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                             min={simVarControl.style.min}
                             max={simVarControl.style.max}
                             step={simVarControl.style.step}
-                            value={state}
+                            value={simVarValue}
                             onInput={handleSetValue}
                         />
                     )}
 
                     {simVarControl.style.type === SimVarControlStyleTypes.CHECKBOX && (
                         <CheckboxSimVarControl
-                            state={state}
+                            state={simVarValue}
                             onInput={handleSetValue}
                         />
                     )}
@@ -137,7 +116,7 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
 };
 
 interface EditableSimVarControlValueProps {
-    value: number,
+    value: SimVarValue,
     unit: string,
     onInput: (v: number | string) => void,
 }
@@ -180,12 +159,21 @@ interface RangeSimVarControlProps {
     min: number,
     max: number,
     step: number,
-    value: number,
+    value: SimVarValue,
     onInput: (v: number) => void,
 }
 
 const RangeSimVarControl: FC<RangeSimVarControlProps> = ({ min, max, step, value, onInput }) => {
-    const valuePercentage = Math.round(((value - min) / (max - min)) * 100);
+    let numberValue;
+    if (typeof value === 'number') {
+        numberValue = value;
+    } else if (typeof value === 'boolean') {
+        numberValue = value ? 1 : 0;
+    } else {
+        numberValue = NaN;
+    }
+
+    const valuePercentage = Math.round(((numberValue - min) / (max - min)) * 100);
 
     return (
         <div className="mb-1 ml-auto">
@@ -193,7 +181,7 @@ const RangeSimVarControl: FC<RangeSimVarControlProps> = ({ min, max, step, value
                 style={{ background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${valuePercentage}%, #36465E ${valuePercentage}%, #36465E 100%)` }}
                 className="w-52"
                 type="range"
-                value={value}
+                value={numberValue}
                 onChange={(e) => onInput(parseInt(e.target.value))}
                 min={min}
                 max={max}
@@ -204,15 +192,26 @@ const RangeSimVarControl: FC<RangeSimVarControlProps> = ({ min, max, step, value
 };
 
 interface CheckboxSimVarControlProps {
-    state: number,
+    state: SimVarValue,
     onInput: (v: number) => void,
 }
 
-const CheckboxSimVarControl: FC<CheckboxSimVarControlProps> = ({ state, onInput }) => (
-    <input
-        className="ml-4 ml-auto"
-        type="checkbox"
-        checked={state !== 0}
-        onChange={(e) => onInput(e.target.checked ? 1 : 0)}
-    />
-);
+const CheckboxSimVarControl: FC<CheckboxSimVarControlProps> = ({ state, onInput }) => {
+    let booleanValue;
+    if (typeof state === 'boolean') {
+        booleanValue = state;
+    } else if (typeof state === 'number') {
+        booleanValue = state !== 0;
+    } else {
+        booleanValue = true; // FIXME not sure about this
+    }
+
+    return (
+        <input
+            className="ml-4 ml-auto"
+            type="checkbox"
+            checked={booleanValue}
+            onChange={(e) => onInput(e.target.checked ? 1 : 0)}
+        />
+    );
+};

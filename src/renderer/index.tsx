@@ -11,7 +11,6 @@ import { CreateProject } from './Pages/createproject';
 import { AceConfigurationPanel } from './Pages/AceConfigurationPanel';
 import './index.scss';
 import { Project } from './types/Project';
-import { ProjectWorkspace } from './Pages/ProjectHome/ProjectWorkspace';
 import { store } from './Store';
 import { RecentlyOpenedProjects } from './Project/recently-opened';
 import { AceConfigHandler } from './Project/fs/AceConfigHandler';
@@ -125,12 +124,11 @@ export const Main = () => {
             <ProjectContext.Provider value={{ loadProject, createProject, closeProject, projects }}>
                 <ApplicationFrame>
                     <Route exact path="/" component={Home} />
-                    <Route path="/project/:name">
-                        <ProjectWorkspaceContainer render={(project) => (
-                            <ProjectWorkspace project={project} />
-                        )}
-                        />
-                    </Route>
+                    {projects.map((it) => (
+                        <Route key={it.name} path={`/project/${it.name}`}>
+                            <ProjectWorkspaceContainer key={it.name} project={it} />
+                        </Route>
+                    ))}
                     <Route exact path="/create-project" component={CreateProject} />
                     <Route exact path="/ace-config" component={AceConfigurationPanel} />
                 </ApplicationFrame>

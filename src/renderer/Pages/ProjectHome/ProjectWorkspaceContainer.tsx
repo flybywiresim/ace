@@ -1,24 +1,15 @@
 import React, { FC } from 'react';
-import { useParams } from 'react-router';
 import { Provider } from 'react-redux';
-import { ProjectData, useProjects } from '../../index';
+import { ProjectData } from '../../index';
 import { ProjectStoreContext, projectStore } from './Store';
+import { ProjectWorkspace } from './ProjectWorkspace';
 
 export interface ProjectWorkspaceContainerProps {
-    render: (project: ProjectData) => JSX.Element,
+    project: ProjectData,
 }
 
-export const ProjectWorkspaceContainer: FC<ProjectWorkspaceContainerProps> = ({ render }) => {
-    const { name } = useParams<{ name: string }>();
-    const project = useProjects().projects.find((project) => project.name === name);
-
-    if (project) {
-        return (
-            <Provider store={projectStore} context={ProjectStoreContext}>
-                {render(project)}
-            </Provider>
-        );
-    }
-
-    return null;
-};
+export const ProjectWorkspaceContainer: FC<ProjectWorkspaceContainerProps> = ({ project }) => (
+    <Provider store={projectStore} context={ProjectStoreContext}>
+        <ProjectWorkspace project={project} />
+    </Provider>
+);

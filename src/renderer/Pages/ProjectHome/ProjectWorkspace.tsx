@@ -30,10 +30,14 @@ import {
     addCanvasElement,
     loadCanvasElements,
     removeCanvasElement,
-    updateCanvasElement,
 } from './Store/actions/canvas.actions';
 import { CockpitPanelElement } from '../Canvas/CockpitPanel/CockpitPanelElement';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
+import { PersistentStorageHandler } from '../../Project/fs/PersistentStorageHandler';
+import { setPersistentValue } from './Store/actions/persistentStorage.actions';
+import useInterval from '../../../utils/useInterval';
+import { QueuedDataWriter } from './QueuedDataWriter';
+import { reset } from './Store/actions/global.actions';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -68,21 +72,29 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
             },
 
             onCoherentNewListener(data, clear, instrumentUniqueID) {
+                const dataWithoutCallback: any = { ...data };
+
+                dataWithoutCallback.callback = undefined;
+
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentNewOn,
                     instrumentUniqueID,
                     timestamp: new Date(),
-                    data,
+                    data: dataWithoutCallback,
                 }));
                 projectDispatch(addCoherentEvent({ data, clear }));
             },
 
             onCoherentClearListener(data, instrumentUniqueID) {
+                const dataWithoutCallback: any = { ...data };
+
+                dataWithoutCallback.callback = undefined;
+
                 projectDispatch(logActivity({
                     kind: ActivityType.CoherentClearOn,
                     instrumentUniqueID,
                     timestamp: new Date(),
-                    data,
+                    data: dataWithoutCallback,
                 }));
                 projectDispatch(clearCoherentEvent(data.uuid));
             },
@@ -115,6 +127,10 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         dispatch(pushNotification(`Interaction Mode: ${inInteractionMode ? 'ON' : 'OFF'}`));
     }, 500, [inInteractionMode]);
 
+    useInterval(() => {
+        QueuedDataWriter.flush();
+    }, 1_000);
+
     useEffect(() => {
         const handler = (ev: KeyboardEvent) => {
             if (ev.key.toUpperCase() === 'ENTER') {
@@ -137,9 +153,15 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
 
     useEffect(() => {
         if (project) {
+            QueuedDataWriter.discard();
+
+            projectDispatch(reset());
+
             doLoadProjectCanvasSave();
         }
-    }, [doLoadProjectCanvasSave, project]);
+
+        return () => QueuedDataWriter.flush();
+    }, [project, projectDispatch, doLoadProjectCanvasSave]);
 
     const handleAddInstrument = (instrument: string) => {
         const newInstrumentPanel: InstrumentFrame = {
@@ -155,18 +177,11 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         };
 
         projectDispatch(addCanvasElement(newInstrumentPanel));
-        ProjectCanvasSaveHandler.addElement(project, newInstrumentPanel);
     };
 
     const handleDeleteCanvasElement = (element: PossibleCanvasElements) => {
         projectDispatch(removeCanvasElement(element.__uuid));
-        ProjectCanvasSaveHandler.removeElement(project, element);
     };
-
-    const handleUpdateCanvasElement = useCallback((element: PossibleCanvasElements) => {
-        projectDispatch(updateCanvasElement(element));
-        ProjectCanvasSaveHandler.updateElement(project, element);
-    }, [project, projectDispatch]);
 
     const [liveReloadConfigHandler, setLiveReloadConfigHandler] = useState<ProjectLiveReloadHandler>(null);
     const [liveReloadDispatcher, setLiveReloadDispatcher] = useState<LiveReloadDispatcher>(null);
@@ -178,7 +193,7 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     }, [liveReloadDispatcher]);
 
     const [simVarControlsHandler, setSimVarControlsHandler] = useState<SimVarControlsHandler>(null);
-    const [simVarValuesHandler, setSimVarValuesHandler] = useState<SimVarValuesHandler>(null);
+    const [persistentStorageHandler, setPersistentStorageHandler] = useState<PersistentStorageHandler>(null);
     const [simVarPresetsHandler, setSimVarPresetsHandler] = useState<SimVarPresetsHandler>(null);
 
     useEffect(() => {
@@ -192,7 +207,7 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
             });
 
             setSimVarControlsHandler(new SimVarControlsHandler(project));
-            setSimVarValuesHandler(new SimVarValuesHandler(project));
+            setPersistentStorageHandler(new PersistentStorageHandler(project));
             setSimVarPresetsHandler(new SimVarPresetsHandler(project));
         }
 
@@ -217,22 +232,34 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         }
     }, [projectDispatch, simVarControlsHandler]);
 
+    // Load cached SimVar values
     useEffect(() => {
-        if (simVarValuesHandler) {
-            const entries = simVarValuesHandler.loadConfig()?.elements;
+        const entries = new SimVarValuesHandler(project).loadConfig()?.elements;
+
+        if (entries) {
+            for (const { value, variable } of entries) {
+                projectDispatch(setSimVarValue(
+                    {
+                        variable,
+                        value,
+                    },
+                ));
+            }
+        }
+    }, [project, projectDispatch]);
+
+    // Load cached persistent properties
+    useEffect(() => {
+        if (persistentStorageHandler) {
+            const entries = persistentStorageHandler.loadConfig()?.data;
 
             if (entries) {
-                for (const { value, variable } of entries) {
-                    projectDispatch(setSimVarValue(
-                        {
-                            variable,
-                            value,
-                        },
-                    ));
+                for (const entry of Object.entries(entries)) {
+                    projectDispatch(setPersistentValue(entry));
                 }
             }
         }
-    }, [projectDispatch, simVarValuesHandler]);
+    }, [projectDispatch, persistentStorageHandler]);
 
     const startLiveReload = useCallback(() => {
         if (liveReloadDispatcher) {
@@ -326,7 +353,6 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                                                 key={canvasElement.title}
                                                 instrumentFrame={canvasElement}
                                                 zoom={zoom}
-                                                onUpdate={handleUpdateCanvasElement}
                                             />
                                         );
                                     } if (canvasElement.__kind === 'cockpit-panel') {
@@ -334,7 +360,6 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                                             <CockpitPanelElement
                                                 panel={canvasElement}
                                                 canvasZoom={zoom}
-                                                onUpdate={handleUpdateCanvasElement}
                                             />
                                         );
                                     }

@@ -3,6 +3,8 @@ import { logActivity } from '../actions/timeline.actions';
 import { SimVarDefinition, SimVarValue } from '../../../../../../ace-engine/src/SimVar';
 import { CoherentEventData } from '../../../../../../ace-engine/src/SimCallListener';
 
+const MAX_TIMELINE_SIZE = 1_000;
+
 export enum ActivityType {
     SimVarSet,
     CoherentTrigger,
@@ -32,7 +34,7 @@ export interface CoherentTriggerCallActivity extends BaseActivity {
 
 export interface CoherentEventActivity extends BaseActivity {
     kind: ActivityType.CoherentNewOn | ActivityType.CoherentClearOn,
-    data: CoherentEventData,
+    data: Omit<CoherentEventData, 'callback'>,
 }
 
 export interface DataStorageSetActivity extends BaseActivity {
@@ -46,5 +48,9 @@ export type Activity = SimVarSetActivity | CoherentTriggerCallActivity | Coheren
 export const timelineReducer = createReducer<{ activity: Activity[] }>({ activity: [] }, (builder) => {
     builder.addCase(logActivity, (state, action) => {
         state.activity.push(action.payload);
+
+        if (state.activity.length > MAX_TIMELINE_SIZE) {
+            state.activity.shift();
+        }
     });
 });

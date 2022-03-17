@@ -10,9 +10,9 @@ export class ViewListener {
         this.coherent = coherent;
     }
 
-    public triggerToAllSubscribers(name: string, data: string) {
+    public triggerToAllSubscribers(name: string, ...data: any[]) {
         if (this.name === 'JS_LISTENER_SIMVARS') {
-            this.coherent.trigger(name, data);
+            this.coherent.trigger(name, ...data);
         }
     }
 }

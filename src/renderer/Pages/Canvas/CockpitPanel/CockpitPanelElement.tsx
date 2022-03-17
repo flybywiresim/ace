@@ -8,10 +8,9 @@ import { WorkspacePanelSelection } from '../../ProjectHome/Store/reducers/intera
 export interface CockpitPanelElementProps {
     panel: CockpitPanel,
     canvasZoom: number,
-    onUpdate: (element: CockpitPanel) => void,
 }
 
-export const CockpitPanelElement: FC<CockpitPanelElementProps> = ({ panel, canvasZoom, onUpdate }) => {
+export const CockpitPanelElement: FC<CockpitPanelElementProps> = ({ panel, canvasZoom }) => {
     const pb1: CockpitPanelPushButton = {
         text: 'HYD G PMP',
         topLegend: 'FAULT',
@@ -37,7 +36,6 @@ export const CockpitPanelElement: FC<CockpitPanelElementProps> = ({ panel, canva
             initialWidth={500}
             initialHeight={250}
             canvasZoom={canvasZoom}
-            onUpdate={onUpdate}
         >
             <div className="w-full h-full bg-gray-800 p-7 flex flex-wrap">
                 <CockpitPanelPushButtonElement pushButton={pb1} />

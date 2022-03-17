@@ -7,15 +7,14 @@ import { addControl, deleteControl, editControl } from './actions/simVarElements
 import { SimVarControlsHandler } from '../../../Project/fs/SimVarControls';
 import { simVarValuesReducer } from './reducers/simVarValues.reducer';
 import { persistentStorageReducer } from './reducers/persistentStorage.reducer';
-import { PersistentStorageHandler } from '../../../Project/fs/PersistentStorageHandler';
 import { deletePersistentValue, setPersistentValue } from './actions/persistentStorage.actions';
 import { setSimVarValue } from './actions/simVarValues.actions';
-import { SimVarValuesHandler } from '../../../Project/fs/SimVarValues';
-import { simVarDefinitionFromName } from '../../../../../ace-engine/src/SimVar';
 import { timelineReducer } from './reducers/timeline.reducer';
 import { interactionToolbarReducer } from './reducers/interactionToolbar.reducer';
 import { coherentReducer } from './reducers/coherent.reducer';
 import { canvasReducer } from './reducers/canvas.reducer';
+import { QueuedDataWriter } from '../QueuedDataWriter';
+import { addCanvasElement, removeCanvasElement, updateCanvasElement } from './actions/canvas.actions';
 
 const reducer = combineReducers({
     projectData: projectDataReducer,
@@ -27,6 +26,8 @@ const reducer = combineReducers({
     interactionToolbar: interactionToolbarReducer,
     coherent: coherentReducer,
 });
+
+const CANVAS_SAVE_ACTIONS = [addCanvasElement.type, removeCanvasElement.type, updateCanvasElement.type];
 
 const SIMVAR_CONTROL_SAVE_ACTIONS = [addControl.type, deleteControl.type, editControl.type];
 
@@ -42,16 +43,20 @@ export const projectStore = configureStore({
 
             const state = store.getState();
 
+            if (CANVAS_SAVE_ACTIONS.includes(action.type)) {
+                QueuedDataWriter.enqueueCanvasWrite();
+            }
+
             if (SIMVAR_CONTROL_SAVE_ACTIONS.includes(action.type)) {
                 handleSaveSimVarControlState(state);
             }
 
             if (SIMVAR_VALUES_SAVE_ACTIONS.includes(action.type)) {
-                handleSaveSimVarValuesState(state);
+                QueuedDataWriter.enqueueSimVarValuesWrite();
             }
 
             if (PERSISTENT_STORAGE_SAVE_ACTIONS.includes(action.type)) {
-                handleSavePersistentStorageState(state);
+                QueuedDataWriter.enqueuePersistentDataWrite();
             }
 
             return ret;
@@ -64,36 +69,6 @@ function handleSaveSimVarControlState(state: ProjectState) {
 
     simvarControlsHandler.saveConfig({
         elements: state.simVarElements,
-    });
-}
-
-function handleSaveSimVarValuesState(state: ProjectState) {
-    const simVarValuesHandler = new SimVarValuesHandler(state.projectData.data);
-
-    const elements = [];
-    for (const [key, value] of Object.entries(state.simVarValues)) {
-        try {
-            const element = {
-                variable: simVarDefinitionFromName(key, 'number'), // TODO actual unit
-                value,
-            };
-
-            elements.push(element);
-        } catch (e) {
-            console.warn(`[SimVarValues] Could not parse simvar '${key}'. Ignoring.`);
-        }
-    }
-
-    simVarValuesHandler.saveConfig({
-        elements,
-    });
-}
-
-function handleSavePersistentStorageState(state: ProjectState) {
-    const persistentStorageHandler = new PersistentStorageHandler(state.projectData.data.location);
-
-    persistentStorageHandler.saveConfig({
-        data: state.persistentStorage,
     });
 }
 

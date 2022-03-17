@@ -1,5 +1,5 @@
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, session, BrowserWindow, ipcMain } from 'electron';
 import express from 'express';
 import cors from 'cors';
 import RPC from 'discord-rpc';
@@ -23,6 +23,15 @@ app.commandLine.appendSwitch('disable-web-security');
 app.commandLine.appendSwitch('disable-site-isolation-trials');
 
 const createWindow = (): void => {
+    session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+        // We abuse the `iframe` name attribute to sneak in the target URL, to later use as a proxy target
+        details.requestHeaders['X-Ace-ProxyTarget'] = details.frame.name;
+
+        callback({
+            requestHeaders: details.requestHeaders,
+        });
+    });
+
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         width: 1200,
@@ -63,13 +72,9 @@ ipcMain.on('load-project', (event, arg) => {
     server.use(cors());
     statics.forEach((s) => server.use(express.static(s)));
     server.use(createProxyMiddleware({
-        target: 'http://localhost:80/',
-        router: (req) => {
-            const targetHeader = req.header('Origin');
-
-            return targetHeader ?? undefined;
-        },
-        changeOrigin: true,
+        target: 'http://localhost:9696/',
+        router: (req) => req.header('X-Ace-ProxyTarget'),
+        changeOrigin: false,
     }));
     server = server.listen(PORT);
 });

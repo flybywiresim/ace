@@ -61,7 +61,7 @@ export class InstrumentLoader {
         InstrumentLoader.prepareIframeWindow(iframeWindow, iframeDocument, engine, options);
     }
 
-    static loadFromUrl({ url }: WebInstrumentData, shim: SimulatorInterface, onto: HTMLIFrameElement, engine: AceEngine, options: InstrumentLoadOptions): void {
+    static loadFromUrl({ url, uniqueID }: WebInstrumentData, shim: SimulatorInterface, onto: HTMLIFrameElement, engine: AceEngine, options: InstrumentLoadOptions): void {
         const iframeWindow = onto.contentWindow as AceInstrumentWindow;
 
         iframeWindow.location.assign(url);
@@ -72,11 +72,11 @@ export class InstrumentLoader {
             iframeDocument.body.style.overflow = 'hidden';
 
             const baseTag = iframeDocument.createElement('base');
-            baseTag.setAttribute('url', 'http://localhost:39511/');
+            baseTag.setAttribute('href', 'http://localhost:39511/');
 
-            iframeDocument.head.appendChild(baseTag);
+            // iframeDocument.head.appendChild(baseTag);
 
-            const wrappedShim = options.simCallListener ? new ProxyShim(shim, options.simCallListener, `Web-${Math.round(Math.random() * 10_000)}`) : shim;
+            const wrappedShim = options.simCallListener ? new ProxyShim(shim, options.simCallListener, uniqueID) : shim;
             InstrumentLoader.installShim(wrappedShim, iframeWindow);
 
             InstrumentLoader.prepareIframeWindow(iframeWindow, iframeDocument, engine, options);

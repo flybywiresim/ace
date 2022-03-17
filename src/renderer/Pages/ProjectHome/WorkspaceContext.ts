@@ -11,8 +11,6 @@ type WorkspaceContextType = {
     engine: AceEngine,
     addInstrument: (instrument: string) => void;
     removeCanvasElement: (element: PossibleCanvasElements) => void;
-    inInteractionMode: boolean;
-    setInInteractionMode: React.Dispatch<React.SetStateAction<boolean>>;
     project: ProjectData,
     liveReloadDispatcher: LiveReloadDispatcher,
     startLiveReload: () => void,

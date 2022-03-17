@@ -13,6 +13,7 @@ import {
 import { InputField } from '../ProjectHome/Components/Framework/InputField';
 import { clearCoherentEventsForUniqueID } from '../ProjectHome/Store/actions/coherent.actions';
 import { updateCanvasElement } from '../ProjectHome/Store/actions/canvas.actions';
+import { setInteractionMode } from '../ProjectHome/Store/actions/interaction.actions';
 
 export interface InstrumentFile {
     name: string,
@@ -87,7 +88,9 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     const [error, setError] = useState<Error | null>(null);
     const [errorIsInInstrument, setErrorIsInInstrument] = useState(false);
 
-    const { engine, project, liveReloadDispatcher, inInteractionMode, setInInteractionMode } = useWorkspace();
+    const { engine, project, liveReloadDispatcher } = useWorkspace();
+
+    const inInteractionMode = useProjectSelector((state) => state.interaction.inInteractionMode);
 
     const [loadedInstrument] = useState<InstrumentData>(() => {
         try {
@@ -131,7 +134,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
         if (iframeRef.current) {
             const handle = (ev: KeyboardEvent) => {
                 if (ev.key.toUpperCase() === 'ENTER') {
-                    setInInteractionMode((old) => !old);
+                    projectDispatch(setInteractionMode(!inInteractionMode));
                 }
             };
 
@@ -142,7 +145,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
         }
 
         return null;
-    }, [setInInteractionMode]);
+    }, [inInteractionMode, projectDispatch]);
 
     const doLoadInstrument = useCallback(() => {
         projectDispatch(clearCoherentEventsForUniqueID(loadedInstrument.uniqueID));

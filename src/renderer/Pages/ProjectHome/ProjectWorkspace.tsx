@@ -38,6 +38,7 @@ import { setPersistentValue } from './Store/actions/persistentStorage.actions';
 import useInterval from '../../../utils/useInterval';
 import { QueuedDataWriter } from './QueuedDataWriter';
 import { reset } from './Store/actions/global.actions';
+import { setInteractionMode } from './Store/actions/interaction.actions';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
@@ -121,7 +122,7 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         },
     }));
 
-    const [inInteractionMode, setInInteractionMode] = useState(false);
+    const inInteractionMode = useProjectSelector((state) => state.interaction.inInteractionMode);
 
     useChangeDebounce(() => {
         dispatch(pushNotification(`Interaction Mode: ${inInteractionMode ? 'ON' : 'OFF'}`));
@@ -134,14 +135,14 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     useEffect(() => {
         const handler = (ev: KeyboardEvent) => {
             if (ev.key.toUpperCase() === 'ENTER') {
-                setInInteractionMode((old) => !old);
+                projectDispatch(setInteractionMode(!inInteractionMode));
             }
         };
 
         window.addEventListener('keydown', handler, true);
 
         return () => window.removeEventListener('keydown', handler);
-    }, []);
+    }, [inInteractionMode, projectDispatch]);
 
     const doLoadProjectCanvasSave = useCallback(() => {
         const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
@@ -315,8 +316,6 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
             addInstrument: handleAddInstrument,
             removeCanvasElement: handleDeleteCanvasElement,
             project,
-            inInteractionMode,
-            setInInteractionMode,
             liveReloadDispatcher,
             startLiveReload,
             handlers: {

@@ -15,11 +15,13 @@ import { coherentReducer } from './reducers/coherent.reducer';
 import { canvasReducer } from './reducers/canvas.reducer';
 import { QueuedDataWriter } from '../QueuedDataWriter';
 import { addCanvasElement, removeCanvasElement, updateCanvasElement } from './actions/canvas.actions';
+import { interactionReducer } from './reducers/interaction.reducer';
 
 const reducer = combineReducers({
     projectData: projectDataReducer,
     canvas: canvasReducer,
     simVarValues: simVarValuesReducer,
+    interaction: interactionReducer,
     persistentStorage: persistentStorageReducer,
     simVarElements: simVarElementsReducer,
     timeline: timelineReducer,

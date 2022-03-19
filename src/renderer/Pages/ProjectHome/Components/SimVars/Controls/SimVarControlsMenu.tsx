@@ -63,7 +63,7 @@ export const SimVarControlsMenu: FC<SimVarControlsMenuProps> = ({ onOpenNewContr
                                     varName: definition.name,
                                     varUnit: definition.unit,
                                     style: {
-                                        type: SimVarControlStyleTypes.NUMBER,
+                                        type: SimVarControlStyleTypes.Number,
                                     },
                                 });
                             }}

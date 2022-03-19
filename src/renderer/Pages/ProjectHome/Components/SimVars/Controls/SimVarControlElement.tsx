@@ -17,13 +17,15 @@ interface SimVarEditorProps {
 
 export const defaultValueForControlStyle = (style: SimVarControlStyle) => {
     switch (style.type) {
-    case SimVarControlStyleTypes.CHECKBOX:
+    case SimVarControlStyleTypes.Checkbox:
         return false;
-    case SimVarControlStyleTypes.NUMBER:
+    case SimVarControlStyleTypes.Number:
         return 0;
-    case SimVarControlStyleTypes.RANGE:
+    case SimVarControlStyleTypes.Range:
         return (style.min + style.max) / 2;
-    case SimVarControlStyleTypes.TEXT_INPUT:
+    case SimVarControlStyleTypes.Button:
+        return style.value;
+    case SimVarControlStyleTypes.TextInput:
         return '';
     default:
         return 0;
@@ -37,7 +39,7 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
 
     const simVarValue = useProjectSelector((state) => state.simVarValues[`${simVarControl.varPrefix}:${simVarControl.varName}`]) ?? defaultValueForControlStyle(simVarControl.style);
 
-    if (simVarControl.style.type === SimVarControlStyleTypes.RANGE) {
+    if (simVarControl.style.type === SimVarControlStyleTypes.Range) {
         const { step } = simVarControl.style;
 
         // Chrome doesn't play well with decimal range slider steps, so we find a scalar
@@ -60,13 +62,13 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
         let actualValue = value;
 
         switch (simVarControl.style.type) {
-        case SimVarControlStyleTypes.NUMBER:
-        case SimVarControlStyleTypes.RANGE:
+        case SimVarControlStyleTypes.Number:
+        case SimVarControlStyleTypes.Range:
             const numberValue = parseFloat(value);
 
             actualValue = numberValue / scaleFactor.current;
             break;
-        case SimVarControlStyleTypes.CHECKBOX:
+        case SimVarControlStyleTypes.Checkbox:
             actualValue = !!value;
             break;
         default:
@@ -89,9 +91,10 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                 <h1 className="text-lg font-medium">{simVarControl.title}</h1>
 
                 <div className="flex flex-row justify-end items-center gap-x-3.5">
-                    {(simVarControl.style.type === SimVarControlStyleTypes.TEXT_INPUT
-                        || simVarControl.style.type === SimVarControlStyleTypes.NUMBER
-                        || simVarControl.style.type === SimVarControlStyleTypes.RANGE
+                    {(simVarControl.style.type === SimVarControlStyleTypes.TextInput
+                        || simVarControl.style.type === SimVarControlStyleTypes.Number
+                        || simVarControl.style.type === SimVarControlStyleTypes.Range
+                        || simVarControl.style.type === SimVarControlStyleTypes.Button
                     ) && (
                         <EditableSimVarControlValue
                             value={simVarValue}
@@ -100,7 +103,7 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                         />
                     )}
 
-                    {simVarControl.style.type === SimVarControlStyleTypes.RANGE && (
+                    {simVarControl.style.type === SimVarControlStyleTypes.Range && (
                         <RangeSimVarControl
                             min={simVarControl.style.min * scaleFactor.current}
                             max={simVarControl.style.max * scaleFactor.current}
@@ -110,10 +113,17 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                         />
                     )}
 
-                    {simVarControl.style.type === SimVarControlStyleTypes.CHECKBOX && (
+                    {simVarControl.style.type === SimVarControlStyleTypes.Checkbox && (
                         <CheckboxSimVarControl
                             state={simVarValue}
                             onInput={handleSetValue}
+                        />
+                    )}
+
+                    {simVarControl.style.type === SimVarControlStyleTypes.Button && (
+                        <ButtonSimVarControl
+                            setterValue={simVarControl.style.value}
+                            onClick={() => (simVarControl.style.type === SimVarControlStyleTypes.Button) && handleSetValue(simVarControl.style.value)}
                         />
                     )}
 
@@ -236,3 +246,15 @@ const CheckboxSimVarControl: FC<CheckboxSimVarControlProps> = ({ state, onInput 
         />
     );
 };
+
+interface ButtonSimVarControlProps {
+    setterValue: SimVarValue,
+    onClick: () => void,
+}
+
+const ButtonSimVarControl: FC<ButtonSimVarControlProps> = ({ setterValue, onClick }) => (
+    <button className="h-10 px-2 flex justify-center items-center gap-x-2 text-gray-500 font-mono" type="button" onClick={onClick}>
+        <span>-&gt; </span>
+        <span className="text-green-500">{setterValue.toString()}</span>
+    </button>
+);

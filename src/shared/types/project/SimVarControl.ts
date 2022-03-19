@@ -1,18 +1,20 @@
 import { IdentifiableElement } from './IdentifiableElement';
-import { SimVarPrefix } from '../../../../ace-engine/src/SimVar';
+import { SimVarPrefix, SimVarValue } from '../../../../ace-engine/src/SimVar';
 
 export enum SimVarControlStyleTypes {
-    TEXT_INPUT,
-    NUMBER,
-    RANGE,
-    CHECKBOX,
+    TextInput,
+    Number,
+    Range,
+    Checkbox,
+    Button,
 }
 
 export type SimVarControlStyle =
-    | { type: SimVarControlStyleTypes.NUMBER }
-    | { type: SimVarControlStyleTypes.RANGE, min: number, max: number, step: number }
-    | { type: SimVarControlStyleTypes.CHECKBOX }
-    | { type: SimVarControlStyleTypes.TEXT_INPUT }
+    | { type: SimVarControlStyleTypes.Number }
+    | { type: SimVarControlStyleTypes.Range, min: number, max: number, step: number }
+    | { type: SimVarControlStyleTypes.Checkbox }
+    | { type: SimVarControlStyleTypes.TextInput }
+    | { type: SimVarControlStyleTypes.Button, value: SimVarValue }
 
 /**
  * A SimVar modification control on the sidebar

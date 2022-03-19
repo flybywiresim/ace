@@ -1,11 +1,15 @@
 import React, { FC, FormEvent, useEffect, useState } from 'react';
 import { v4 } from 'uuid';
-import { SimVarControl, SimVarControlStyleTypes } from '../../../../../../shared/types/project/SimVarControl';
+import {
+    SimVarControl,
+    SimVarControlStyle,
+    SimVarControlStyleTypes,
+} from '../../../../../../shared/types/project/SimVarControl';
 import { SideMenu } from '../../Framework/Toolbars';
 import { SelectBox, SelectBoxItem, SelectBoxItemBody, SelectBoxItemIcon } from '../../Framework/MenuBoxes';
 import { useProjectDispatch } from '../../../Store';
 import { addControl, editControl } from '../../../Store/actions/simVarElements.actions';
-import { simVarDefinitionFromName } from '../../../../../../../ace-engine/src/SimVar';
+import { simVarDefinitionFromName, SimVarValue } from '../../../../../../../ace-engine/src/SimVar';
 
 export interface SimVarControlEditMenuProps {
 
@@ -22,10 +26,12 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
     const [title, setTitle] = useState('');
     const [varName, setVarName] = useState('');
     const [varUnit, setVarUnit] = useState('');
-    const [controlStyleType, setControlStyleType] = useState<SimVarControlStyleTypes>(SimVarControlStyleTypes.TEXT_INPUT);
+    const [controlStyleType, setControlStyleType] = useState<SimVarControlStyleTypes>(SimVarControlStyleTypes.TextInput);
     const [rangeMin, setRangeMin] = useState('');
     const [rangeMax, setRangeMax] = useState('');
     const [rangeStep, setRangeStep] = useState('');
+    const [value, setValue] = useState('');
+    const [valueHighlighted, setValueHighlighted] = useState(false);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -38,13 +44,29 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
             setVarName(`${control.varPrefix}:${control.varName}`);
             setVarUnit(control.varUnit);
             setControlStyleType(control.style.type);
-            if (control.style.type === SimVarControlStyleTypes.RANGE) {
+            if (control.style.type === SimVarControlStyleTypes.Range) {
                 setRangeMin(control.style.min.toString());
                 setRangeMax(control.style.max.toString());
                 setRangeStep(control.style.step.toString());
             }
+
+            if (control.style.type === SimVarControlStyleTypes.Button) {
+                setValue(control.style.value.toString());
+            }
         }
     }, [control]);
+
+    // Highlight boolean values
+
+    useEffect(() => {
+        const trimmedValue = value.trim();
+
+        if (trimmedValue === 'true' || trimmedValue === 'false') {
+            setValueHighlighted(true);
+        } else {
+            setValueHighlighted(false);
+        }
+    }, [value]);
 
     const handleInputChanged = (e: FormEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string>>) => {
         setter(e.currentTarget.value);
@@ -53,7 +75,7 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
     const [canSubmit, setCanSubmit] = useState(false);
 
     useEffect(() => {
-        if (controlStyleType === SimVarControlStyleTypes.RANGE) {
+        if (controlStyleType === SimVarControlStyleTypes.Range) {
             if ([rangeMin, rangeMax, rangeStep].every((value) => value.match(/\d+/))) {
                 const stepCount = (parseFloat(rangeMax) - parseFloat(rangeMin)) / parseFloat(rangeStep);
 
@@ -79,18 +101,53 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
     const handleSubmit = () => {
         const def = simVarDefinitionFromName(varName, varUnit);
 
+        let style: SimVarControlStyle;
+        switch (controlStyleType) {
+        case SimVarControlStyleTypes.Range:
+            const min = parseFloat(rangeMin);
+            const max = parseFloat(rangeMax);
+            const step = parseFloat(rangeStep);
+
+            style = {
+                type: controlStyleType,
+                min,
+                max,
+                step,
+            };
+            break;
+        case SimVarControlStyleTypes.Button:
+            let actualValue: SimVarValue;
+
+            if (value.trim() === 'true' || value === 'false') {
+                actualValue = JSON.parse(value.trim());
+            } else {
+                const numValue = parseFloat(value);
+
+                if (!Number.isNaN(numValue)) {
+                    actualValue = numValue;
+                } else {
+                    actualValue = value;
+                }
+            }
+
+            style = {
+                type: controlStyleType,
+                value: actualValue,
+            };
+            break;
+        default:
+            style = {
+                type: controlStyleType,
+            };
+        }
+
         const data = {
             __uuid: control?.__uuid,
             title,
             varPrefix: def.prefix,
             varName: def.name,
             varUnit: def.unit,
-            style: {
-                type: controlStyleType,
-                min: parseFloat(rangeMin),
-                max: parseFloat(rangeMax),
-                step: parseFloat(rangeStep),
-            },
+            style,
         };
 
         if (control) {
@@ -157,9 +214,17 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
                             Checkbox
                         </SelectBoxItemBody>
                     </SelectBoxItem>
+
+                    <SelectBoxItem>
+                        <SelectBoxItemIcon />
+
+                        <SelectBoxItemBody>
+                            Button
+                        </SelectBoxItemBody>
+                    </SelectBoxItem>
                 </SelectBox>
 
-                {controlStyleType === SimVarControlStyleTypes.RANGE && (
+                {controlStyleType === SimVarControlStyleTypes.Range && (
                     <>
                         <h3>Range Settings</h3>
 
@@ -170,6 +235,22 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
                         </div>
 
                         <span className="text-red-500 mt-1.5">{error}</span>
+                    </>
+                )}
+
+                {controlStyleType === SimVarControlStyleTypes.Button && (
+                    <>
+                        <h3>Button Settings</h3>
+
+                        <div className="flex flex-row gap-x-3 5 items-center justify-stretch">
+                            <input
+                                value={value}
+                                onInput={(e) => handleInputChanged(e, setValue)}
+                                placeholder="Value"
+                                className={`w-full min-w-0 font-mono ${valueHighlighted ? 'text-green-500' : ''}`}
+                                type="text"
+                            />
+                        </div>
                     </>
                 )}
 

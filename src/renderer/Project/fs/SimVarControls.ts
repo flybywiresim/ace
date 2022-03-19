@@ -19,7 +19,7 @@ export class SimVarControlsHandler extends GenericProjectListConfigHandler<SimVa
                     varName: 'INDICATED ALTITUDE',
                     varUnit: 'ft',
                     style: {
-                        type: SimVarControlStyleTypes.RANGE,
+                        type: SimVarControlStyleTypes.Range,
                         min: 0,
                         max: 40_000,
                         step: 1,
@@ -32,7 +32,7 @@ export class SimVarControlsHandler extends GenericProjectListConfigHandler<SimVa
                     varName: 'AIRSPEED INDICATED',
                     varUnit: 'kn',
                     style: {
-                        type: SimVarControlStyleTypes.RANGE,
+                        type: SimVarControlStyleTypes.Range,
                         min: 0,
                         max: 400,
                         step: 1,
@@ -45,7 +45,7 @@ export class SimVarControlsHandler extends GenericProjectListConfigHandler<SimVa
                     varName: 'PLANE HEADING DEGREES TRUE',
                     varUnit: 'deg',
                     style: {
-                        type: SimVarControlStyleTypes.RANGE,
+                        type: SimVarControlStyleTypes.Range,
                         min: 0,
                         max: 359,
                         step: 1,
@@ -58,7 +58,7 @@ export class SimVarControlsHandler extends GenericProjectListConfigHandler<SimVa
                     varName: 'PLANE PITCH DEGREES',
                     varUnit: 'deg',
                     style: {
-                        type: SimVarControlStyleTypes.RANGE,
+                        type: SimVarControlStyleTypes.Range,
                         min: -90,
                         max: 90,
                         step: 1,
@@ -71,7 +71,7 @@ export class SimVarControlsHandler extends GenericProjectListConfigHandler<SimVa
                     varName: 'PLANE BANK DEGREES',
                     varUnit: 'deg',
                     style: {
-                        type: SimVarControlStyleTypes.RANGE,
+                        type: SimVarControlStyleTypes.Range,
                         min: -90,
                         max: 90,
                         step: 1,

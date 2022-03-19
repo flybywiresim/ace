@@ -43,7 +43,24 @@ export function simVarDefinitionFromName(fullName: string, unit: string): SimVar
 
     return {
         prefix: parsedPrefix,
-        name,
+        name: prefix !== SimVarPrefix.L ? normalizeName(name) : name,
         unit,
     };
+}
+
+function normalizeName(name: string): string {
+    const indexMatch = /.+:(\d+)/[Symbol.match](name);
+
+    if (indexMatch) {
+        const [, index] = indexMatch;
+        const numIndex = parseInt(index);
+
+        if (numIndex > 1) {
+            return name;
+        }
+
+        return name.replace(/:\d+$/, '');
+    }
+
+    return name;
 }

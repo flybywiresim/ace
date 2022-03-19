@@ -33,7 +33,28 @@ export const defaultValueForControlStyle = (style: SimVarControlStyle) => {
 export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarControl, onEdit, onDelete }) => {
     const projectDispatch = useProjectDispatch();
 
+    const scaleFactor = useRef(1);
+
     const simVarValue = useProjectSelector((state) => state.simVarValues[`${simVarControl.varPrefix}:${simVarControl.varName}`]) ?? defaultValueForControlStyle(simVarControl.style);
+
+    if (simVarControl.style.type === SimVarControlStyleTypes.RANGE) {
+        const { step } = simVarControl.style;
+
+        // Chrome doesn't play well with decimal range slider steps, so we find a scalar
+        if (Math.round(step) !== step) {
+            let wholeStep = step;
+            let factor = 1;
+            let iterations = 0;
+
+            while (Math.round(wholeStep) !== wholeStep && iterations < 64) {
+                iterations++;
+                wholeStep *= 10;
+                factor *= 10;
+            }
+
+            scaleFactor.current = factor;
+        }
+    }
 
     const handleSetValue = useCallback((value) => {
         let actualValue = value;
@@ -43,7 +64,7 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
         case SimVarControlStyleTypes.RANGE:
             const numberValue = parseFloat(value);
 
-            actualValue = numberValue;
+            actualValue = numberValue / scaleFactor.current;
             break;
         case SimVarControlStyleTypes.CHECKBOX:
             actualValue = !!value;
@@ -81,10 +102,10 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
 
                     {simVarControl.style.type === SimVarControlStyleTypes.RANGE && (
                         <RangeSimVarControl
-                            min={simVarControl.style.min}
-                            max={simVarControl.style.max}
-                            step={simVarControl.style.step}
-                            value={simVarValue}
+                            min={simVarControl.style.min * scaleFactor.current}
+                            max={simVarControl.style.max * scaleFactor.current}
+                            step={simVarControl.style.step * scaleFactor.current}
+                            value={typeof simVarValue === 'number' ? simVarValue * scaleFactor.current : simVarValue}
                             onInput={handleSetValue}
                         />
                     )}

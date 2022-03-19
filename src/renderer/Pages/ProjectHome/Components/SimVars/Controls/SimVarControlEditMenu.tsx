@@ -27,6 +27,8 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
     const [rangeMax, setRangeMax] = useState('');
     const [rangeStep, setRangeStep] = useState('');
 
+    const [error, setError] = useState<string | null>(null);
+
     const handleControlStyleTypeSelected = setControlStyleType;
 
     // Update states if a control to edit is provided
@@ -52,10 +54,19 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
 
     useEffect(() => {
         if (controlStyleType === SimVarControlStyleTypes.RANGE) {
-            setCanSubmit(
-                [title, varName, varUnit].every((value) => value.match(/\w+/))
-                && [rangeMin, rangeMax, rangeStep].every((value) => value.match(/\d+/)),
-            );
+            if ([rangeMin, rangeMax, rangeStep].every((value) => value.match(/\d+/))) {
+                const stepCount = (parseFloat(rangeMax) - parseFloat(rangeMin)) / parseFloat(rangeStep);
+
+                if (Math.round(stepCount) !== stepCount) {
+                    setError('Total range must be divisible by step');
+                    setCanSubmit(false);
+                } else {
+                    setError(null);
+                    setCanSubmit(
+                        [title, varName, varUnit].every((value) => value.match(/\w+/)),
+                    );
+                }
+            }
         } else {
             setCanSubmit(
                 [title, varName, varUnit].every((value) => value.match(/\w+/)),
@@ -76,9 +87,9 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
             varUnit: def.unit,
             style: {
                 type: controlStyleType,
-                min: Number(rangeMin),
-                max: Number(rangeMax),
-                step: Number(rangeStep),
+                min: parseFloat(rangeMin),
+                max: parseFloat(rangeMax),
+                step: parseFloat(rangeStep),
             },
         };
 
@@ -157,6 +168,8 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
                             <input value={rangeMax} onInput={(e) => handleInputChanged(e, setRangeMax)} placeholder="Max" className="min-w-0" type="text" />
                             <input value={rangeStep} onInput={(e) => handleInputChanged(e, setRangeStep)} placeholder="Step" className="min-w-0" type="text" />
                         </div>
+
+                        <span className="text-red-500 mt-1.5">{error}</span>
                     </>
                 )}
 

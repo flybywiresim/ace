@@ -34,6 +34,8 @@ export class InstrumentLoader {
         const wrappedShim = options.simCallListener ? new ProxyShim(shim, options.simCallListener, instrument.uniqueID) : shim;
         InstrumentLoader.installShim(wrappedShim, iframeWindow);
 
+        const vcockpitPanelTag = iframeDocument.createElement('vcockpit-panel');
+
         const rootTag = iframeDocument.createElement(instrument.elementName);
         rootTag.id = 'ROOT_ELEMENT';
 
@@ -41,6 +43,7 @@ export class InstrumentLoader {
         mountTag.id = 'MSFS_REACT_MOUNT';
 
         rootTag.append(mountTag);
+        vcockpitPanelTag.append(rootTag);
 
         const scriptTag = iframeDocument.createElement('script');
         scriptTag.setAttribute('data-ace-filename', instrument.jsSource.fileName);
@@ -54,7 +57,7 @@ export class InstrumentLoader {
         iframeDocument.body.innerHTML = '';
         iframeDocument.body.style.margin = '0';
 
-        iframeDocument.body.append(rootTag);
+        iframeDocument.body.append(vcockpitPanelTag);
         iframeDocument.head.append(styleTag);
         iframeDocument.head.append(scriptTag);
 

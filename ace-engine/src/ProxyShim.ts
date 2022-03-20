@@ -66,7 +66,7 @@ export class ProxyShim implements SimulatorInterface {
             return value;
         },
 
-        SetSimVarValue: (key: string, unit: string, value: SimVarValue): void => {
+        SetSimVarValue: (key: string, unit: string, value: SimVarValue): Promise<void> => {
             this.simCallListener.onSetSimVar?.(simVarDefinitionFromName(key, unit), value, this.instrumentUniqueID);
 
             return this.shim.SimVar.SetSimVarValue(key, unit, value);

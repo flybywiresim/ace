@@ -31,7 +31,7 @@ export class LocalShim implements SimulatorInterface {
 
             return value ?? 0;
         },
-        SetSimVarValue(key: string, unit: string, value: SimVarValue): Promise<SimVarValue> {
+        SetSimVarValue(key: string, unit: string, value: SimVarValue): Promise<void> {
             try {
                 const [, prefix, name] = SIMVAR_NAME_REGEX[Symbol.match](key);
 
@@ -48,7 +48,7 @@ export class LocalShim implements SimulatorInterface {
                     value,
                 }));
 
-                return new Promise(((resolve) => resolve(value)));
+                return new Promise(((resolve) => resolve()));
             } catch (error) {
                 console.log(error);
 

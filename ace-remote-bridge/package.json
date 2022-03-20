@@ -1,0 +1,11 @@
+{
+    "name": "ace-remote-bridge",
+    "version": "1.0.0",
+    "dependencies": {
+        "ace-engine": "file:../ace-engine",
+        "ws": "^8.5.0"
+    },
+    "devDependencies": {
+        "@types/ws": "^8.5.3"
+    }
+}

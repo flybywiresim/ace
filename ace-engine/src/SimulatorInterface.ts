@@ -15,7 +15,7 @@ export interface SimulatorInterface {
 interface Coherent {
     trigger(name: string, ...data: string[]): any,
 
-    on(name: string, callback: (data: string) => void): { clear: () => void },
+    on(name: string, callback: (...data: string[]) => void): { clear: () => void },
 
     call<T>(name: string, ...args: any[]): Promise<T>
 }
@@ -27,7 +27,7 @@ export interface ViewListener {
 interface SimVar {
     GetSimVarValue(key: string, unit: string): SimVarValue
 
-    SetSimVarValue(key: string, unit: string, value: SimVarValue): void
+    SetSimVarValue(key: string, unit: string, value: SimVarValue): Promise<void>
 
     GetGameVarValue(key: string, unit: string): SimVarValue
 }

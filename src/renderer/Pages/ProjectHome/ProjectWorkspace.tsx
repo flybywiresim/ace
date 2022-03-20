@@ -38,6 +38,8 @@ import { setPersistentValue } from './Store/actions/persistentStorage.actions';
 import useInterval from '../../../utils/useInterval';
 import { QueuedDataWriter } from './QueuedDataWriter';
 import { reset } from './Store/actions/global.actions';
+import { RemoteShim } from '../../../../ace-remote-bridge/src/RemoteShim';
+import { RemoteBridgeAceClient } from '../../../../ace-remote-bridge/src/RemoteBridgeAceClient';
 import { setInteractionMode } from './Store/actions/interaction.actions';
 
 export interface ProjectWorkspaceProps {
@@ -48,7 +50,12 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     const dispatch = useAppDispatch();
     const projectDispatch = useProjectDispatch();
 
-    const [localShim] = useState(new LocalShim());
+    const [localShim] = useState(new RemoteShim(new RemoteBridgeAceClient()));
+
+    useEffect(() => {
+        localShim.client.connect('ws://10.0.0.200:8086/interfaces/remote-bridge');
+    }, [localShim]);
+
     const [engine] = useState(new AceEngine(localShim, {
         updateInterval: 50,
         simCallListener: {

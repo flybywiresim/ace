@@ -73,7 +73,6 @@ ipcMain.on('load-project', (event, arg) => {
     statics.forEach((s) => server.use(express.static(s)));
     server.use(createProxyMiddleware({
         target: 'http://localhost:9696/',
-        router: (req) => req.header('X-Ace-ProxyTarget'),
         changeOrigin: false,
     }));
     server = server.listen(PORT);

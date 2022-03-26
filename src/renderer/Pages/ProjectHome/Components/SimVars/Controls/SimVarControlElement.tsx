@@ -1,6 +1,13 @@
-import React, { FC, FocusEvent, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FC, FocusEvent, useCallback, useEffect, useRef } from 'react';
 import { IconPencil, IconTrash } from '@tabler/icons';
-import { SimVarControl, SimVarControlStyle, SimVarControlStyleTypes } from '../../../../../../shared/types/project/SimVarControl';
+import {
+    SimVarControl,
+    SimVarControlStyle,
+    SimVarControlStyleTypes,
+} from '../../../../../../shared/types/project/SimVarControl';
+import { useProjectDispatch, useProjectSelector } from '../../../Store';
+import { setSimVarValue } from '../../../Store/actions/simVarValues.actions';
+import { SimVarValue } from '../../../../../../../ace-engine/src/SimVar';
 
 interface SimVarEditorProps {
     simVarControl: SimVarControl,
@@ -8,49 +15,75 @@ interface SimVarEditorProps {
     onDelete?: () => void,
 }
 
+export const defaultValueForControlStyle = (style: SimVarControlStyle) => {
+    switch (style.type) {
+    case SimVarControlStyleTypes.Checkbox:
+        return false;
+    case SimVarControlStyleTypes.Number:
+        return 0;
+    case SimVarControlStyleTypes.Range:
+        return (style.min + style.max) / 2;
+    case SimVarControlStyleTypes.Button:
+        return style.value;
+    case SimVarControlStyleTypes.TextInput:
+        return '';
+    default:
+        return 0;
+    }
+};
+
 export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarControl, onEdit, onDelete }) => {
-    const valueRef = useRef<HTMLSpanElement>();
+    const projectDispatch = useProjectDispatch();
 
-    const normalizeTextValue = (state: string) => {
-        const parsedFloat = parseFloat(state);
+    const scaleFactor = useRef(1);
 
-        if (Number.isNaN(parsedFloat)) {
-            return state;
+    const simVarValue = useProjectSelector((state) => state.simVarValues[`${simVarControl.varPrefix}:${simVarControl.varName}`]) ?? defaultValueForControlStyle(simVarControl.style);
+
+    if (simVarControl.style.type === SimVarControlStyleTypes.Range) {
+        const { step } = simVarControl.style;
+
+        // Chrome doesn't play well with decimal range slider steps, so we find a scalar
+        if (Math.round(step) !== step) {
+            let wholeStep = step;
+            let factor = 1;
+            let iterations = 0;
+
+            while (Math.round(wholeStep) !== wholeStep && iterations < 64) {
+                iterations++;
+                wholeStep *= 10;
+                factor *= 10;
+            }
+
+            scaleFactor.current = factor;
         }
+    }
 
-        return parsedFloat;
-    };
+    const handleSetValue = useCallback((value) => {
+        let actualValue = value;
 
-    const defaultValueForControlStyle = (style: SimVarControlStyle) => {
-        switch (style.type) {
-        case SimVarControlStyleTypes.CHECKBOX:
-            return false;
-        case SimVarControlStyleTypes.NUMBER:
-            return 0;
-        case SimVarControlStyleTypes.RANGE:
-            return (style.min + style.max) / 2;
-        case SimVarControlStyleTypes.TEXT_INPUT:
-            return '';
+        switch (simVarControl.style.type) {
+        case SimVarControlStyleTypes.Number:
+        case SimVarControlStyleTypes.Range:
+            const numberValue = parseFloat(value);
+
+            actualValue = numberValue / scaleFactor.current;
+            break;
+        case SimVarControlStyleTypes.Checkbox:
+            actualValue = !!value;
+            break;
         default:
-            return 0;
+            break;
         }
-    };
 
-    const [state, handleSetState] = useState<any>(() => {
-        const rawValue = window.localStorage.getItem(simVarControl.varName);
-
-        return normalizeTextValue(JSON.parse(rawValue) ?? defaultValueForControlStyle(simVarControl.style));
-    });
-
-    useEffect(() => {
-        const normalizedValue = normalizeTextValue(state);
-
-        window.localStorage.setItem(simVarControl.varName, String(normalizedValue));
-
-        if (valueRef.current && document.activeElement !== valueRef.current) {
-            valueRef.current.innerText = state;
-        }
-    }, [simVarControl.varName, state]);
+        projectDispatch(setSimVarValue({
+            variable: {
+                prefix: simVarControl.varPrefix,
+                name: simVarControl.varName,
+                unit: simVarControl.varUnit,
+            },
+            value: actualValue,
+        }));
+    }, [projectDispatch, simVarControl.style.type, simVarControl.varName, simVarControl.varPrefix, simVarControl.varUnit]);
 
     return (
         <div className="py-3.5">
@@ -58,45 +91,55 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
                 <h1 className="text-lg font-medium">{simVarControl.title}</h1>
 
                 <div className="flex flex-row justify-end items-center gap-x-3.5">
-                    {(simVarControl.style.type === SimVarControlStyleTypes.TEXT_INPUT
-                        || simVarControl.style.type === SimVarControlStyleTypes.NUMBER
-                        || simVarControl.style.type === SimVarControlStyleTypes.RANGE
+                    {(simVarControl.style.type === SimVarControlStyleTypes.TextInput
+                        || simVarControl.style.type === SimVarControlStyleTypes.Number
+                        || simVarControl.style.type === SimVarControlStyleTypes.Range
+                        || simVarControl.style.type === SimVarControlStyleTypes.Button
                     ) && (
                         <EditableSimVarControlValue
-                            value={state}
+                            value={simVarValue}
                             unit={simVarControl.varUnit}
-                            onInput={handleSetState}
+                            onInput={handleSetValue}
                         />
                     )}
 
-                    {simVarControl.style.type === SimVarControlStyleTypes.RANGE && (
+                    {simVarControl.style.type === SimVarControlStyleTypes.Range && (
                         <RangeSimVarControl
-                            min={simVarControl.style.min}
-                            max={simVarControl.style.max}
-                            step={simVarControl.style.step}
-                            value={state}
-                            onInput={handleSetState}
+                            min={simVarControl.style.min * scaleFactor.current}
+                            max={simVarControl.style.max * scaleFactor.current}
+                            step={simVarControl.style.step * scaleFactor.current}
+                            value={typeof simVarValue === 'number' ? simVarValue * scaleFactor.current : simVarValue}
+                            onInput={handleSetValue}
                         />
                     )}
 
-                    {simVarControl.style.type === SimVarControlStyleTypes.CHECKBOX && (
+                    {simVarControl.style.type === SimVarControlStyleTypes.Checkbox && (
                         <CheckboxSimVarControl
-                            state={state}
-                            onInput={handleSetState}
+                            state={simVarValue}
+                            onInput={handleSetValue}
                         />
                     )}
 
-                    <IconTrash
-                        size={28}
-                        className="text-gray-500 cursor-pointer hover:text-green-500"
-                        onClick={onDelete}
-                    />
+                    {simVarControl.style.type === SimVarControlStyleTypes.Button && (
+                        <ButtonSimVarControl
+                            setterValue={simVarControl.style.value}
+                            onClick={() => (simVarControl.style.type === SimVarControlStyleTypes.Button) && handleSetValue(simVarControl.style.value)}
+                        />
+                    )}
 
-                    <IconPencil
-                        size={28}
-                        className="text-gray-500 cursor-pointer hover:text-green-500"
-                        onClick={onEdit}
-                    />
+                    <span className="flex gap-x-2">
+                        <IconTrash
+                            size={28}
+                            className="text-gray-500 cursor-pointer hover:text-green-500"
+                            onClick={onDelete}
+                        />
+
+                        <IconPencil
+                            size={28}
+                            className="text-gray-500 cursor-pointer hover:text-green-500"
+                            onClick={onEdit}
+                        />
+                    </span>
                 </div>
             </div>
         </div>
@@ -104,7 +147,7 @@ export const SimVarControlElement: React.FC<SimVarEditorProps> = ({ simVarContro
 };
 
 interface EditableSimVarControlValueProps {
-    value: number,
+    value: SimVarValue,
     unit: string,
     onInput: (v: number | string) => void,
 }
@@ -147,20 +190,29 @@ interface RangeSimVarControlProps {
     min: number,
     max: number,
     step: number,
-    value: number,
+    value: SimVarValue,
     onInput: (v: number) => void,
 }
 
 const RangeSimVarControl: FC<RangeSimVarControlProps> = ({ min, max, step, value, onInput }) => {
-    const valuePercentage = Math.round(((value - min) / (max - min)) * 100);
+    let numberValue;
+    if (typeof value === 'number') {
+        numberValue = value;
+    } else if (typeof value === 'boolean') {
+        numberValue = value ? 1 : 0;
+    } else {
+        numberValue = NaN;
+    }
+
+    const valuePercentage = Math.round(((numberValue - min) / (max - min)) * 100);
 
     return (
         <div className="mb-1 ml-auto">
             <input
                 style={{ background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${valuePercentage}%, #36465E ${valuePercentage}%, #36465E 100%)` }}
-                className="w-44"
+                className="w-52"
                 type="range"
-                value={value}
+                value={numberValue}
                 onChange={(e) => onInput(parseInt(e.target.value))}
                 min={min}
                 max={max}
@@ -171,15 +223,38 @@ const RangeSimVarControl: FC<RangeSimVarControlProps> = ({ min, max, step, value
 };
 
 interface CheckboxSimVarControlProps {
-    state: number,
+    state: SimVarValue,
     onInput: (v: number) => void,
 }
 
-const CheckboxSimVarControl: FC<CheckboxSimVarControlProps> = ({ state, onInput }) => (
-    <input
-        className="ml-4 ml-auto"
-        type="checkbox"
-        checked={state !== 0}
-        onChange={(e) => onInput(e.target.checked ? 1 : 0)}
-    />
+const CheckboxSimVarControl: FC<CheckboxSimVarControlProps> = ({ state, onInput }) => {
+    let booleanValue;
+    if (typeof state === 'boolean') {
+        booleanValue = state;
+    } else if (typeof state === 'number') {
+        booleanValue = state !== 0;
+    } else {
+        booleanValue = true; // FIXME not sure about this
+    }
+
+    return (
+        <input
+            className="ml-4 ml-auto"
+            type="checkbox"
+            checked={booleanValue}
+            onChange={(e) => onInput(e.target.checked ? 1 : 0)}
+        />
+    );
+};
+
+interface ButtonSimVarControlProps {
+    setterValue: SimVarValue,
+    onClick: () => void,
+}
+
+const ButtonSimVarControl: FC<ButtonSimVarControlProps> = ({ setterValue, onClick }) => (
+    <button className="h-10 px-2 flex justify-center items-center gap-x-2 text-gray-500 font-mono" type="button" onClick={onClick}>
+        <span>-&gt; </span>
+        <span className="text-green-500">{setterValue.toString()}</span>
+    </button>
 );

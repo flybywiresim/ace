@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Nova+Mono&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -14,6 +15,21 @@ body {
     Arial, sans-serif;
   margin: auto;
   @apply w-full h-full bg-navy text-white;
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #22344c;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #234160;
 }
 
 button,
@@ -32,8 +48,16 @@ input:not([type="range"]) {
 button {
   @apply text-xl;
 
+    &:hover {
+        box-shadow: 0 0 0 3px rgba(#00c2cc, 0.3);
+    }
+
+    &:active {
+        box-shadow: 0 0 0 3px rgba(#00c2cc, 0.8);
+    }
+
   &[disabled] {
-    @apply text-opacity-50 bg-opacity-50 cursor-not-allowed;
+    @apply opacity-50 cursor-not-allowed;
   }
 }
 

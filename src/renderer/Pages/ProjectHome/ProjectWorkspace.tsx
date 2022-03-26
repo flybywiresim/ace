@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState, useRef, FC } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { v4 } from 'uuid';
 import { ProjectCanvasSaveHandler } from '../../Project/fs/Canvas';
-import { ElementFactory } from '../../Project/canvas/ElementFactory';
 import { PossibleCanvasElements } from '../../../shared/types/project/canvas/CanvasSaveFile';
 import { InteractionToolbar } from './Components/InteractionToolbar';
 import { PanelCanvas } from '../PanelCanvas';
@@ -8,7 +8,6 @@ import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
 import { ProjectData } from '../..';
 import { WorkspaceContext } from './WorkspaceContext';
 import { ProjectLiveReloadHandler } from '../../Project/fs/LiveReload';
-import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
 import { Grid } from '../Canvas/Grid';
 import { useAppDispatch } from '../../Store';
 import { pushNotification } from '../../Store/actions/notifications.actions';
@@ -16,115 +15,189 @@ import { useChangeDebounce } from '../../Hooks/useDebounceEffect';
 import { SimVarControlsHandler } from '../../Project/fs/SimVarControls';
 import { CanvasContextMenu } from './Components/CanvasContextMenu';
 import { SimVarPresetsHandler } from '../../Project/fs/SimVarPresets';
-import { useProjectDispatch } from './Store';
+import { useProjectDispatch, useProjectSelector } from './Store';
 import { loadControls } from './Store/actions/simVarElements.actions';
 import { LocalShim } from '../../shims/LocalShim';
 import { setProjectData } from './Store/actions/projectData.actions';
+import { AceEngine } from '../../../../ace-engine/src/AceEngine';
+import { logActivity } from './Store/actions/timeline.actions';
+import { ActivityType } from './Store/reducers/timeline.reducer';
+import { addCoherentEvent, clearCoherentEvent } from './Store/actions/coherent.actions';
+import { setSimVarValue } from './Store/actions/simVarValues.actions';
+import { SimVarValuesHandler } from '../../Project/fs/SimVarValues';
+import {
+    addCanvasElement,
+    loadCanvasElements,
+    removeCanvasElement,
+} from './Store/actions/canvas.actions';
+import { CockpitPanelElement } from '../Canvas/CockpitPanel/CockpitPanelElement';
+import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
+import { PersistentStorageHandler } from '../../Project/fs/PersistentStorageHandler';
+import { setPersistentValue } from './Store/actions/persistentStorage.actions';
+import useInterval from '../../../utils/useInterval';
+import { QueuedDataWriter } from './QueuedDataWriter';
+import { reset } from './Store/actions/global.actions';
+import { setInteractionMode } from './Store/actions/interaction.actions';
 
 export interface ProjectWorkspaceProps {
     project: ProjectData,
 }
 
 export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
-    const [localShim] = useState(new LocalShim());
-    const [inInteractionMode, setInInteractionMode] = useState(false);
-
     const dispatch = useAppDispatch();
+    const projectDispatch = useProjectDispatch();
+
+    const [localShim] = useState(new LocalShim());
+    const [engine] = useState(new AceEngine(localShim, {
+        updateInterval: 50,
+        simCallListener: {
+            onSetSimVar(variable, obtainedValue, instrumentUniqueID) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.SimVarSet,
+                    instrumentUniqueID,
+                    timestamp: new Date(),
+                    variable,
+                    value: obtainedValue,
+                }));
+            },
+
+            onCoherentCall(event, args, instrumentUniqueID) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentCall,
+                    instrumentUniqueID,
+                    timestamp: new Date(),
+                    event,
+                    args,
+                }));
+            },
+
+            onCoherentNewListener(data, clear, instrumentUniqueID) {
+                const dataWithoutCallback: any = { ...data };
+
+                dataWithoutCallback.callback = undefined;
+
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentNewOn,
+                    instrumentUniqueID,
+                    timestamp: new Date(),
+                    data: dataWithoutCallback,
+                }));
+                projectDispatch(addCoherentEvent({ data, clear }));
+            },
+
+            onCoherentClearListener(data, instrumentUniqueID) {
+                const dataWithoutCallback: any = { ...data };
+
+                dataWithoutCallback.callback = undefined;
+
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentClearOn,
+                    instrumentUniqueID,
+                    timestamp: new Date(),
+                    data: dataWithoutCallback,
+                }));
+                projectDispatch(clearCoherentEvent(data.uuid));
+            },
+
+            onCoherentTrigger(event, args, instrumentUniqueID) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.CoherentTrigger,
+                    instrumentUniqueID,
+                    timestamp: new Date(),
+                    event,
+                    args,
+                }));
+            },
+
+            onSetStoredData(key, setValue, instrumentUniqueID) {
+                projectDispatch(logActivity({
+                    kind: ActivityType.DataStorageSet,
+                    instrumentUniqueID,
+                    timestamp: new Date(),
+                    key,
+                    value: setValue,
+                }));
+            },
+        },
+    }));
+
+    const inInteractionMode = useProjectSelector((state) => state.interaction.inInteractionMode);
 
     useChangeDebounce(() => {
         dispatch(pushNotification(`Interaction Mode: ${inInteractionMode ? 'ON' : 'OFF'}`));
     }, 500, [inInteractionMode]);
 
+    useInterval(() => {
+        QueuedDataWriter.flush();
+    }, 1_000);
+
     useEffect(() => {
         const handler = (ev: KeyboardEvent) => {
             if (ev.key.toUpperCase() === 'ENTER') {
-                setInInteractionMode((old) => !old);
+                projectDispatch(setInteractionMode(!inInteractionMode));
             }
         };
 
         window.addEventListener('keydown', handler, true);
 
         return () => window.removeEventListener('keydown', handler);
-    }, []);
-
-    const [inEditMode, setInEditMode] = useState(false);
+    }, [inInteractionMode, projectDispatch]);
 
     const doLoadProjectCanvasSave = useCallback(() => {
         const canvasSave = ProjectCanvasSaveHandler.loadCanvas(project);
 
-        setCanvasElements(canvasSave.elements);
+        projectDispatch(loadCanvasElements(canvasSave.elements));
     }, [project]);
 
-    const [canvasElements, setCanvasElements] = useState<PossibleCanvasElements[]>([]);
+    const canvasElements = useProjectSelector((state) => state.canvas.elements);
 
     useEffect(() => {
         if (project) {
+            QueuedDataWriter.discard();
+
+            projectDispatch(reset());
+
             doLoadProjectCanvasSave();
         }
-    }, [doLoadProjectCanvasSave, project]);
+
+        return () => QueuedDataWriter.flush();
+    }, [project, projectDispatch, doLoadProjectCanvasSave]);
 
     const handleAddInstrument = (instrument: string) => {
-        const newInstrumentPanel = ElementFactory.newInstrumentPanel({
+        const newInstrumentPanel: InstrumentFrame = {
+            __uuid: v4(),
+            __kind: 'instrument',
+            dataKind: 'bundled',
             title: instrument,
             instrumentName: instrument,
             position: {
                 x: 0,
                 y: 0,
             },
-        });
+        };
 
-        setCanvasElements((old) => [...old, newInstrumentPanel]);
-        ProjectCanvasSaveHandler.addElement(project, newInstrumentPanel);
+        projectDispatch(addCanvasElement(newInstrumentPanel));
     };
 
     const handleDeleteCanvasElement = (element: PossibleCanvasElements) => {
-        setCanvasElements((old) => old.filter((el) => el.__uuid !== element.__uuid));
-
-        ProjectCanvasSaveHandler.removeElement(project, element);
-    };
-
-    const handleUpdateCanvasElement = (element: PossibleCanvasElements) => {
-        const savedElement = canvasElements.find((it) => it.__uuid === element.__uuid);
-
-        for (const [k, v] of Object.entries(element)) {
-            (savedElement as Record<string, any>)[k] = v;
-        }
-
-        ProjectCanvasSaveHandler.updateElement(project, element);
+        projectDispatch(removeCanvasElement(element.__uuid));
     };
 
     const [liveReloadConfigHandler, setLiveReloadConfigHandler] = useState<ProjectLiveReloadHandler>(null);
-    const [liveReloadDispatcher, setLiveReloadDispatcher] = useState<LiveReloadDispatcher>(null);
-
-    const liveReloadDispatcherRef = useRef<LiveReloadDispatcher>(null);
-
-    useEffect(() => {
-        liveReloadDispatcherRef.current = liveReloadDispatcher;
-    }, [liveReloadDispatcher]);
 
     const [simVarControlsHandler, setSimVarControlsHandler] = useState<SimVarControlsHandler>(null);
+    const [persistentStorageHandler, setPersistentStorageHandler] = useState<PersistentStorageHandler>(null);
     const [simVarPresetsHandler, setSimVarPresetsHandler] = useState<SimVarPresetsHandler>(null);
 
     useEffect(() => {
         if (project) {
             setLiveReloadConfigHandler(new ProjectLiveReloadHandler(project));
 
-            setLiveReloadDispatcher((old) => {
-                old?.stopWatching();
-
-                return new LiveReloadDispatcher(project);
-            });
-
             setSimVarControlsHandler(new SimVarControlsHandler(project));
+            setPersistentStorageHandler(new PersistentStorageHandler(project));
             setSimVarPresetsHandler(new SimVarPresetsHandler(project));
         }
-
-        return () => {
-            liveReloadDispatcherRef.current?.stopWatching();
-        };
     }, [project]);
-
-    const projectDispatch = useProjectDispatch();
 
     useEffect(() => {
         projectDispatch(setProjectData(project));
@@ -142,14 +215,34 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         }
     }, [projectDispatch, simVarControlsHandler]);
 
-    const startLiveReload = useCallback(() => {
-        if (liveReloadDispatcher) {
-            if (liveReloadDispatcher.started) {
-                liveReloadDispatcher.stopWatching();
+    // Load cached SimVar values
+    useEffect(() => {
+        const entries = new SimVarValuesHandler(project).loadConfig()?.elements;
+
+        if (entries) {
+            for (const { value, variable } of entries) {
+                projectDispatch(setSimVarValue(
+                    {
+                        variable,
+                        value,
+                    },
+                ));
             }
-            liveReloadDispatcher.startWatching();
         }
-    }, [liveReloadDispatcher]);
+    }, [project, projectDispatch]);
+
+    // Load cached persistent properties
+    useEffect(() => {
+        if (persistentStorageHandler) {
+            const entries = persistentStorageHandler.loadConfig()?.data;
+
+            if (entries) {
+                for (const entry of Object.entries(entries)) {
+                    projectDispatch(setPersistentValue(entry));
+                }
+            }
+        }
+    }, [projectDispatch, persistentStorageHandler]);
 
     const contextMenuRef = useRef<HTMLDivElement>(null);
     const [contextMenuTarget, setContextMenuTarget] = useState<PossibleCanvasElements>(null);
@@ -192,16 +285,10 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
 
     return (
         <WorkspaceContext.Provider value={{
+            engine,
             addInstrument: handleAddInstrument,
             removeCanvasElement: handleDeleteCanvasElement,
             project,
-            inEditMode,
-            inInteractionMode,
-            setInInteractionMode,
-            setInEditMode,
-            liveReloadDispatcher,
-            startLiveReload,
-            localShim,
             handlers: {
                 liveReload: liveReloadConfigHandler,
                 simVarControls: simVarControlsHandler,
@@ -236,7 +323,13 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
                                                 key={canvasElement.title}
                                                 instrumentFrame={canvasElement}
                                                 zoom={zoom}
-                                                onUpdate={handleUpdateCanvasElement}
+                                            />
+                                        );
+                                    } if (canvasElement.__kind === 'cockpit-panel') {
+                                        return (
+                                            <CockpitPanelElement
+                                                panel={canvasElement}
+                                                canvasZoom={zoom}
                                             />
                                         );
                                     }

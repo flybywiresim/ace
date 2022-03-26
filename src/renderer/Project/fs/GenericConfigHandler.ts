@@ -88,6 +88,8 @@ export abstract class GenericConfigHandler<T> {
     public saveConfig(object: T): void {
         const configContents = JSON.stringify(object, null, 4);
 
+        fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
+
         fs.writeFileSync(this.filePath, configContents);
     }
 

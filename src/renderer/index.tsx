@@ -11,11 +11,12 @@ import { CreateProject } from './Pages/createproject';
 import { AceConfigurationPanel } from './Pages/AceConfigurationPanel';
 import './index.scss';
 import { Project } from './types/Project';
-import { ProjectWorkspace } from './Pages/ProjectHome/ProjectWorkspace';
 import { store } from './Store';
 import { RecentlyOpenedProjects } from './Project/recently-opened';
 import { AceConfigHandler } from './Project/fs/AceConfigHandler';
 import { ProjectWorkspaceContainer } from './Pages/ProjectHome/ProjectWorkspaceContainer';
+
+const ACE_PROJECT_GITIGNORE_CONTENT = 'data/*\n';
 
 export type ProjectData = Project & { location: string };
 
@@ -56,6 +57,11 @@ export const Main = () => {
 
         const project = JSON.parse(fs.readFileSync(path.join(location, '.ace/project.json'), { encoding: 'utf8' })) as Project;
 
+        // Create .ace gitignore if it doesn't exist
+        if (!fs.existsSync(path.join(location, '.ace/.gitignore'))) {
+            fs.writeFileSync(path.join(location, '.ace/.gitignore'), ACE_PROJECT_GITIGNORE_CONTENT);
+        }
+
         if (projects.find((p) => p.name === project.name)) {
             history.push(`/project/${project.name}`);
             return;
@@ -95,9 +101,17 @@ export const Main = () => {
             },
         };
 
-        console.log(project);
-        if (!fs.existsSync(path.join(location, '.ace'))) fs.mkdirSync(path.join(location, '.ace'));
+        // Create .ace directory
+        if (!fs.existsSync(path.join(location, '.ace'))) {
+            fs.mkdirSync(path.join(location, '.ace'));
+        }
+
+        // Create project.json
         fs.writeFileSync(path.join(location, '.ace/project.json'), JSON.stringify(project, null, '\t'));
+
+        // Create .ace gitignore
+        fs.writeFileSync(path.join(location, '.ace/.gitignore'), ACE_PROJECT_GITIGNORE_CONTENT);
+
         loadProject(location);
     };
 
@@ -110,12 +124,11 @@ export const Main = () => {
             <ProjectContext.Provider value={{ loadProject, createProject, closeProject, projects }}>
                 <ApplicationFrame>
                     <Route exact path="/" component={Home} />
-                    <Route path="/project/:name">
-                        <ProjectWorkspaceContainer render={(project) => (
-                            <ProjectWorkspace project={project} />
-                        )}
-                        />
-                    </Route>
+                    {projects.map((it) => (
+                        <Route key={it.name} path={`/project/${it.name}`}>
+                            <ProjectWorkspaceContainer key={it.name} project={it} />
+                        </Route>
+                    ))}
                     <Route exact path="/create-project" component={CreateProject} />
                     <Route exact path="/ace-config" component={AceConfigurationPanel} />
                 </ApplicationFrame>

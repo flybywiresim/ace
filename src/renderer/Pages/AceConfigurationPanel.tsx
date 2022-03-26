@@ -105,7 +105,7 @@ export const AceConfigurationPanel: React.FC = () => {
                         <div className="ml-20 flex flex-col sm:flex-row flex-shrink-0 items-center gap-x-2">
                             <button
                                 type="button"
-                                className="bg-transparent hover:underline focus:shadow-none py-0 my-1"
+                                className="bg-blue-darker bg-opacity-30 hover:bg-opacity-50 my-1 border border-blue-dark px-4 py-1 rounded-md focus:shadow-none transition duration-300"
                                 onClick={() => {
                                     setTempAceConfig(aceConfig[0].loadConfig());
                                     setShowSaveMenu(false);

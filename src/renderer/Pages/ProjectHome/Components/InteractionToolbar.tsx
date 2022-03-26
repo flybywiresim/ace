@@ -1,59 +1,98 @@
 import React, { FC } from 'react';
-import { IconArrowsMaximize, IconBulb, IconChevronLeft, IconPencil, IconRefresh, IconVariable } from '@tabler/icons';
+import {
+    IconArrowsMaximize,
+    IconBell,
+    IconBulb,
+    IconChevronLeft,
+    IconPencil,
+    IconVariable,
+} from '@tabler/icons';
 import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Framework/Toolbars';
-import { EditMenu } from './EditMenu';
-import { useWorkspace } from '../WorkspaceContext';
-import { LiveReloadMenu } from './LiveReloadMenu';
+import { useProjectDispatch, useProjectSelector } from '../Store';
+import { WorkspacePanelSelection } from '../Store/reducers/interactionToolbar.reducer';
+import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.actions';
 import { SimVarMenu } from './SimVars/SimVarMenu';
+import { Timeline } from './Timeline';
+import { CoherentMenu } from './CoherentMenu';
 
 export const InteractionToolbar: FC = () => {
-    const { inEditMode, setInEditMode } = useWorkspace();
+    const panelSelection = useProjectSelector((state) => state.interactionToolbar.panel);
+    const dispatch = useProjectDispatch();
 
-    const handleSetEditMode = () => {
-        setInEditMode((old) => !old);
+    const selectPanel = (panel: WorkspacePanelSelection) => {
+        if (panel === panelSelection) {
+            dispatch(selectWorkspacePanel(WorkspacePanelSelection.None));
+        } else {
+            dispatch(selectWorkspacePanel(panel));
+        }
+    };
+
+    const currentPanel = useProjectSelector((state) => state.interactionToolbar.panel);
+
+    const getCurrentPanel = () => {
+        switch (currentPanel) {
+        default:
+            return <></>;
+        case WorkspacePanelSelection.SimVars:
+            return <SimVarMenu />;
+        case WorkspacePanelSelection.Timeline:
+            return <Timeline />;
+        case WorkspacePanelSelection.Coherent:
+            return <CoherentMenu />;
+        }
     };
 
     return (
-        <Toolbar>
-            <ToolbarItem
-                color={ToolbarItemColors.GREEN}
-                renderPopover={() => (
-                    <SimVarMenu />
-                )}
-            >
-                <IconVariable size={56} strokeWidth={1.5} />
-            </ToolbarItem>
+        <>
+            <Toolbar>
+                <ToolbarItem
+                    color={ToolbarItemColors.GREEN}
+                    visible={panelSelection === WorkspacePanelSelection.SimVars}
+                    onClick={() => selectPanel(WorkspacePanelSelection.SimVars)}
+                >
+                    <IconVariable size={56} strokeWidth={1.5} />
+                </ToolbarItem>
 
-            <ToolbarItem color={ToolbarItemColors.GREEN}>
-                <IconBulb size={56} strokeWidth={1.5} />
-            </ToolbarItem>
+                <ToolbarItem
+                    color={ToolbarItemColors.GREEN}
+                    visible={panelSelection === WorkspacePanelSelection.Timeline}
+                    onClick={() => selectPanel(WorkspacePanelSelection.Timeline)}
+                >
+                    <IconBulb size={56} strokeWidth={1.5} />
+                </ToolbarItem>
 
-            <ToolbarSeparator />
+                <ToolbarItem
+                    color={ToolbarItemColors.GREEN}
+                    visible={panelSelection === WorkspacePanelSelection.Coherent}
+                    onClick={() => selectPanel(WorkspacePanelSelection.Coherent)}
+                >
+                    <IconBell size={56} strokeWidth={1.5} />
+                </ToolbarItem>
 
-            <ToolbarItem
-                visible={inEditMode}
-                onClick={handleSetEditMode}
-                color={ToolbarItemColors.PURPLE}
-                renderPopover={() => (
-                    <EditMenu />
-                )}
-            >
-                <IconPencil size={56} strokeWidth={1.5} />
-            </ToolbarItem>
+                <ToolbarSeparator />
 
-            <ToolbarItem color={ToolbarItemColors.PURPLE} renderPopover={LiveReloadMenu}>
-                <IconRefresh size={56} strokeWidth={1.5} />
-            </ToolbarItem>
+                <ToolbarItem
+                    visible={panelSelection === WorkspacePanelSelection.Edit}
+                    onClick={() => selectPanel(WorkspacePanelSelection.Edit)}
+                    color={ToolbarItemColors.PURPLE}
+                >
+                    <IconPencil size={56} strokeWidth={1.5} />
+                </ToolbarItem>
 
-            <ToolbarSeparator />
+                <ToolbarSeparator />
 
-            <ToolbarItem color={ToolbarItemColors.GREEN}>
-                <IconArrowsMaximize size={56} strokeWidth={1.5} />
-            </ToolbarItem>
+                <ToolbarItem color={ToolbarItemColors.GREEN}>
+                    <IconArrowsMaximize size={56} strokeWidth={1.5} />
+                </ToolbarItem>
 
-            <ToolbarItem color={ToolbarItemColors.TRANSLUCENT}>
-                <IconChevronLeft size={48} strokeWidth={1.25} />
-            </ToolbarItem>
-        </Toolbar>
+                <ToolbarItem color={ToolbarItemColors.TRANSLUCENT}>
+                    <IconChevronLeft size={48} strokeWidth={1.25} />
+                </ToolbarItem>
+            </Toolbar>
+            <div className="absolute min-w-max h-full left-28 flex" style={{ top: 0 }}>
+                {getCurrentPanel()}
+            </div>
+        </>
+
     );
 };

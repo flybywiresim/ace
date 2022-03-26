@@ -1,11 +1,13 @@
-import React, { useRef, MouseEvent, useState, useEffect, useCallback, WheelEvent, PropsWithChildren } from 'react';
+import React, { MouseEvent, PropsWithChildren, useCallback, useEffect, useRef, useState, WheelEvent } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { IconArrowsMaximize } from '@tabler/icons';
 import { useThrottle } from 'react-use';
 import useInterval from '../../utils/useInterval';
-import { useWorkspace } from './ProjectHome/WorkspaceContext';
 import { PossibleCanvasElements } from '../../shared/types/project/canvas/CanvasSaveFile';
 import { GRID_LINE_SIZE, GRID_SVG_SIZE } from './Canvas/Grid';
+import { useProjectDispatch, useProjectSelector } from './ProjectHome/Store';
+import { WorkspacePanelSelection } from './ProjectHome/Store/reducers/interactionToolbar.reducer';
+import { updateCanvasElement } from './ProjectHome/Store/actions/canvas.actions';
 
 export const PANEL_CANVAS_SIZE = 30_000;
 
@@ -80,9 +82,8 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
                 initialPositionX={-PANEL_CANVAS_SIZE / 2}
                 initialPositionY={-PANEL_CANVAS_SIZE / 2}
                 minScale={0.045}
-                velocityAnimation={{
-                    disabled: true,
-                    sensitivity: 0,
+                panning={{
+                    velocityDisabled: true,
                 }}
                 doubleClick={{
                     mode: currentDoubleClickMode,
@@ -115,24 +116,41 @@ export const PanelCanvas = ({ render }: PanelCanvasProps) => {
 export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     element: T,
     title?: string;
+    initialWidth: number,
+    initialHeight: number,
     canvasZoom: number;
-    onUpdate: (el: T) => void;
+    resizingEnabled?: boolean,
+    onResizeCompleted?: (width: number, height: number) => void,
+    topBarContent?: JSX.Element;
 }
 
 export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     element,
     title,
+    initialWidth,
+    initialHeight,
     canvasZoom,
-    onUpdate,
+    resizingEnabled,
+    onResizeCompleted,
+    topBarContent,
     children,
 }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
+    const projectDispatch = useProjectDispatch();
+
+    const xResizeOriginalPos = useRef(0);
+    const yResizeOriginalPos = useRef(0);
+    const resizeMode = useRef<'x' | 'y' | 'xy' | null>(null);
+
+    const [width, setWidth] = useState(initialWidth);
+    const [height, setHeight] = useState(initialHeight);
+
     const [offsetX, setOffsetX] = useState(() => element.position.x);
     const [offsetY, setOffsetY] = useState(() => element.position.y);
 
     const throttledOffsetX = useThrottle(offsetX, 750);
     const throttledOffsetY = useThrottle(offsetY, 750);
 
-    const TITLE_FONTSIZE = 14;
+    const TITLE_FONTSIZE = 18;
 
     const roundToGrid = (input: number): number => {
         const PROJECTED_GRID_CELL_SIZE = (PANEL_CANVAS_SIZE / GRID_SVG_SIZE) * GRID_LINE_SIZE;
@@ -142,8 +160,9 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
 
     // Handle updating the saved element when the throttled position is updated
     useEffect(() => {
-        onUpdate({ ...element, position: { x: throttledOffsetX, y: throttledOffsetY } });
-    }, [element, onUpdate, throttledOffsetX, throttledOffsetY]);
+        projectDispatch(updateCanvasElement({ ...element, position: { x: throttledOffsetX, y: throttledOffsetY } }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [element.__kind, projectDispatch, throttledOffsetX, throttledOffsetY]);
 
     const [editPositionX, setEditPositionX] = useState(() => element.position.x);
     const [editPositionY, setEditPositionY] = useState(() => element.position.y);
@@ -154,23 +173,23 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
         setOffsetY(roundToGrid(editPositionY));
     }, [editPositionX, editPositionY]);
 
-    const { inEditMode } = useWorkspace();
+    const inEditMode = useProjectSelector((state) => state.interactionToolbar.panel === WorkspacePanelSelection.Edit);
 
     const canvasElementRef = useRef<HTMLDivElement>(null);
 
     const handlePanStart = (event: MouseEvent) => {
         document.body.addEventListener('mouseup', handlePanStop);
-        document.body.addEventListener('mousemove', handleMouseMove);
+        document.body.addEventListener('mousemove', handlePanMouseMove);
         event.stopPropagation();
     };
 
     const handlePanStop = (event: globalThis.MouseEvent) => {
         document.body.removeEventListener('mouseup', handlePanStop);
-        document.body.removeEventListener('mousemove', handleMouseMove);
+        document.body.removeEventListener('mousemove', handlePanMouseMove);
         event.stopPropagation();
     };
 
-    const handleMouseMove = (event: globalThis.MouseEvent) => {
+    const handlePanMouseMove = (event: globalThis.MouseEvent) => {
         if (!canvasElementRef.current) {
             return;
         }
@@ -185,28 +204,100 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
         (e as any).canvasTarget = element;
     };
 
+    const handleResizeMouseMove = useCallback((e: globalThis.PointerEvent) => {
+        if (resizeMode.current.includes('x')) {
+            const delta = (e.clientX / canvasZoom) - xResizeOriginalPos.current;
+
+            setWidth(initialWidth + delta);
+        }
+
+        if (resizeMode.current.includes('y')) {
+            const delta = (e.clientY / canvasZoom) - yResizeOriginalPos.current;
+
+            setHeight(initialHeight + delta);
+        }
+    }, [canvasZoom, initialWidth, initialHeight]);
+
+    const handleResizeStop = useCallback((event: globalThis.MouseEvent) => {
+        document.body.removeEventListener('mouseup', handleResizeStop);
+        document.body.removeEventListener('pointermove', handleResizeMouseMove);
+        event.stopPropagation();
+
+        // For some reason, width and height do not update fast enough
+        onResizeCompleted(canvasElementRef.current.clientWidth, canvasElementRef.current.clientHeight);
+    }, [handleResizeMouseMove, onResizeCompleted]);
+
+    const handleResizeStart = useCallback((event: React.MouseEvent, newResizeMode: 'x' | 'y' | 'xy') => {
+        document.body.addEventListener('mouseup', handleResizeStop);
+        document.body.addEventListener('pointermove', handleResizeMouseMove);
+        event.stopPropagation();
+
+        if (newResizeMode.includes('x')) {
+            xResizeOriginalPos.current = event.clientX / canvasZoom;
+        }
+
+        if (newResizeMode.includes('y')) {
+            yResizeOriginalPos.current = event.clientY / canvasZoom;
+        }
+
+        resizeMode.current = newResizeMode;
+    }, [canvasZoom, handleResizeMouseMove, handleResizeStop]);
+
     return (
         <span className="absolute" onMouseDown={handleMouseDown}>
             <span
                 ref={canvasElementRef}
                 className="shadow-md"
                 style={{
+                    width: `${width}px`,
+                    height: `${height}px`,
                     position: 'absolute',
-                    transitionDuration: '0.1s',
+                    // transitionDuration: '0.1s',
                     transform: `translate(${(PANEL_CANVAS_SIZE / 2) + offsetX}px, ${(PANEL_CANVAS_SIZE / 2) + offsetY}px)`,
                 }}
             >
-                <span className="absolute flex flex-row h-12 -top-16 justify-between items-center">
-                    <h1 style={{ fontSize: `${TITLE_FONTSIZE * (1 / canvasZoom)}px` }}>{title}</h1>
+                <span className="w-full absolute flex flex-row px-3 bg-gray-800 border-2 border-gray-700 rounded-t-md bg-opacity-80 h-10 -top-10 justify-between items-center">
+                    <h1 style={{ fontSize: `${TITLE_FONTSIZE}px` }}>{title}</h1>
 
-                    {inEditMode && (
-                        <IconArrowsMaximize className="hover:text-red-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
-                    )}
+                    <div className="flex flex-row flex-grow ml-2">
+                        <div className="w-full flex items-center gap-x-2 ml-2.5">
+                            {topBarContent}
+                        </div>
+
+                        {inEditMode && (
+                            <div className="flex flex-row ml-2">
+                                <IconArrowsMaximize size={22} className="hover:text-purple-500 hover:cursor-pointer" onMouseDown={handlePanStart} />
+                            </div>
+                        )}
+                    </div>
+
                 </span>
 
-                <span className="block border border-[#00c2cc] hover:border-green-500 overflow-hidden">
+                <span
+                    className="block border border-[#00c2cc] hover:border-green-500 overflow-hidden"
+                    style={{
+                        width: `${width}px`,
+                        height: `${height}px`,
+                    }}
+                >
                     {children}
                 </span>
+
+                {resizingEnabled && (
+                    <>
+                        <span className="absolute top-0 right-[-4px] flex flex-col justify-center" style={{ height: 'calc(100% + 4px)' }}>
+                            <span className="absolute w-[4px] h-[40px] bg-green-500" style={{ cursor: 'ew-resize' }} onMouseDown={(e) => handleResizeStart(e, 'x')} />
+
+                            <span className="mt-auto w-[4px] h-[40px] bg-green-500" style={{ cursor: 'nwse-resize' }} onMouseDown={(e) => handleResizeStart(e, 'xy')} />
+                        </span>
+
+                        <span className="absolute flex justify-center" style={{ width: 'calc(100% + 4px)' }}>
+                            <span className="absolute w-[40px] h-[4px] bg-green-500" style={{ cursor: 'ns-resize' }} onMouseDown={(e) => handleResizeStart(e, 'y')} />
+
+                            <span className="ml-auto w-[40px] h-[4px] bg-green-500" style={{ cursor: 'nwse-resize' }} onMouseDown={(e) => handleResizeStart(e, 'xy')} />
+                        </span>
+                    </>
+                )}
             </span>
         </span>
     );

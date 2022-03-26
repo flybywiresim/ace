@@ -7,7 +7,7 @@ import {
 } from '../../../../../../shared/types/project/SimVarControl';
 import { SideMenu } from '../../Framework/Toolbars';
 import { SelectBox, SelectBoxItem, SelectBoxItemBody, SelectBoxItemIcon } from '../../Framework/MenuBoxes';
-import { useProjectDispatch } from '../../../Store';
+import { useProjectDispatch, useProjectSelector } from '../../../Store';
 import { addControl, editControl } from '../../../Store/actions/simVarElements.actions';
 import { simVarDefinitionFromName, SimVarValue } from '../../../../../../../ace-engine/src/SimVar';
 
@@ -34,6 +34,8 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
     const [valueHighlighted, setValueHighlighted] = useState(false);
 
     const [error, setError] = useState<string | null>(null);
+
+    const allControls = useProjectSelector((state) => state.simVarElements);
 
     const handleControlStyleTypeSelected = setControlStyleType;
 
@@ -150,7 +152,7 @@ export const SimVarControlEditMenu: FC<SimVarControlEditMenuProps> = ({ control,
             style,
         };
 
-        if (control) {
+        if (control && allControls.some((c) => c.__uuid === control.__uuid)) {
             projectDispatch(editControl(data));
         } else {
             projectDispatch(addControl({

@@ -257,7 +257,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
                 }}
             >
                 <span className="w-full absolute flex flex-row px-3 bg-gray-800 border-2 border-gray-700 rounded-t-md bg-opacity-80 h-10 -top-10 justify-between items-center">
-                    <h1 style={{ fontSize: `${TITLE_FONTSIZE * (1 / canvasZoom)}px` }}>{title}</h1>
+                    <h1 style={{ fontSize: `${TITLE_FONTSIZE}px` }}>{title}</h1>
 
                     <div className="flex flex-row flex-grow ml-2">
                         <div className="w-full flex items-center gap-x-2 ml-2.5">

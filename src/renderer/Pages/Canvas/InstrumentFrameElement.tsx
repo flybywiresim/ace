@@ -1,5 +1,6 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { IconRefresh } from '@tabler/icons';
+import { Toggle } from '@flybywiresim/react-components';
 import { PanelCanvasElement } from '../PanelCanvas';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
@@ -14,6 +15,7 @@ import { InputField } from '../ProjectHome/Components/Framework/InputField';
 import { clearCoherentEventsForUniqueID } from '../ProjectHome/Store/actions/coherent.actions';
 import { updateCanvasElement } from '../ProjectHome/Store/actions/canvas.actions';
 import { setInteractionMode } from '../ProjectHome/Store/actions/interaction.actions';
+import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
 
 export interface InstrumentFile {
     name: string,
@@ -60,10 +62,12 @@ function bundleInstrumentData(instrument: Instrument): BundledInstrumentData {
         dimensions: instrument.config.dimensions,
         jsSource: {
             fileName: instrument.files[1].name,
+            path: instrument.files[1].path,
             contents: instrument.files[1].contents,
         },
         cssSource: {
             fileName: instrument.files[0].name,
+            path: instrument.files[0].path,
             contents: instrument.files[0].contents,
         },
     };
@@ -88,7 +92,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     const [error, setError] = useState<Error | null>(null);
     const [errorIsInInstrument, setErrorIsInInstrument] = useState(false);
 
-    const { engine, project, liveReloadDispatcher } = useWorkspace();
+    const { engine, project } = useWorkspace();
 
     const inInteractionMode = useProjectSelector((state) => state.interaction.inInteractionMode);
 
@@ -157,6 +161,10 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
 
         try {
             if (iframeRef.current && (instrumentFrame.dataKind === 'bundled' && loadedInstrument.__kind === 'bundled') && loadedInstrument.displayName) {
+                // TODO: this is a bit weird
+                const newInstrument = bundleInstrumentData(ProjectInstrumentsHandler.loadInstrumentByName(project, instrumentFrame.instrumentName));
+                loadedInstrument.jsSource.contents = newInstrument.jsSource.contents;
+                loadedInstrument.cssSource.contents = newInstrument.cssSource.contents;
                 engine.loadBundledInstrument(
                     loadedInstrument,
                     iframeRef.current, {
@@ -189,6 +197,8 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
     const jsSourceDep = loadedInstrument.__kind === 'bundled' && loadedInstrument.jsSource;
     const cssSourceDep = loadedInstrument.__kind === 'bundled' && loadedInstrument.cssSource;
 
+    const [liveReloadDispatcher] = useState<LiveReloadDispatcher | null>(loadedInstrument.__kind === 'bundled' ? new LiveReloadDispatcher(loadedInstrument) : null);
+
     useEffect(() => {
         if (!liveReloadDispatcher) {
             return () => {};
@@ -197,16 +207,9 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
         if (instrumentFrame.dataKind === 'bundled' && loadedInstrument.__kind === 'bundled') {
             console.log(`[InstrumentFrameElement(${instrumentFrame.title})] Hooking into a new LiveReloadDispatcher.`);
 
-            const sub = liveReloadDispatcher.subscribe(instrumentFrame.instrumentName, (fileName, contents) => {
+            const sub = liveReloadDispatcher.subscribe(instrumentFrame.instrumentName, (fileName) => {
                 console.log(`[InstrumentFrameElement(${instrumentFrame.title})] File updated: ${fileName}.`);
-
-                if (loadedInstrument.jsSource.fileName === fileName) {
-                    loadedInstrument.jsSource.contents = contents;
-                }
-
-                if (loadedInstrument.cssSource.fileName === fileName) {
-                    loadedInstrument.cssSource.contents = contents;
-                }
+                // TODO: This function is called for each file, so its going to reload the instrument twice, once for css once for js, needs a clean
 
                 doLoadInstrument();
             });
@@ -223,6 +226,16 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
             projectDispatch(updateCanvasElement({ ...instrumentFrame, url }));
         }
     };
+
+    const [liveReloadActive, setLiveReloadActive] = useState(false);
+
+    useEffect(() => {
+        if (liveReloadActive) {
+            liveReloadDispatcher?.startWatching();
+        } else {
+            liveReloadDispatcher?.stopWatching();
+        }
+    }, [liveReloadDispatcher, liveReloadActive]);
 
     return (
         <PanelCanvasElement<InstrumentFrame>
@@ -246,6 +259,10 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                         size={22}
                         className="hover:text-green-500 hover:cursor-pointer"
                         onMouseDown={() => doLoadInstrument()}
+                    />
+                    <Toggle
+                        value={liveReloadActive}
+                        onToggle={() => setLiveReloadActive((value) => !value)}
                     />
                 </>
             )}

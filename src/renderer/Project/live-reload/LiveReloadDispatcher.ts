@@ -1,31 +1,25 @@
 import fs from 'fs';
-import { ProjectData } from '../../index';
-import { ProjectInstrumentsHandler } from '../fs/Instruments';
+import { BundledInstrumentData } from '../../../../ace-engine/src/InstrumentData';
 
 export type LiveReloadSubscriptionHandler = (fileName: string, contents: string) => void;
 
 export class LiveReloadDispatcher {
     constructor(
-        private project: ProjectData,
+        private instrument: BundledInstrumentData,
     ) {
     }
 
-    public started = false;
+    private subscriptions: { [k: string]: LiveReloadSubscriptionHandler; } = {};
+
+    private watchers: fs.FSWatcher[] = [];
 
     public startWatching() {
-        const allProjectInstruments = ProjectInstrumentsHandler.loadAllInstruments(this.project);
-
-        for (const instrument of allProjectInstruments) {
-            for (const file of instrument.files) {
-                console.log(`[LiveReloadDispatcher] Watching '${file.path}'...`);
-
-                this.watchers.push(
-                    fs.watch(file.path, this.handleFileUpdate.bind(this, instrument.config.name, file.path)),
-                );
-            }
+        for (const file of [this.instrument.jsSource, this.instrument.cssSource]) {
+            console.log(`[LiveReloadDispatcher] Watching '${file.path}'...`);
+            this.watchers.push(
+                fs.watch(file.path, this.handleFileUpdate.bind(this, this.instrument.displayName, file.path)),
+            );
         }
-
-        this.started = true;
     }
 
     public stopWatching() {
@@ -34,8 +28,6 @@ export class LiveReloadDispatcher {
         }
 
         console.log('[LiveReloadDispatcher] Closed all watchers.');
-
-        this.started = false;
     }
 
     private handleFileUpdate(instrumentName: string, fileName: string) {
@@ -47,10 +39,6 @@ export class LiveReloadDispatcher {
             }
         }
     }
-
-    private subscriptions: { [k: string]: LiveReloadSubscriptionHandler; } = {};
-
-    private watchers: fs.FSWatcher[] = [];
 
     public subscribe(forInstrument: string, handler: LiveReloadSubscriptionHandler) {
         this.subscriptions[forInstrument] = handler;

@@ -8,7 +8,6 @@ import { InstrumentFrameElement } from '../Canvas/InstrumentFrameElement';
 import { ProjectData } from '../..';
 import { WorkspaceContext } from './WorkspaceContext';
 import { ProjectLiveReloadHandler } from '../../Project/fs/LiveReload';
-import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
 import { Grid } from '../Canvas/Grid';
 import { useAppDispatch } from '../../Store';
 import { pushNotification } from '../../Store/actions/notifications.actions';
@@ -185,13 +184,6 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
     };
 
     const [liveReloadConfigHandler, setLiveReloadConfigHandler] = useState<ProjectLiveReloadHandler>(null);
-    const [liveReloadDispatcher, setLiveReloadDispatcher] = useState<LiveReloadDispatcher>(null);
-
-    const liveReloadDispatcherRef = useRef<LiveReloadDispatcher>(null);
-
-    useEffect(() => {
-        liveReloadDispatcherRef.current = liveReloadDispatcher;
-    }, [liveReloadDispatcher]);
 
     const [simVarControlsHandler, setSimVarControlsHandler] = useState<SimVarControlsHandler>(null);
     const [persistentStorageHandler, setPersistentStorageHandler] = useState<PersistentStorageHandler>(null);
@@ -201,20 +193,10 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         if (project) {
             setLiveReloadConfigHandler(new ProjectLiveReloadHandler(project));
 
-            setLiveReloadDispatcher((old) => {
-                old?.stopWatching();
-
-                return new LiveReloadDispatcher(project);
-            });
-
             setSimVarControlsHandler(new SimVarControlsHandler(project));
             setPersistentStorageHandler(new PersistentStorageHandler(project));
             setSimVarPresetsHandler(new SimVarPresetsHandler(project));
         }
-
-        return () => {
-            liveReloadDispatcherRef.current?.stopWatching();
-        };
     }, [project]);
 
     useEffect(() => {
@@ -262,15 +244,6 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
         }
     }, [projectDispatch, persistentStorageHandler]);
 
-    const startLiveReload = useCallback(() => {
-        if (liveReloadDispatcher) {
-            if (liveReloadDispatcher.started) {
-                liveReloadDispatcher.stopWatching();
-            }
-            liveReloadDispatcher.startWatching();
-        }
-    }, [liveReloadDispatcher]);
-
     const contextMenuRef = useRef<HTMLDivElement>(null);
     const [contextMenuTarget, setContextMenuTarget] = useState<PossibleCanvasElements>(null);
     const [contextMenuOpen, setContextMenuOpen] = useState(false);
@@ -316,8 +289,6 @@ export const ProjectWorkspace: FC<ProjectWorkspaceProps> = ({ project }) => {
             addInstrument: handleAddInstrument,
             removeCanvasElement: handleDeleteCanvasElement,
             project,
-            liveReloadDispatcher,
-            startLiveReload,
             handlers: {
                 liveReload: liveReloadConfigHandler,
                 simVarControls: simVarControlsHandler,

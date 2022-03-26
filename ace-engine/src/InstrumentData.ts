@@ -31,6 +31,7 @@ export interface BaseInstrumentData {
 
 export interface InstrumentFile {
     fileName: string,
+    path: string,
     contents: string,
 }
 

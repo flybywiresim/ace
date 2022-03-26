@@ -7,7 +7,6 @@ export enum WorkspacePanelSelection {
     Timeline,
     Coherent,
     Edit,
-    LiveReload,
 }
 
 export const interactionToolbarReducer = createReducer<{ panel: WorkspacePanelSelection }>({ panel: WorkspacePanelSelection.None }, (builder) => {

@@ -5,7 +5,6 @@ import {
     IconBulb,
     IconChevronLeft,
     IconPencil,
-    IconRefresh,
     IconVariable,
 } from '@tabler/icons';
 import { Toolbar, ToolbarItem, ToolbarItemColors, ToolbarSeparator } from './Framework/Toolbars';
@@ -14,7 +13,6 @@ import { WorkspacePanelSelection } from '../Store/reducers/interactionToolbar.re
 import { selectWorkspacePanel } from '../Store/actions/interactionToolbar.actions';
 import { SimVarMenu } from './SimVars/SimVarMenu';
 import { Timeline } from './Timeline';
-import { LiveReloadMenu } from './LiveReloadMenu';
 import { CoherentMenu } from './CoherentMenu';
 
 export const InteractionToolbar: FC = () => {
@@ -41,8 +39,6 @@ export const InteractionToolbar: FC = () => {
             return <Timeline />;
         case WorkspacePanelSelection.Coherent:
             return <CoherentMenu />;
-        case WorkspacePanelSelection.LiveReload:
-            return <LiveReloadMenu />;
         }
     };
 
@@ -81,14 +77,6 @@ export const InteractionToolbar: FC = () => {
                     color={ToolbarItemColors.PURPLE}
                 >
                     <IconPencil size={56} strokeWidth={1.5} />
-                </ToolbarItem>
-
-                <ToolbarItem
-                    color={ToolbarItemColors.PURPLE}
-                    visible={panelSelection === WorkspacePanelSelection.LiveReload}
-                    onClick={() => selectPanel(WorkspacePanelSelection.LiveReload)}
-                >
-                    <IconRefresh size={56} strokeWidth={1.5} />
                 </ToolbarItem>
 
                 <ToolbarSeparator />

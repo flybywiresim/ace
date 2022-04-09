@@ -122,6 +122,7 @@ export interface PanelCanvasElementProps<T extends PossibleCanvasElements> {
     resizingEnabled?: boolean,
     onResizeCompleted?: (width: number, height: number) => void,
     topBarContent?: JSX.Element;
+    id?: string;
 }
 
 export const PanelCanvasElement = <T extends PossibleCanvasElements>({
@@ -133,6 +134,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     resizingEnabled,
     onResizeCompleted,
     topBarContent,
+    id,
     children,
 }: PropsWithChildren<PanelCanvasElementProps<T>>) => {
     const projectDispatch = useProjectDispatch();
@@ -244,7 +246,7 @@ export const PanelCanvasElement = <T extends PossibleCanvasElements>({
     }, [canvasZoom, handleResizeMouseMove, handleResizeStop]);
 
     return (
-        <span className="absolute" onMouseDown={handleMouseDown}>
+        <span id={id} className="absolute" onMouseDown={handleMouseDown}>
             <span
                 ref={canvasElementRef}
                 className="shadow-md"

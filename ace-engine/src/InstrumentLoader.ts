@@ -30,6 +30,7 @@ export class InstrumentLoader {
         const iframeDocument = onto.contentDocument;
 
         iframeDocument.body.style.overflow = 'hidden';
+        iframeDocument.body.style.backgroundColor = '#000';
 
         const wrappedShim = options.simCallListener ? new ProxyShim(shim, options.simCallListener, instrument.uniqueID) : shim;
         InstrumentLoader.installShim(wrappedShim, iframeWindow);

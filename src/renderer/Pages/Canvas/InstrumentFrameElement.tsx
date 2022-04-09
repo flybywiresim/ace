@@ -1,6 +1,7 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
-import { IconRefresh } from '@tabler/icons';
+import { IconCamera, IconRefresh } from '@tabler/icons';
 import { Toggle } from '@flybywiresim/react-components';
+import rasterizeHTML from 'rasterizehtml';
 import { PanelCanvasElement } from '../PanelCanvas';
 import { ProjectInstrumentsHandler } from '../../Project/fs/Instruments';
 import { InstrumentFrame } from '../../../shared/types/project/canvas/InstrumentFrame';
@@ -16,6 +17,8 @@ import { clearCoherentEventsForUniqueID } from '../ProjectHome/Store/actions/coh
 import { updateCanvasElement } from '../ProjectHome/Store/actions/canvas.actions';
 import { setInteractionMode } from '../ProjectHome/Store/actions/interaction.actions';
 import { LiveReloadDispatcher } from '../../Project/live-reload/LiveReloadDispatcher';
+import { useAppDispatch } from '../../Store';
+import { pushNotification } from '../../Store/actions/notifications.actions';
 
 export interface InstrumentFile {
     name: string,
@@ -85,6 +88,7 @@ function webInstrumentData(url: string, config: InstrumentConfig): WebInstrument
 }
 
 export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instrumentFrame, zoom }) => {
+    const appDispatch = useAppDispatch();
     const projectDispatch = useProjectDispatch();
 
     const inEditMode = useProjectSelector((state) => state.interactionToolbar.panel === WorkspacePanelSelection.Edit);
@@ -237,8 +241,65 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
         }
     }, [liveReloadDispatcher, liveReloadActive]);
 
+    const handleScreenshotInstrument = () => {
+        if (!iframeRef.current) {
+            console.warn('(!) Cannot screenshot when no iframe instance');
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+
+        // TODO allow user to change the res
+        canvas.width = overrideWidth;
+        canvas.height = overrideHeight;
+
+        canvas.getContext('2d').fillStyle = 'rgb(0, 0, 0)';
+        canvas.getContext('2d').fillRect(0, 0, canvas.width, canvas.height);
+
+        const iframeDoc = iframeRef.current.contentDocument;
+
+        // Replace canvasses with images
+        const canvasElements = iframeDoc.querySelectorAll('canvas');
+
+        for (const canvas of canvasElements) {
+            const dataUrl = canvas.toDataURL();
+
+            const img = iframeDoc.createElement('img');
+            img.width = canvas.width;
+            img.height = canvas.height;
+            img.src = dataUrl;
+            (canvas as any).replacementImg = img;
+
+            canvas.replaceWith(img);
+        }
+
+        rasterizeHTML.drawDocument(iframeDoc, canvas).then(() => {
+            // Restore canvasses
+            for (const canvas of canvasElements) {
+                const img = (canvas as any).replacementImg;
+
+                img.replaceWith(canvas);
+            }
+
+            const dataUrl = canvas.toDataURL();
+            const buffer = Buffer.from(dataUrl.split(',')[1], 'base64');
+
+            const blob = new Blob([buffer], {
+                type: 'image/png',
+            });
+
+            // @ts-ignore
+            navigator.clipboard.write([new ClipboardItem({
+                [blob.type]: blob,
+            })]);
+
+            appDispatch(pushNotification(`Screenshot (${canvas.width}x${canvas.height}) copied to clipboard`));
+        });
+    };
+
     return (
         <PanelCanvasElement<InstrumentFrame>
+            id={`ace-instrument-${loadedInstrument.uniqueID}`}
             element={instrumentFrame}
             title={loadedInstrument.displayName}
             initialWidth={overrideWidth ?? loadedInstrument.dimensions.width ?? 1000}
@@ -263,6 +324,11 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                     <Toggle
                         value={liveReloadActive}
                         onToggle={() => setLiveReloadActive((value) => !value)}
+                    />
+                    <IconCamera
+                        size={22}
+                        className="hover:text-green-500 hover:cursor-pointer"
+                        onMouseDown={() => handleScreenshotInstrument()}
                     />
                 </>
             )}
@@ -292,7 +358,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
 
             <iframe
                 title="Instrument Frame"
-                name={instrumentFrame.dataKind === 'web' ? instrumentFrame.url : undefined}
+                name={instrumentFrame.dataKind === 'web' ? instrumentFrame.url : loadedInstrument.uniqueID}
                 ref={iframeRef}
                 width={overrideWidth ?? loadedInstrument.dimensions.width}
                 height={overrideHeight ?? loadedInstrument.dimensions.height}

@@ -288,6 +288,7 @@ export const InstrumentFrameElement: FC<InstrumentFrameElementProps> = ({ instru
                 type: 'image/png',
             });
 
+            document.body.focus();
             // @ts-ignore
             navigator.clipboard.write([new ClipboardItem({
                 [blob.type]: blob,

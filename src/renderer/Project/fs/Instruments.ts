@@ -62,10 +62,12 @@ export class ProjectInstrumentsHandler {
     private static loadInstrumentFiles(instrumentBundlesPath: string): InstrumentFile[] {
         const filesInBundlesFolder = fs.readdirSync(instrumentBundlesPath, { withFileTypes: true });
 
-        return filesInBundlesFolder.map((ent) => ({
-            name: ent.name,
-            path: path.join(instrumentBundlesPath, ent.name),
-            contents: fs.readFileSync(path.join(instrumentBundlesPath, ent.name)).toString(),
-        }));
+        return filesInBundlesFolder
+            .filter((ent) => ent.isFile())
+            .map((ent) => ({
+                name: ent.name,
+                path: path.join(instrumentBundlesPath, ent.name),
+                contents: fs.readFileSync(path.join(instrumentBundlesPath, ent.name)).toString(),
+            }));
     }
 }

@@ -49,11 +49,13 @@ export interface InstrumentFrameElementProps {
 }
 
 function bundleInstrumentData(instrument: Instrument): BundledInstrumentData {
-    if (!instrument.files[0]) {
+    const cssFile = instrument.files.find((file) => file.name.endsWith('.css'));
+    if (cssFile === undefined) {
         throw new Error('Expected CSS bundle file in instrument');
     }
 
-    if (!instrument.files[1]) {
+    const jsFile = instrument.files.find((file) => file.name.endsWith('.js'));
+    if (jsFile === undefined) {
         throw new Error('Expected JavaScript bundle file in instrument');
     }
 
@@ -64,14 +66,14 @@ function bundleInstrumentData(instrument: Instrument): BundledInstrumentData {
         elementName: 'ace-instrument',
         dimensions: instrument.config.dimensions,
         jsSource: {
-            fileName: instrument.files[1].name,
-            path: instrument.files[1].path,
-            contents: instrument.files[1].contents,
+            fileName: jsFile.name,
+            path: jsFile.path,
+            contents: jsFile.contents,
         },
         cssSource: {
-            fileName: instrument.files[0].name,
-            path: instrument.files[0].path,
-            contents: instrument.files[0].contents,
+            fileName: cssFile.name,
+            path: cssFile.path,
+            contents: cssFile.contents,
         },
     };
 }

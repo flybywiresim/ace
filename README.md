@@ -44,7 +44,7 @@ Your rollup should output to a bundles folder within your project using this str
     - bundle.css
 ```
 
-Open the repository in an IDE of your choice, run `npm i` to install dependencies, then run `npm start`.
+Download and install NodeJS v16. Open the repository in an IDE of your choice, run `npm i` to install dependencies, then run `npm start`.
 
 After running the program, select `New Project` and choose the locations of all your folders. 
 If your folders are setup for ACE beforehand, you can select `Open Project` and select your root directory.

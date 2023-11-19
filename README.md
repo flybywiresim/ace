@@ -1,3 +1,5 @@
+# For the most up-to-date version of ACE, please visit the new ACE repository at [Synaptic Simulations Github](https://github.com/synapticsim/ace-v3).
+
 ![FlyByWire Simulations](https://raw.githubusercontent.com/flybywiresim/branding/1391fc003d8b5d439d01ad86e2778ae0bfc8b682/tails-with-text/FBW-Color-Light.svg)
 
 # `ace`
